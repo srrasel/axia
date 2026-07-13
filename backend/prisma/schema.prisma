@@ -1,0 +1,271 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+enum AccountType {
+  demo
+  live
+}
+
+enum TradeSide {
+  buy
+  sell
+}
+
+enum TradeStatus {
+  open
+  pending
+  closed
+}
+
+enum TradeSource {
+  self
+  social
+}
+
+enum AssetCategory {
+  forex
+  crypto
+  commodity
+  stock
+  index
+}
+
+enum TxType {
+  deposit
+  withdraw
+  trade_pnl
+  credit
+  debit
+  fee
+  commission
+  bonus
+}
+
+enum TxStatus {
+  pending
+  approved
+  rejected
+  completed
+}
+
+enum KycStatus {
+  none
+  pending
+  approved
+  rejected
+}
+
+enum EarningType {
+  trading_fee
+  deposit_fee
+  withdraw_fee
+  spread
+  swap
+  referral_commission
+  other
+}
+
+model User {
+  id                 String         @id @default(cuid())
+  email              String         @unique
+  passwordHash       String
+  name               String
+  initials           String
+  nationality        String         @default("Saudi Arabia")
+  role               Role           @default(USER)
+  verified           Boolean        @default(false)
+  funded             Boolean        @default(false)
+  totalDeposited     Float          @default(0)
+  questionnaireDone  Boolean        @default(false)
+  referralCode       String         @unique
+  referredById       String?
+  referredBy         User?          @relation("Referrals", fields: [referredById], references: [id])
+  referrals          User[]         @relation("Referrals")
+  assignedToId       String?
+  assignedTo         User?          @relation("ClientAssignment", fields: [assignedToId], references: [id])
+  assignedClients    User[]         @relation("ClientAssignment")
+  lastSeenAt         DateTime?
+  kycStatus          KycStatus      @default(none)
+  active             Boolean        @default(true)
+  totpEnabled        Boolean        @default(false)
+  totpSecret         String?
+  totpTempSecret     String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  accounts           Account[]
+  trades             Trade[]
+  transactions       Transaction[]
+  notifications      Notification[]
+  kycDocuments       KycDocument[]
+  earnings           PlatformEarning[]
+  contactsAsClient   ContactLog[]   @relation("ContactClient")
+  contactsAsStaff    ContactLog[]   @relation("ContactStaff")
+  priceOverrides     PriceOverride[]
+
+  @@index([role])
+  @@index([lastSeenAt])
+  @@index([assignedToId])
+}
+
+model Account {
+  id           String        @id @default(cuid())
+  number       String        @unique
+  type         AccountType
+  platform     String        @default("MT5")
+  leverage     String        @default("1:400")
+  currency     String        @default("EUR")
+  balance      Float         @default(0)
+  equity       Float         @default(0)
+  credit       Float         @default(0)
+  active       Boolean       @default(true)
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trades       Trade[]
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+model Trade {
+  id           String        @id @default(cuid())
+  symbol       String
+  side         TradeSide
+  volume       Float
+  openPrice    Float
+  currentPrice Float
+  closePrice   Float?
+  openTime     DateTime      @default(now())
+  closeTime    DateTime?
+  status       TradeStatus   @default(open)
+  stopLoss     Float?
+  takeProfit   Float?
+  triggerPrice Float?
+  realizedPnl  Float?
+  commission   Float         @default(0)
+  swap         Float         @default(0)
+  category     AssetCategory
+  source       TradeSource   @default(self)
+  userId       String
+  accountId    String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account      Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([userId, accountId, status])
+}
+
+model Transaction {
+  id         String   @id @default(cuid())
+  type       TxType
+  status     TxStatus @default(completed)
+  amount     Float
+  fee        Float    @default(0)
+  payment    String
+  note       String?
+  gatewayRef String?
+  meta       String?
+  userId     String
+  accountId  String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account    Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([gatewayRef])
+}
+
+model PlatformEarning {
+  id          String      @id @default(cuid())
+  type        EarningType
+  amount      Float
+  currency    String      @default("EUR")
+  description String
+  userId      String?
+  user        User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  meta        String?
+  createdAt   DateTime    @default(now())
+
+  @@index([type])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model KycDocument {
+  id        String    @id @default(cuid())
+  kind      String
+  docType   String
+  fileName  String
+  status    KycStatus @default(pending)
+  note      String?
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
+
+/** CRM: forced market quotes for a symbol (manager price control) */
+model PriceOverride {
+  id          String   @id @default(cuid())
+  symbol      String   @unique
+  price       Float
+  bid         Float?
+  ask         Float?
+  active      Boolean  @default(true)
+  note        String?
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/** CRM: employee/manager contact notes with clients */
+model ContactLog {
+  id        String   @id @default(cuid())
+  clientId  String
+  staffId   String
+  note      String
+  channel   String   @default("phone")
+  client    User     @relation("ContactClient", fields: [clientId], references: [id], onDelete: Cascade)
+  staff     User     @relation("ContactStaff", fields: [staffId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([clientId])
+  @@index([staffId])
+}

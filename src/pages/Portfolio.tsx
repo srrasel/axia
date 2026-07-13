@@ -1,0 +1,265 @@
+import { useMemo, useState } from 'react'
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { ChevronDown, ChevronRight } from 'lucide-react'
+import { useApp } from '../context/AppContext'
+import { calcPnl, formatMoney, formatPrice } from '../data/mock'
+import { TradingJournal } from '../components/portfolio/TradingJournal'
+import { TradingCalendar } from '../components/portfolio/TradingCalendar'
+import clsx from 'clsx'
+
+type Section = 'portfolio' | 'journal' | 'calendar'
+
+export function PortfolioPage() {
+  const [section, setSection] = useState<Section>('portfolio')
+  const { trades, quotes, activeAccountId } = useApp()
+  const open = trades.filter((t) => t.status === 'open' && t.accountId === activeAccountId)
+  const [source, setSource] = useState<'all' | 'self' | 'social'>('all')
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({ forex: true, stock: true })
+
+  const filteredOpen = useMemo(() => {
+    if (source === 'all') return open
+    return open.filter((t) => t.source === source)
+  }, [open, source])
+
+  const byCategory = useMemo(() => {
+    const map: Record<string, typeof filteredOpen> = {}
+    filteredOpen.forEach((t) => {
+      map[t.category] = map[t.category] ?? []
+      map[t.category].push(t)
+    })
+    return map
+  }, [filteredOpen])
+
+  const allocation = useMemo(() => {
+    const total = filteredOpen.length || 1
+    const cats = ['forex', 'stock', 'commodity', 'crypto', 'index'] as const
+    const colors = ['#f5c518', '#2563eb', '#22a06b', '#a855f7', '#64748b']
+    const labels = ['Forex', 'Stocks', 'Commodities', 'Crypto', 'Indices']
+    return cats.map((c, i) => ({
+      name: labels[i],
+      value: ((byCategory[c]?.length ?? 0) / total) * 100,
+      color: colors[i],
+    }))
+  }, [byCategory, filteredOpen.length])
+
+  const performance = useMemo(() => {
+    return Object.entries(byCategory).map(([cat, list]) => ({
+      name: cat,
+      pnl: list.reduce((s, t) => s + calcPnl(t), 0),
+      fill:
+        cat === 'forex'
+          ? '#f5c518'
+          : cat === 'stock'
+            ? '#2563eb'
+            : cat === 'crypto'
+              ? '#a855f7'
+              : cat === 'commodity'
+                ? '#22a06b'
+                : '#64748b',
+    }))
+  }, [byCategory])
+
+  const selfPct = open.length ? (open.filter((t) => t.source === 'self').length / open.length) * 100 : 100
+
+  const nav = [
+    { id: 'portfolio' as const, label: 'Portfolio' },
+    { id: 'journal' as const, label: 'Trading Journal' },
+    { id: 'calendar' as const, label: 'Calendar' },
+  ]
+
+  return (
+    <div className="flex h-full flex-col md:flex-row">
+      <div className="panel flex shrink-0 flex-row overflow-x-auto border-b md:w-52 md:flex-col md:border-b-0 md:border-r">
+        {nav.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setSection(item.id)}
+            className={clsx(
+              'mx-1 my-2 shrink-0 rounded-md px-3 py-2.5 text-left text-sm transition-colors md:mx-2 md:my-0 md:mt-1 first:md:mt-3',
+              section === item.id
+                ? 'bg-sidebar-active font-semibold text-brand-ink'
+                : 'text-text-secondary hover:bg-muted hover:text-brand-ink',
+            )}
+          >
+            {item.label}
+          </button>
+        ))}
+        <div className="mt-auto hidden border-t border-border p-3 text-[11px] text-text-secondary md:block">
+          Data reflects GMT + 3 time zone (Server time).
+        </div>
+      </div>
+
+      <div className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-5">
+        {section === 'journal' ? (
+          <TradingJournal />
+        ) : section === 'calendar' ? (
+          <TradingCalendar />
+        ) : (
+          <>
+            <h1 className="text-xl font-semibold">Portfolio</h1>
+            <p className="text-sm text-text-secondary">Explore your open orders by market.</p>
+
+            <div className="mt-5 grid gap-4 lg:grid-cols-[220px_1fr_180px]">
+              <div className="space-y-4">
+                <div className="rounded-lg border border-border bg-panel p-4">
+                  <div className="mb-2 text-sm font-semibold">Trades source ratio</div>
+                  <div className="flex h-2 overflow-hidden rounded-full bg-muted">
+                    <div className="bg-link" style={{ width: `${100 - selfPct}%` }} />
+                    <div className="bg-brand" style={{ width: `${selfPct}%` }} />
+                  </div>
+                  <div className="mt-2 flex justify-between text-[11px] text-text-secondary">
+                    <span>Discover Social {(100 - selfPct).toFixed(0)}%</span>
+                    <span>Self {selfPct.toFixed(0)}%</span>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-border bg-panel p-4">
+                  <div className="mb-2 text-sm font-semibold">Trades Allocation</div>
+                  <div className="relative mx-auto h-40 w-40">
+                    <ResponsiveContainer>
+                      <PieChart>
+                        <Pie data={allocation} dataKey="value" innerRadius={48} outerRadius={70} paddingAngle={2}>
+                          {allocation.map((a) => (
+                            <Cell key={a.name} fill={a.color} />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-center text-xs font-semibold">
+                      {filteredOpen.length} Open
+                      <br />
+                      Trades
+                    </div>
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    {allocation.map((a) => (
+                      <div key={a.name} className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full" style={{ background: a.color }} />
+                          {a.name}
+                        </span>
+                        <span>{a.value.toFixed(0)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-border bg-panel p-4">
+                <div className="mb-3 text-sm font-semibold">Performance by category</div>
+                <div className="h-64">
+                  <ResponsiveContainer>
+                    <BarChart data={performance}>
+                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <Tooltip formatter={(v) => formatMoney(Number(v))} />
+                      <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
+                        {performance.map((p) => (
+                          <Cell key={p.name} fill={p.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-border bg-panel p-4">
+                <div className="mb-3 text-sm font-semibold">Trade source</div>
+                {(['all', 'self', 'social'] as const).map((s) => (
+                  <label key={s} className="mb-2 flex items-center gap-2 text-sm capitalize">
+                    <input type="radio" name="source" checked={source === s} onChange={() => setSource(s)} />
+                    {s}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {Object.entries(byCategory).map(([cat, list]) => (
+                <div key={cat} className="overflow-hidden rounded-lg border border-border bg-panel">
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold capitalize"
+                    onClick={() => setExpanded((e) => ({ ...e, [cat]: !e[cat] }))}
+                  >
+                    {expanded[cat] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                    {cat} ({list.length} Trades)
+                  </button>
+                  {expanded[cat] ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[640px] text-sm">
+                        <thead className="bg-muted text-xs text-text-secondary">
+                          <tr>
+                            <th className="px-4 py-2 text-left font-medium">Symbol</th>
+                            <th className="px-4 py-2 text-left font-medium">Order ID</th>
+                            <th className="px-4 py-2 text-left font-medium">Open Time</th>
+                            <th className="px-4 py-2 text-left font-medium">Type</th>
+                            <th className="px-4 py-2 text-left font-medium">Volume</th>
+                            <th className="px-4 py-2 text-left font-medium">P&L</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {list.map((t) => {
+                            const q = quotes.find((x) => x.symbol === t.symbol)
+                            const pnl = calcPnl(t)
+                            return (
+                              <tr key={t.id} className="border-t border-border">
+                                <td className="px-4 py-2">
+                                  <div className="font-semibold">{t.symbol}</div>
+                                  <div
+                                    className={clsx(
+                                      'text-[11px]',
+                                      (q?.percentChange ?? 0) >= 0 ? 'positive' : 'negative',
+                                    )}
+                                  >
+                                    {formatPrice(t.currentPrice, t.symbol)} ({(q?.percentChange ?? 0).toFixed(2)}%)
+                                  </div>
+                                </td>
+                                <td className="px-4 py-2">#{t.id}</td>
+                                <td className="px-4 py-2">{t.openTime}</td>
+                                <td className="px-4 py-2">
+                                  <span
+                                    className={clsx(
+                                      'rounded px-2 py-0.5 text-xs font-semibold capitalize',
+                                      t.side === 'buy' ? 'bg-buy/10 text-buy' : 'bg-sell/10 text-sell',
+                                    )}
+                                  >
+                                    {t.side}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-2">{t.volume} Lot</td>
+                                <td className={clsx('px-4 py-2 font-semibold', pnl >= 0 ? 'positive' : 'negative')}>
+                                  {formatMoney(pnl)}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+              {filteredOpen.length === 0 ? (
+                <div className="rounded-lg border border-border bg-panel p-8 text-center text-sm text-text-secondary">
+                  No open trades for this filter.
+                </div>
+              ) : null}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}

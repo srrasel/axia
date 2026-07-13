@@ -1,0 +1,176 @@
+import { useState } from 'react'
+import { useApp } from '../../context/AppContext'
+import { calcPnl, formatMoney, formatPrice } from '../../data/mock'
+import clsx from 'clsx'
+
+export function TradesTable() {
+  const { trades, closeTrade, cancelPending, updateTradeLevels, activeAccountId } = useApp()
+  const [tab, setTab] = useState<'open' | 'pending' | 'closed'>('open')
+  const [editing, setEditing] = useState<string | null>(null)
+  const [sl, setSl] = useState('')
+  const [tp, setTp] = useState('')
+
+  const accountTrades = trades.filter((t) => t.accountId === activeAccountId)
+  const filtered = accountTrades.filter((t) => t.status === tab)
+  const openCount = accountTrades.filter((t) => t.status === 'open').length
+  const pendingCount = accountTrades.filter((t) => t.status === 'pending').length
+
+  return (
+    <div className="panel flex h-32 shrink-0 flex-col border-t sm:h-36 md:h-40 lg:h-44">
+      <div className="flex items-center gap-3 overflow-x-auto border-b border-border px-3 sm:gap-4 sm:px-4">
+        {(
+          [
+            ['open', `Open (${openCount})`],
+            ['pending', `Pending (${pendingCount})`],
+            ['closed', 'History'],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setTab(key)}
+            className={clsx(
+              'shrink-0 border-b-2 py-2 text-sm sm:py-2.5',
+              tab === key
+                ? 'border-brand font-semibold text-brand-ink'
+                : 'border-transparent text-text-secondary',
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex-1 overflow-auto">
+        <table className="w-full min-w-[1100px] text-left text-sm">
+          <thead className="sticky top-0 bg-muted text-xs text-text-secondary">
+            <tr>
+              <th className="px-3 py-2 font-medium">Order</th>
+              <th className="px-3 py-2 font-medium">Asset</th>
+              <th className="px-3 py-2 font-medium">Type</th>
+              <th className="px-3 py-2 font-medium">Volume</th>
+              <th className="px-3 py-2 font-medium">Open</th>
+              <th className="px-3 py-2 font-medium">Current</th>
+              <th className="px-3 py-2 font-medium">SL / TP</th>
+              <th className="px-3 py-2 font-medium">PnL</th>
+              <th className="px-3 py-2 font-medium">Swap</th>
+              <th className="px-3 py-2 font-medium">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={10} className="px-3 py-8 text-center text-text-secondary">
+                  No {tab} trades
+                </td>
+              </tr>
+            ) : (
+              filtered.map((t) => {
+                const pnl = t.status === 'closed' ? (t.realizedPnl ?? 0) : calcPnl(t)
+                return (
+                  <tr key={t.id} className="border-t border-border/70">
+                    <td className="px-3 py-2">
+                      <div className="font-medium">#{t.id}</div>
+                      <div className="text-[11px] text-text-secondary">{t.openTime}</div>
+                      {t.triggerPrice != null && t.status === 'pending' ? (
+                        <div className="text-[11px] text-link">Trigger {formatPrice(t.triggerPrice, t.symbol)}</div>
+                      ) : null}
+                    </td>
+                    <td className="px-3 py-2 font-semibold">{t.symbol}</td>
+                    <td className="px-3 py-2">
+                      <span
+                        className={clsx(
+                          'rounded px-2 py-0.5 text-xs font-semibold capitalize',
+                          t.side === 'buy' ? 'bg-buy/10 text-buy' : 'bg-sell/10 text-sell',
+                        )}
+                      >
+                        {t.side}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2">{t.volume} Lot</td>
+                    <td className="px-3 py-2 tabular-nums">{formatPrice(t.openPrice, t.symbol)}</td>
+                    <td className="px-3 py-2 tabular-nums">
+                      {t.status === 'closed'
+                        ? formatPrice(t.closePrice ?? t.currentPrice, t.symbol)
+                        : formatPrice(t.currentPrice, t.symbol)}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-text-secondary">
+                      {editing === t.id ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            value={sl}
+                            onChange={(e) => setSl(e.target.value)}
+                            placeholder="SL"
+                            className="w-16 rounded border border-border px-1 py-0.5"
+                          />
+                          <input
+                            value={tp}
+                            onChange={(e) => setTp(e.target.value)}
+                            placeholder="TP"
+                            className="w-16 rounded border border-border px-1 py-0.5"
+                          />
+                          <button
+                            type="button"
+                            className="text-link"
+                            onClick={async () => {
+                              await updateTradeLevels(
+                                t.id,
+                                sl ? Number(sl) : undefined,
+                                tp ? Number(tp) : undefined,
+                              )
+                              setEditing(null)
+                            }}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          className="hover:text-brand-ink"
+                          onClick={() => {
+                            setEditing(t.id)
+                            setSl(t.stopLoss?.toString() ?? '')
+                            setTp(t.takeProfit?.toString() ?? '')
+                          }}
+                          disabled={t.status === 'closed'}
+                        >
+                          {t.stopLoss ?? '—'} / {t.takeProfit ?? '—'}
+                        </button>
+                      )}
+                    </td>
+                    <td className={clsx('px-3 py-2 font-semibold tabular-nums', pnl >= 0 ? 'positive' : 'negative')}>
+                      {formatMoney(pnl)}
+                    </td>
+                    <td className="px-3 py-2 tabular-nums">{formatMoney(t.swap)}</td>
+                    <td className="px-3 py-2">
+                      {t.status === 'open' ? (
+                        <button
+                          type="button"
+                          onClick={() => void closeTrade(t.id)}
+                          className="rounded border border-border px-2 py-1 text-xs font-medium hover:bg-muted"
+                        >
+                          Close
+                        </button>
+                      ) : t.status === 'pending' ? (
+                        <button
+                          type="button"
+                          onClick={() => void cancelPending(t.id)}
+                          className="rounded border border-border px-2 py-1 text-xs font-medium hover:bg-muted"
+                        >
+                          Cancel
+                        </button>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                  </tr>
+                )
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}

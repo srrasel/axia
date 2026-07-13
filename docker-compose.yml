@@ -1,0 +1,82 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: seekapa-db
+    environment:
+      POSTGRES_USER: seekapa
+      POSTGRES_PASSWORD: seekapa
+      POSTGRES_DB: seekapa
+    ports:
+      - "5432:5432"
+    volumes:
+      - seekapa_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U seekapa -d seekapa"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./backend
+    container_name: seekapa-api
+    environment:
+      DATABASE_URL: postgresql://seekapa:seekapa@db:5432/seekapa?schema=public
+      JWT_SECRET: ${JWT_SECRET:-seekapa-docker-secret-change-me}
+      PORT: 4000
+      TWELVE_DATA_API_KEY: ${TWELVE_DATA_API_KEY:-your_api_key_here}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://my.nitajfx.online,http://account.nitajfx.online,https://my.nitajfx.online,https://account.nitajfx.online,http://localhost:3000,http://localhost:3001}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://my.nitajfx.online}
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://api.nitajfx.online}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      NOWPAYMENTS_API_KEY: ${NOWPAYMENTS_API_KEY:-}
+      NOWPAYMENTS_IPN_SECRET: ${NOWPAYMENTS_IPN_SECRET:-}
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://api.nitajfx.online}
+    container_name: seekapa-web
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  admin:
+    build:
+      context: ./admin
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://api.nitajfx.online}
+    container_name: seekapa-admin
+    ports:
+      - "3001:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # Public nginx gateway — domains on :80
+  # my.nitajfx.online → web | account.nitajfx.online → admin | api.nitajfx.online → api
+  nginx:
+    image: nginx:alpine
+    container_name: seekapa-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - web
+      - admin
+      - api
+    restart: unless-stopped
+
+volumes:
+  seekapa_pg:

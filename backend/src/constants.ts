@@ -1,0 +1,1 @@
+export const PREMIUM_THRESHOLD = 5000
