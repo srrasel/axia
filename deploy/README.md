@@ -1,80 +1,70 @@
 # NitajFX — VPS deploy + SSL
 
 ## Domains
-| Host | App |
-|------|-----|
-| `https://my.nitajfx.online` | Trading |
-| `https://account.nitajfx.online` | Admin |
-| `https://api.nitajfx.online` | API |
+| Host | App | Docker port |
+|------|-----|-------------|
+| `https://my.nitajfx.online` | Trading | `3000` |
+| `https://account.nitajfx.online` | Admin | `3001` |
+| `https://api.nitajfx.online` | API | `4000` |
 
-## 1. DNS
-A records → VPS IP:
-- `my.nitajfx.online`
-- `account.nitajfx.online`
-- `api.nitajfx.online`
+## Fix: `502 Bad Gateway nginx/1.18.0 (Ubuntu)`
 
-## 2. Firewall
+Host Ubuntu nginx owns `:80`/`:443`. Docker is fine — host nginx is proxying to the wrong place (or `localhost` → IPv6).
+
+### On the VPS
 ```bash
-sudo ufw allow OpenSSH
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw enable
+cd /opt/axiatrade   # your project path
+docker compose up -d --build
+
+# Verify Docker directly (should work):
+curl -I http://127.0.0.1:3000
+curl -I http://127.0.0.1:3001
+curl http://127.0.0.1:4000/health
+
+# Point host nginx at Docker:
+chmod +x deploy/fix-host-nginx-502.sh
+bash deploy/fix-host-nginx-502.sh
 ```
 
-## 3. Install Docker + clone project
+Or manually:
 ```bash
-# Docker install (Ubuntu) — see earlier steps, then:
-cd /opt
-sudo git clone YOUR_REPO axiatrade
-cd axiatrade
-cp .env.example .env
-nano .env   # set JWT_SECRET, TWELVE_DATA_API_KEY, SSL_EMAIL
+sudo cp deploy/host-nginx/nitajfx.conf /etc/nginx/sites-available/nitajfx
+sudo ln -sf /etc/nginx/sites-available/nitajfx /etc/nginx/sites-enabled/nitajfx
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t && sudo systemctl reload nginx
 ```
 
-## 4. Install SSL (Let's Encrypt)
+Use **`127.0.0.1:3000`** in `proxy_pass`, not `localhost` (avoids `::1` → 502).
+
 ```bash
-chmod +x deploy/ssl-init.sh deploy/ssl-renew.sh
+sudo tail -n 50 /var/log/nginx/error.log
+```
+
+Do **not** run `docker compose --profile gateway` while host nginx is using 80/443.
+
+---
+
+## Alternative: Docker nginx only
+
+```bash
+sudo systemctl stop nginx && sudo systemctl disable nginx
 bash deploy/ssl-init.sh
+docker compose --profile gateway up -d --build
 ```
 
-This will:
-1. Create a temporary cert so nginx can listen on 443
-2. Request a real certificate for all 3 domains
-3. Reload nginx
+## DNS + firewall
+A records → VPS IP for `my` / `account` / `api`.  
+`ufw allow 80,443` + OpenSSH.
 
-## 5. Point app to HTTPS + rebuild
-Edit `.env`:
+## Env
 ```env
 WEB_ORIGIN=https://my.nitajfx.online
 API_PUBLIC_URL=https://api.nitajfx.online
-VITE_API_URL=https://api.nitajfx.online
+VITE_API_URL=
 CORS_ORIGIN=https://my.nitajfx.online,https://account.nitajfx.online
 ```
 
-```bash
-docker compose --profile gateway up --build -d
-```
-
-Local Windows/dev (no SSL gateway — use ports 3000/3001/4000):
-
+## Local Windows
 ```bash
 docker compose up --build -d
 ```
-
-## 6. Auto-renew (cron)
-```bash
-sudo crontab -e
-```
-Add:
-```
-0 3 1 * * cd /opt/axiatrade && bash deploy/ssl-renew.sh >> /var/log/nitajfx-ssl-renew.log 2>&1
-```
-
-## Troubleshooting
-```bash
-docker compose logs nginx
-docker compose run --rm --entrypoint certbot certbot certificates
-curl -I https://my.nitajfx.online
-```
-
-If cert fails: DNS must already point to this VPS, and ports 80/443 must be open.
