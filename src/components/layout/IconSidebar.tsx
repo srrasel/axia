@@ -2,7 +2,6 @@ import { NavLink } from 'react-router-dom'
 import {
   BarChart3,
   Bell,
-  Bot,
   Briefcase,
   Calendar,
   Crosshair,
@@ -24,7 +23,6 @@ const items = [
   { to: '/calendar', icon: Calendar, label: 'Calendar' },
   { to: '/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
-  { to: '/ai', icon: Bot, label: 'AI' },
 ]
 
 const ICON_PX = 24
