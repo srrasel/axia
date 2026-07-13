@@ -160,6 +160,7 @@ function mapUser(u: any): ApiUser {
     password: '',
     nationality: u.nationality,
     initials: u.initials,
+    photoUrl: u.photoUrl ?? u.avatarUrl ?? null,
     verified: u.verified,
     funded: u.funded,
     totalDeposited: u.totalDeposited ?? 0,

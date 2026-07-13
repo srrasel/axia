@@ -1,7 +1,5 @@
-/**
- * Empty / unset VITE_API_URL → same-origin `/api/...` (via nginx proxy).
- */
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+/** Always same-origin `/api/...` (nginx proxies to backend). */
+const API_URL = ''
 
 export function getToken() {
   return localStorage.getItem('seekapa_admin_token')
@@ -20,14 +18,14 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   const token = getToken()
   if (token) headers.Authorization = `Bearer ${token}`
 
-  const url = `${API_URL}${path.startsWith('/') ? path : `/${path}`}`
+  const url = path.startsWith('/') ? path : `/${path}`
 
   let res: Response
   try {
     res = await fetch(url, { ...options, headers })
   } catch {
     throw new Error(
-      'Cannot reach API. Check that the backend is running and you are using the correct site URL.',
+      `Cannot reach API at ${url}. Is the backend up, and is /api proxied on this host?`,
     )
   }
 
@@ -35,3 +33,5 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   if (!res.ok) throw new Error(data.error || res.statusText || 'Request failed')
   return data as T
 }
+
+export { API_URL }

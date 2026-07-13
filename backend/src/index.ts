@@ -15,8 +15,19 @@ async function main() {
   const origins = (process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:5174')
     .split(',')
     .map((s) => s.trim())
+    .filter(Boolean)
 
-  app.use(cors({ origin: origins, credentials: true }))
+  app.use(
+    cors({
+      origin: (origin, cb) => {
+        // Same-origin / curl / server-to-server have no Origin
+        if (!origin) return cb(null, true)
+        if (origins.includes(origin) || origins.includes('*')) return cb(null, true)
+        return cb(null, false)
+      },
+      credentials: true,
+    }),
+  )
   app.use(express.json({ limit: '2mb' }))
 
   app.get('/health', (_req, res) => res.json({ ok: true, service: 'seekapa-api' }))
@@ -33,8 +44,8 @@ async function main() {
 
   await ensureDefaultSettings()
 
-  app.listen(port, () => {
-    console.log(`NitajFX API listening on :${port}`)
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`NitajFX API listening on 0.0.0.0:${port}`)
   })
 
   setInterval(() => {

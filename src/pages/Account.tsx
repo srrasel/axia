@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 're
 import { Link, useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import { AccountSidebar } from '../components/layout/AccountSidebar'
+import { UserAvatar } from '../components/UserAvatar'
 import { useApp } from '../context/AppContext'
 import { api } from '../api/client'
 import { calcUsedMargin, formatMoney, getPlatformCurrency } from '../data/mock'
@@ -16,26 +17,40 @@ import {
   Diamond,
   FileWarning,
   Lock,
+  Menu,
   Pencil,
   Upload,
   Users,
   Wallet,
+  X,
 } from 'lucide-react'
 
 function PageShell({ title, children }: { title: string; children: ReactNode }) {
+  const [navOpen, setNavOpen] = useState(false)
+
   return (
     <>
-      <AccountSidebar />
+      <AccountSidebar open={navOpen} onClose={() => setNavOpen(false)} />
       <div className="panel flex min-w-0 flex-1 flex-col overflow-hidden border-l-0">
-        <div className="border-b border-border bg-muted px-5 py-3 text-sm font-semibold">{title}</div>
-        <div className="flex-1 overflow-y-auto p-5">{children}</div>
+        <div className="flex items-center gap-2 border-b border-border bg-muted px-3 py-3 sm:gap-3 sm:px-5">
+          <button
+            type="button"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-panel text-text-secondary hover:bg-muted md:hidden"
+            onClick={() => setNavOpen(true)}
+            aria-label="Open account menu"
+          >
+            <Menu size={18} />
+          </button>
+          <div className="min-w-0 truncate text-sm font-semibold">{title}</div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-3 sm:p-5">{children}</div>
       </div>
     </>
   )
 }
 
 export function AccountDetailsPage() {
-  const { user, updateProfile, changePassword, setup2fa, enable2fa, disable2fa } = useApp()
+  const { user, updateProfile, changePassword, setup2fa, enable2fa, disable2fa, accounts } = useApp()
   const [tab, setTab] = useState<'personal' | 'password' | 'security'>('personal')
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(user?.name ?? '')
@@ -49,46 +64,79 @@ export function AccountDetailsPage() {
   const [secError, setSecError] = useState<string | null>(null)
   const [secBusy, setSecBusy] = useState(false)
 
+  const liveCount = accounts.filter((a) => a.type === 'live').length
+  const demoCount = accounts.filter((a) => a.type === 'demo').length
+
+  const cancelEdit = () => {
+    setEditing(false)
+    setName(user?.name ?? '')
+    setNationality(user?.nationality ?? '')
+  }
+
   return (
     <PageShell title="Account Details">
-      <div className="mb-4 flex gap-4 overflow-x-auto border-b border-border">
-        <TabBtn active={tab === 'personal'} onClick={() => setTab('personal')}>
-          Personal Information
+      <div className="-mx-3 mb-4 flex gap-1 overflow-x-auto border-b border-border px-3 sm:mx-0 sm:gap-2 sm:px-0">
+        <TabBtn
+          active={tab === 'personal'}
+          onClick={() => {
+            setTab('personal')
+            cancelEdit()
+          }}
+        >
+          Personal<span className="hidden sm:inline"> Information</span>
         </TabBtn>
-        <TabBtn active={tab === 'password'} onClick={() => setTab('password')}>
-          Change Password
+        <TabBtn
+          active={tab === 'password'}
+          onClick={() => {
+            setTab('password')
+            cancelEdit()
+          }}
+        >
+          <span className="sm:hidden">Password</span>
+          <span className="hidden sm:inline">Change Password</span>
         </TabBtn>
-        <TabBtn active={tab === 'security'} onClick={() => setTab('security')}>
-          Two-step verification
+        <TabBtn
+          active={tab === 'security'}
+          onClick={() => {
+            setTab('security')
+            cancelEdit()
+          }}
+        >
+          <span className="sm:hidden">2FA</span>
+          <span className="hidden sm:inline">Two-step verification</span>
         </TabBtn>
       </div>
 
-      <div className="mb-6 flex items-center gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand text-lg font-bold text-on-brand">
-          {user?.initials}
-        </div>
-        <div>
-          <div className="text-lg font-semibold">{user?.name}</div>
-          <div className="text-sm text-text-secondary">{user?.email}</div>
-          <div className="text-xs text-text-secondary">1 live accounts | 1 demo accounts</div>
+      <div className="mb-5 flex items-center gap-3 sm:mb-6 sm:gap-4">
+        <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={64} />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-base font-semibold sm:text-lg">{user?.name}</div>
+          <div className="truncate text-sm text-text-secondary">{user?.email}</div>
+          <div className="text-xs text-text-secondary">
+            {liveCount} live · {demoCount} demo
+          </div>
         </div>
       </div>
 
       {tab === 'personal' ? (
-        <div className="grid max-w-3xl gap-4 md:grid-cols-2">
-          <div className="relative rounded-lg border border-border p-4">
+        <div className="grid max-w-3xl gap-3 sm:gap-4 md:grid-cols-2">
+          <div className="relative rounded-xl border border-border bg-panel p-4 sm:p-5">
             <button
               type="button"
-              className="absolute right-3 top-3 text-text-secondary"
+              className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-text-secondary transition-colors hover:bg-muted hover:text-brand-ink"
               onClick={() => {
-                setEditing((v) => !v)
-                setName(user?.name ?? '')
-                setNationality(user?.nationality ?? '')
+                if (editing) cancelEdit()
+                else {
+                  setEditing(true)
+                  setName(user?.name ?? '')
+                  setNationality(user?.nationality ?? '')
+                }
               }}
+              aria-label={editing ? 'Cancel editing' : 'Edit personal information'}
             >
-              <Pencil size={15} />
+              {editing ? <X size={15} /> : <Pencil size={15} />}
             </button>
-            <div className="mb-3 text-sm font-semibold">Personal Information</div>
+            <div className="mb-3 pr-10 text-sm font-semibold">Personal Information</div>
             {editing ? (
               <form
                 className="space-y-3"
@@ -101,7 +149,7 @@ export function AccountDetailsPage() {
                 <label className="block text-sm">
                   Name
                   <input
-                    className="mt-1 h-9 w-full rounded border border-border px-2"
+                    className="mt-1 h-10 w-full rounded-lg border border-border px-3 outline-none focus:border-[#F0B90B]"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
@@ -109,35 +157,49 @@ export function AccountDetailsPage() {
                 <label className="block text-sm">
                   Nationality
                   <input
-                    className="mt-1 h-9 w-full rounded border border-border px-2"
+                    className="mt-1 h-10 w-full rounded-lg border border-border px-3 outline-none focus:border-[#F0B90B]"
                     value={nationality}
                     onChange={(e) => setNationality(e.target.value)}
                   />
                 </label>
-                <button type="submit" className="h-9 rounded btn-brand px-3 text-sm font-semibold">
-                  Save
-                </button>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button type="submit" className="h-10 rounded-lg btn-brand px-4 text-sm font-semibold">
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    className="h-10 rounded-lg border border-border px-4 text-sm font-medium hover:bg-muted"
+                    onClick={cancelEdit}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </form>
             ) : (
               <>
                 <Row label="Name" value={user?.name ?? ''} />
-                <Row label="Nationality" value={user?.nationality ?? ''} />
+                <Row label="Nationality" value={user?.nationality || '—'} />
+                <Row label="Email" value={user?.email ?? ''} />
               </>
             )}
           </div>
-          <div className="rounded-lg border border-border p-4">
+          <div className="rounded-xl border border-border bg-panel p-4 sm:p-5">
             <div className="mb-3 text-sm font-semibold">Account Information</div>
             <div className="flex flex-wrap gap-2">
               <Badge icon={<Check size={12} />} label="Verified Account" muted={!user?.verified} />
-              <Badge icon={<CreditCard size={12} />} label="$ Funded" muted={!user?.funded} />
+              <Badge icon={<CreditCard size={12} />} label="Funded" muted={!user?.funded} />
               <Badge icon={<Briefcase size={12} />} label="Live Account" />
-              <Badge icon={<Check size={12} />} label={user?.totpEnabled ? '2FA On' : '2FA Off'} muted={!user?.totpEnabled} />
+              <Badge
+                icon={<Check size={12} />}
+                label={user?.totpEnabled ? '2FA On' : '2FA Off'}
+                muted={!user?.totpEnabled}
+              />
             </div>
           </div>
         </div>
       ) : tab === 'password' ? (
         <form
-          className="max-w-md space-y-3"
+          className="w-full max-w-md space-y-3 rounded-xl border border-border bg-panel p-4 sm:p-5"
           onSubmit={async (e) => {
             e.preventDefault()
             const fd = new FormData(e.currentTarget)
@@ -149,18 +211,23 @@ export function AccountDetailsPage() {
             }
           }}
         >
-          {msg ? <p className="text-sm text-link">{msg}</p> : null}
+          {msg ? (
+            <p className={clsx('text-sm', msg === 'Password updated' ? 'text-buy' : 'text-sell')}>{msg}</p>
+          ) : null}
           <Input name="current" label="Current password" type="password" />
           <Input name="next" label="New password" type="password" />
-          <button type="submit" className="h-10 rounded-md btn-brand px-4 text-sm font-semibold">
+          <button
+            type="submit"
+            className="h-10 w-full rounded-lg btn-brand px-4 text-sm font-semibold sm:w-auto"
+          >
             Update password
           </button>
         </form>
       ) : (
-        <div className="max-w-lg space-y-4">
-          <div className="rounded-xl border border-border p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
+        <div className="w-full max-w-lg space-y-4">
+          <div className="rounded-xl border border-border bg-panel p-4 sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
                 <div className="font-semibold">Google Authenticator</div>
                 <p className="mt-1 text-sm text-text-secondary">
                   Protect your account with a 6-digit code from the Google Authenticator app.
@@ -168,7 +235,7 @@ export function AccountDetailsPage() {
               </div>
               <span
                 className={clsx(
-                  'rounded-full px-2.5 py-1 text-[11px] font-semibold',
+                  'w-fit shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold',
                   user?.totpEnabled ? 'bg-buy/10 text-buy' : 'bg-muted text-text-secondary',
                 )}
               >
@@ -180,12 +247,12 @@ export function AccountDetailsPage() {
           {secError ? <p className="text-sm text-sell">{secError}</p> : null}
 
           {!user?.totpEnabled ? (
-            <div className="space-y-3 rounded-xl border border-border p-4">
+            <div className="space-y-3 rounded-xl border border-border bg-panel p-4 sm:p-5">
               {!qr ? (
                 <button
                   type="button"
                   disabled={secBusy}
-                  className="h-10 rounded-md btn-brand px-4 text-sm font-semibold disabled:opacity-50"
+                  className="h-10 w-full rounded-lg btn-brand px-4 text-sm font-semibold disabled:opacity-50 sm:w-auto"
                   onClick={async () => {
                     setSecBusy(true)
                     setSecError(null)
@@ -202,14 +269,31 @@ export function AccountDetailsPage() {
                 </button>
               ) : (
                 <>
-                  <p className="text-sm text-text-secondary">1. Open Google Authenticator → Add → Scan QR code</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm text-text-secondary">
+                      1. Open Google Authenticator → Add → Scan QR code
+                    </p>
+                    <button
+                      type="button"
+                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border text-text-secondary hover:bg-muted"
+                      onClick={() => {
+                        setQr(null)
+                        setSecret(null)
+                        setCode2fa('')
+                      }}
+                      aria-label="Cancel setup"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
                   <img
                     src={qr}
                     alt="2FA QR code"
-                    className="mx-auto h-52 w-52 rounded-lg border border-border bg-white p-2"
+                    className="mx-auto h-44 w-44 max-w-full rounded-lg border border-border bg-white p-2 sm:h-52 sm:w-52"
                   />
-                  <p className="text-center text-xs text-text-secondary">
-                    Or enter key manually: <span className="font-mono font-semibold text-text">{secret}</span>
+                  <p className="break-all text-center text-xs text-text-secondary">
+                    Or enter key manually:{' '}
+                    <span className="font-mono font-semibold text-text">{secret}</span>
                   </p>
                   <label className="block text-sm">
                     <span className="mb-1 block font-medium">2. Enter the 6-digit code to confirm</span>
@@ -217,14 +301,14 @@ export function AccountDetailsPage() {
                       value={code2fa}
                       onChange={(e) => setCode2fa(e.target.value)}
                       inputMode="numeric"
-                      className="h-10 w-full rounded-lg border border-border px-3 outline-none"
+                      className="h-10 w-full rounded-lg border border-border px-3 outline-none focus:border-[#F0B90B]"
                       placeholder="000000"
                     />
                   </label>
                   <button
                     type="button"
                     disabled={secBusy || code2fa.replace(/\s/g, '').length < 6}
-                    className="h-10 w-full rounded-md btn-brand text-sm font-semibold disabled:opacity-50"
+                    className="h-10 w-full rounded-lg btn-brand text-sm font-semibold disabled:opacity-50"
                     onClick={async () => {
                       setSecBusy(true)
                       setSecError(null)
@@ -244,7 +328,7 @@ export function AccountDetailsPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-3 rounded-xl border border-border p-4">
+            <div className="space-y-3 rounded-xl border border-border bg-panel p-4 sm:p-5">
               <p className="text-sm text-text-secondary">
                 Enter your password and a current authenticator code to turn off 2FA.
               </p>
@@ -254,7 +338,7 @@ export function AccountDetailsPage() {
                   type="password"
                   value={disablePass}
                   onChange={(e) => setDisablePass(e.target.value)}
-                  className="h-10 w-full rounded-lg border border-border px-3 outline-none"
+                  className="h-10 w-full rounded-lg border border-border px-3 outline-none focus:border-[#F0B90B]"
                 />
               </label>
               <label className="block text-sm">
@@ -263,14 +347,14 @@ export function AccountDetailsPage() {
                   value={code2fa}
                   onChange={(e) => setCode2fa(e.target.value)}
                   inputMode="numeric"
-                  className="h-10 w-full rounded-lg border border-border px-3 outline-none"
+                  className="h-10 w-full rounded-lg border border-border px-3 outline-none focus:border-[#F0B90B]"
                   placeholder="000000"
                 />
               </label>
               <button
                 type="button"
                 disabled={secBusy}
-                className="h-10 rounded-md border border-sell px-4 text-sm font-semibold text-sell hover:bg-sell/10 disabled:opacity-50"
+                className="h-10 w-full rounded-lg border border-sell px-4 text-sm font-semibold text-sell hover:bg-sell/10 disabled:opacity-50 sm:w-auto"
                 onClick={async () => {
                   setSecBusy(true)
                   setSecError(null)
@@ -302,7 +386,7 @@ export function ManageAccountsPage() {
 
   return (
     <PageShell title="Manage Accounts">
-      <div className="mb-4 flex gap-4 border-b border-border">
+      <div className="mb-4 flex gap-4 overflow-x-auto border-b border-border">
         <TabBtn active={tab === 'live'} onClick={() => setTab('live')}>
           Live
         </TabBtn>
@@ -311,7 +395,89 @@ export function ManageAccountsPage() {
         </TabBtn>
       </div>
       <h2 className="mb-3 text-sm font-semibold capitalize">{tab} Accounts</h2>
-      <div className="overflow-auto rounded-lg border border-border">
+
+      {/* Mobile cards */}
+      <div className="space-y-3 md:hidden">
+        {list.map((a) => (
+          <div
+            key={a.id}
+            className={clsx(
+              'rounded-xl border border-border p-4',
+              activeAccountId === a.id && 'bg-sidebar-active ring-1 ring-border',
+            )}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="font-semibold">#{a.number || a.id}</div>
+                <div className="mt-0.5 text-xs text-text-secondary">
+                  {a.platform} · {a.leverage} · {a.currency}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="rounded-lg border border-border px-2.5 py-1 text-lg leading-none"
+                onClick={() => setMenu(menu === a.id ? null : a.id)}
+                aria-label="Account actions"
+              >
+                ⋯
+              </button>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+              <div>
+                <div className="text-[11px] text-text-secondary">Equity</div>
+                <div className="font-semibold tabular-nums">{formatMoney(a.equity)}</div>
+              </div>
+              <div>
+                <div className="text-[11px] text-text-secondary">Balance</div>
+                <div className="font-semibold tabular-nums">{formatMoney(a.balance)}</div>
+              </div>
+              <div>
+                <div className="text-[11px] text-text-secondary">Credit</div>
+                <div className="tabular-nums">{formatMoney(a.credit)}</div>
+              </div>
+            </div>
+            {menu === a.id ? (
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  className="rounded-lg border border-border py-2 text-xs font-semibold hover:bg-muted"
+                  onClick={() => {
+                    switchAccount(a.id)
+                    setMenu(null)
+                    navigate('/platform')
+                  }}
+                >
+                  Trade
+                </button>
+                <button
+                  type="button"
+                  className="rounded-lg border border-border py-2 text-xs font-semibold hover:bg-muted"
+                  onClick={() => {
+                    switchAccount(a.id)
+                    setMenu(null)
+                    navigate('/account/deposit')
+                  }}
+                >
+                  Deposit
+                </button>
+                <button
+                  type="button"
+                  className="rounded-lg border border-border py-2 text-xs font-semibold hover:bg-muted"
+                  onClick={() => {
+                    switchAccount(a.id)
+                    setMenu(null)
+                  }}
+                >
+                  Set active
+                </button>
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden overflow-auto rounded-lg border border-border md:block">
         <table className="w-full min-w-[800px] text-left text-sm">
           <thead className="bg-muted text-xs text-text-secondary">
             <tr>
@@ -430,48 +596,86 @@ export function TransactionsPage() {
           text="Your transaction history is empty. Check your filters or make a transaction."
         />
       ) : (
-        <div className="overflow-auto rounded-lg border border-border">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-text-secondary">
-              <tr>
-                <th className="px-3 py-2">Type and account</th>
-                <th className="px-3 py-2">Date</th>
-                <th className="px-3 py-2">Amount</th>
-                <th className="px-3 py-2">Payment</th>
-                <th className="px-3 py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((t) => (
-                <tr key={t.id} className="border-t border-border">
-                  <td className="px-3 py-3">
+        <>
+          {/* Mobile cards */}
+          <div className="space-y-3 md:hidden">
+            {filtered.map((t) => (
+              <div key={t.id} className="rounded-xl border border-border p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
                     <div className="font-medium capitalize">{t.type.replace('_', ' ')}</div>
-                    <div className="text-xs text-text-secondary">#{t.accountId.slice(-6)} · {t.note}</div>
-                  </td>
-                  <td className="px-3 py-3">{t.date}</td>
-                  <td className={`px-3 py-3 font-semibold ${t.amount >= 0 ? 'positive' : 'negative'}`}>
+                    <div className="mt-0.5 truncate text-xs text-text-secondary">
+                      #{t.accountId.slice(-6)} · {t.note}
+                    </div>
+                  </div>
+                  <span className={`shrink-0 text-sm font-semibold tabular-nums ${t.amount >= 0 ? 'positive' : 'negative'}`}>
                     {formatMoney(t.amount)}
-                  </td>
-                  <td className="px-3 py-3">{t.payment}</td>
-                  <td className="px-3 py-3">
-                    <span
-                      className={clsx(
-                        'rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize',
-                        t.status === 'completed' || t.status === 'approved'
-                          ? 'bg-buy/10 text-buy'
-                          : t.status === 'rejected'
-                            ? 'bg-sell/10 text-sell'
-                            : 'bg-muted text-text-secondary',
-                      )}
-                    >
-                      {t.status || 'completed'}
-                    </span>
-                  </td>
+                  </span>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-text-secondary">
+                  <span>{t.date}</span>
+                  <span>{t.payment}</span>
+                  <span
+                    className={clsx(
+                      'rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize',
+                      t.status === 'completed' || t.status === 'approved'
+                        ? 'bg-buy/10 text-buy'
+                        : t.status === 'rejected'
+                          ? 'bg-sell/10 text-sell'
+                          : 'bg-muted text-text-secondary',
+                    )}
+                  >
+                    {t.status || 'completed'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden overflow-auto rounded-lg border border-border md:block">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-muted text-xs text-text-secondary">
+                <tr>
+                  <th className="px-3 py-2">Type and account</th>
+                  <th className="px-3 py-2">Date</th>
+                  <th className="px-3 py-2">Amount</th>
+                  <th className="px-3 py-2">Payment</th>
+                  <th className="px-3 py-2">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtered.map((t) => (
+                  <tr key={t.id} className="border-t border-border">
+                    <td className="px-3 py-3">
+                      <div className="font-medium capitalize">{t.type.replace('_', ' ')}</div>
+                      <div className="text-xs text-text-secondary">#{t.accountId.slice(-6)} · {t.note}</div>
+                    </td>
+                    <td className="px-3 py-3">{t.date}</td>
+                    <td className={`px-3 py-3 font-semibold ${t.amount >= 0 ? 'positive' : 'negative'}`}>
+                      {formatMoney(t.amount)}
+                    </td>
+                    <td className="px-3 py-3">{t.payment}</td>
+                    <td className="px-3 py-3">
+                      <span
+                        className={clsx(
+                          'rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize',
+                          t.status === 'completed' || t.status === 'approved'
+                            ? 'bg-buy/10 text-buy'
+                            : t.status === 'rejected'
+                              ? 'bg-sell/10 text-sell'
+                              : 'bg-muted text-text-secondary',
+                        )}
+                      >
+                        {t.status || 'completed'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </PageShell>
   )
@@ -539,7 +743,7 @@ export function WithdrawPage() {
 
   return (
     <PageShell title="Withdraw">
-      <div className="mb-4 flex gap-4 border-b border-border">
+      <div className="mb-4 flex gap-4 overflow-x-auto border-b border-border">
         <TabBtn active={tab === 'request'} onClick={() => setTab('request')}>
           Withdraw Request
         </TabBtn>
@@ -554,9 +758,12 @@ export function WithdrawPage() {
         ) : (
           <div className="space-y-2">
             {history.map((h) => (
-              <div key={h.id} className="flex justify-between rounded border border-border px-3 py-2 text-sm">
-                <span>#{h.accountId} · {h.date}</span>
-                <span className="negative">{formatMoney(h.amount)}</span>
+              <div
+                key={h.id}
+                className="flex flex-col gap-1 rounded-xl border border-border px-3 py-2.5 text-sm sm:flex-row sm:items-center sm:justify-between"
+              >
+                <span className="min-w-0 truncate text-text-secondary">#{h.accountId} · {h.date}</span>
+                <span className="negative font-semibold tabular-nums">{formatMoney(h.amount)}</span>
               </div>
             ))}
           </div>
@@ -811,15 +1018,15 @@ export function DepositPage() {
           }
         }}
       >
-        <div className="rounded-2xl border border-border bg-panel p-5">
-          <div className="flex items-end justify-between gap-3">
+        <div className="rounded-2xl border border-border bg-panel p-4 sm:p-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="text-xs font-medium uppercase tracking-wide text-text-secondary">Deposit amount</div>
               <div className="mt-1 text-sm text-text-secondary">
                 Total deposited {formatMoney(user?.totalDeposited ?? 0)}
               </div>
             </div>
-            <div className="text-right text-xs text-text-secondary">
+            <div className="text-xs text-text-secondary sm:text-right">
               Premium from {formatMoney(PREMIUM_THRESHOLD)}
             </div>
           </div>
@@ -860,7 +1067,7 @@ export function DepositPage() {
 
         <div>
           <div className="mb-3 text-sm font-semibold">Payment method</div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {tabs.map((t) => {
               const Icon = t.icon
               const active = method === t.id
@@ -870,15 +1077,17 @@ export function DepositPage() {
                   type="button"
                   onClick={() => setMethod(t.id)}
                   className={clsx(
-                    'rounded-2xl border p-3 text-left transition-all',
+                    'flex items-center gap-3 rounded-2xl border p-3 text-left transition-all sm:block',
                     active
                       ? 'border-[#F0B90B] bg-[#F0B90B]/10 shadow-[0_0_0_1px_rgba(240,185,11,0.2)]'
                       : 'border-border hover:bg-muted',
                   )}
                 >
-                  <Icon size={18} className={active ? 'text-[#F0B90B]' : 'text-text-secondary'} />
-                  <div className="mt-2 text-sm font-semibold">{t.title}</div>
-                  <div className="mt-0.5 text-[11px] text-text-secondary">{t.desc}</div>
+                  <Icon size={18} className={clsx('shrink-0', active ? 'text-[#F0B90B]' : 'text-text-secondary')} />
+                  <div>
+                    <div className="text-sm font-semibold sm:mt-2">{t.title}</div>
+                    <div className="mt-0.5 text-[11px] text-text-secondary">{t.desc}</div>
+                  </div>
                 </button>
               )
             })}
@@ -1029,7 +1238,7 @@ export function DepositPage() {
                 >
                   <div className="min-w-0">
                     <div className="text-[11px] text-text-secondary">{label}</div>
-                    <div className="truncate text-sm font-medium">{value}</div>
+                    <div className="break-all text-sm font-medium">{value}</div>
                   </div>
                   <button
                     type="button"
@@ -1110,7 +1319,7 @@ export function InvitePage() {
         </div>
         <p className="mt-2 break-all text-xs text-text-secondary">{link}</p>
       </div>
-      <div className="mb-6 flex gap-4 border-b border-border">
+      <div className="mb-6 flex gap-4 overflow-x-auto border-b border-border">
         <TabBtn active={tab === 'signed'} onClick={() => setTab('signed')}>
           Signed Up ({referrals.signedUp})
         </TabBtn>
@@ -1127,12 +1336,15 @@ export function InvitePage() {
       ) : (
         <div className="space-y-2">
           {list.map((r) => (
-            <div key={r.id} className="flex justify-between rounded border border-border px-3 py-2 text-sm">
-              <span>
-                {r.name}
-                <span className="ml-2 text-xs text-text-secondary">{r.email}</span>
-              </span>
-              <span className={r.funded ? 'positive' : 'text-text-secondary'}>
+            <div
+              key={r.id}
+              className="flex flex-col gap-1 rounded-xl border border-border px-3 py-2.5 text-sm sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="min-w-0">
+                <div className="font-medium">{r.name}</div>
+                <div className="break-all text-xs text-text-secondary">{r.email}</div>
+              </div>
+              <span className={clsx('shrink-0 text-xs font-semibold', r.funded ? 'positive' : 'text-text-secondary')}>
                 {r.funded ? 'Qualified' : 'Signed up'}
               </span>
             </div>
@@ -1230,7 +1442,7 @@ export function MobileAppPage() {
         <p className="mt-2 text-sm text-text-secondary">
           Download the NitajFX mobile app for iOS and Android to manage positions anywhere.
         </p>
-        <div className="mt-4 flex gap-3">
+        <div className="mt-4 flex flex-wrap gap-3">
           <a
             href="https://apps.apple.com"
             target="_blank"
@@ -1308,9 +1520,12 @@ function TabBtn({
     <button
       type="button"
       onClick={onClick}
-      className={`border-b-2 pb-2 text-sm ${
-        active ? 'border-brand font-semibold text-brand-ink' : 'border-transparent text-text-secondary'
-      }`}
+      className={clsx(
+        'shrink-0 whitespace-nowrap border-b-2 px-2 pb-2.5 text-sm transition-colors sm:px-1',
+        active
+          ? 'border-brand font-semibold text-brand-ink'
+          : 'border-transparent text-text-secondary hover:text-brand-ink',
+      )}
     >
       {children}
     </button>

@@ -1,8 +1,9 @@
 /**
- * Empty / unset VITE_API_URL → same-origin `/api/...` (via nginx proxy).
- * Set VITE_API_URL only if you must call the API on another host.
+ * Always call same-origin `/api/...`.
+ * Web/admin nginx (and host nginx) proxy `/api` → backend.
+ * Avoids NetworkError from wrong VITE_API_URL / CORS / SSL on api subdomain.
  */
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+const API_URL = ''
 
 const TOKEN_KEY = 'seekapa_token'
 
@@ -23,14 +24,14 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   const token = getToken()
   if (token) headers.Authorization = `Bearer ${token}`
 
-  const url = `${API_URL}${path.startsWith('/') ? path : `/${path}`}`
+  const url = path.startsWith('/') ? path : `/${path}`
 
   let res: Response
   try {
     res = await fetch(url, { ...options, headers })
   } catch {
     throw new Error(
-      'Cannot reach API. Check that the backend is running and you are using the correct site URL.',
+      `Cannot reach API at ${url}. Is the backend up, and is /api proxied on this host?`,
     )
   }
 

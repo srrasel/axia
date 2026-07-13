@@ -96,6 +96,82 @@ adminRouter.get('/dashboard', async (_req, res) => {
     include: { user: { select: { name: true } } },
   })
 
+  const days = 14
+  const since = new Date()
+  since.setHours(0, 0, 0, 0)
+  since.setDate(since.getDate() - (days - 1))
+
+  const [seriesTx, seriesEarnings, seriesUsers, seriesTrades, onlineUsers] = await Promise.all([
+    prisma.transaction.findMany({
+      where: {
+        createdAt: { gte: since },
+        status: { in: ['completed', 'approved'] },
+        type: { in: ['deposit', 'withdraw'] },
+      },
+      select: { type: true, amount: true, createdAt: true },
+    }),
+    prisma.platformEarning.findMany({
+      where: { createdAt: { gte: since } },
+      select: { amount: true, createdAt: true },
+    }),
+    prisma.user.findMany({
+      where: { role: 'USER', createdAt: { gte: since } },
+      select: { createdAt: true },
+    }),
+    prisma.trade.findMany({
+      where: { openTime: { gte: since } },
+      select: { volume: true, openTime: true, status: true },
+    }),
+    prisma.user.count({
+      where: { role: 'USER', lastSeenAt: { gte: new Date(Date.now() - 5 * 60 * 1000) } },
+    }).catch(() => 0),
+  ])
+
+  const dayKeys: string[] = []
+  for (let i = 0; i < days; i++) {
+    const d = new Date(since)
+    d.setDate(since.getDate() + i)
+    dayKeys.push(d.toISOString().slice(0, 10))
+  }
+
+  const emptyDay = () => ({
+    deposits: 0,
+    withdrawals: 0,
+    earnings: 0,
+    newUsers: 0,
+    volume: 0,
+    trades: 0,
+  })
+  const byDay: Record<string, ReturnType<typeof emptyDay>> = Object.fromEntries(dayKeys.map((k) => [k, emptyDay()]))
+
+  for (const t of seriesTx) {
+    const key = t.createdAt.toISOString().slice(0, 10)
+    if (!byDay[key]) continue
+    if (t.type === 'deposit') byDay[key].deposits += t.amount
+    else byDay[key].withdrawals += Math.abs(t.amount)
+  }
+  for (const e of seriesEarnings) {
+    const key = e.createdAt.toISOString().slice(0, 10)
+    if (byDay[key]) byDay[key].earnings += e.amount
+  }
+  for (const u of seriesUsers) {
+    const key = u.createdAt.toISOString().slice(0, 10)
+    if (byDay[key]) byDay[key].newUsers += 1
+  }
+  for (const t of seriesTrades) {
+    const key = t.openTime.toISOString().slice(0, 10)
+    if (!byDay[key]) continue
+    byDay[key].volume += t.volume
+    byDay[key].trades += 1
+  }
+
+  const chartSeries = dayKeys.map((date) => ({
+    date,
+    label: new Date(date + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+    ...byDay[date],
+    net: byDay[date].deposits - byDay[date].withdrawals,
+  }))
+
   const totalDeposits = deposits._sum.amount ?? 0
   const totalWithdrawals = Math.abs(withdrawals._sum.amount ?? 0)
   const pendingTx = pendingDeposits + pendingWithdrawals
@@ -124,12 +200,14 @@ adminRouter.get('/dashboard', async (_req, res) => {
       premiumThreshold: await getPremiumThreshold(),
       platformName: settings.platform_name,
       currency: settings.currency,
+      onlineUsers,
     },
     earningsByType: earningsByType.map((r) => ({
       type: r.type,
       amount: r._sum.amount ?? 0,
       count: r._count,
     })),
+    chartSeries,
     recentUsers,
     recentTx,
     recentEarnings,

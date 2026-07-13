@@ -7,6 +7,8 @@ export interface User {
   password: string
   nationality: string
   initials: string
+  /** Profile photo URL when uploaded; otherwise avatar falls back to user icon. */
+  photoUrl?: string | null
   verified: boolean
   funded: boolean
   totalDeposited: number

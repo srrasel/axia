@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './auth'
 import { AdminLayout, Card, PageHeader, money } from './layout'
 import { setActiveCurrency, useCurrency } from './currency'
 import { BrandLogo } from './BrandLogo'
+import { Dashboard } from './dashboard'
 import {
   CrmClientDetailPage,
   CrmDeskPage,
@@ -28,7 +29,7 @@ function Login() {
   return (
     <div className="flex min-h-full items-center justify-center p-6">
       <form
-        className="w-full max-w-md rounded-2xl border border-border bg-panel p-8 shadow-sm"
+        className="w-full max-w-md rounded-2xl border border-border bg-panel/95 p-8 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur"
         onSubmit={async (e: FormEvent) => {
           e.preventDefault()
           setError(null)
@@ -119,118 +120,6 @@ function Protected({ children }: { children: ReactNode }) {
   if (loading) return <div className="flex h-full items-center justify-center text-secondary">Loading…</div>
   if (!user) return <Navigate to="/login" replace />
   return children
-}
-
-function Dashboard() {
-  const { code: currencyCode } = useCurrency()
-  const [data, setData] = useState<any>(null)
-  const [error, setError] = useState<string | null>(null)
-  useEffect(() => {
-    void api('/api/admin/dashboard')
-      .then(setData)
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'))
-  }, [])
-  useEffect(() => {
-    if (data?.stats?.currency) setActiveCurrency(data.stats.currency)
-  }, [data?.stats?.currency])
-  if (error) return <p className="text-sell">{error}</p>
-  if (!data) return <p className="text-secondary">Loading dashboard…</p>
-  const s = data.stats
-  const cur = s.currency || currencyCode || 'EUR'
-  return (
-    <div>
-      <PageHeader title="Dashboard">
-        <span className="text-sm text-secondary">{s.platformName || 'NitajFX'} · {cur}</span>
-      </PageHeader>
-
-      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-secondary">Earnings & money</h2>
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card title="Platform earnings" value={money(s.platformEarnings)} sub={`${s.earningEntries || 0} ledger entries`} />
-        <Card title="Trading fees collected" value={money(s.tradingFees)} sub="From closed trades" />
-        <Card title="Total deposits" value={money(s.totalDeposits)} sub="Approved / completed" />
-        <Card title="Total withdrawals" value={money(s.totalWithdrawals)} />
-        <Card title="Net cash flow" value={money(s.netFlow)} sub="Deposits − withdrawals" />
-        <Card title="Client balances" value={money(s.totalBalances)} sub="All accounts" />
-        <Card title="Client realized PnL" value={money(s.clientRealizedPnl)} />
-        <Card title="Traded volume" value={`${Number(s.tradedVolume || 0).toFixed(2)} lots`} />
-      </div>
-
-      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-secondary">Operations</h2>
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card title="Users" value={String(s.users)} sub={`${s.fundedUsers || 0} funded`} />
-        <Card title="Open trades" value={String(s.openTrades)} sub={`${s.pendingTrades || 0} pending · ${s.closedTrades || 0} closed`} />
-        <Card title="Pending deposits" value={String(s.pendingDeposits ?? 0)} />
-        <Card title="Pending withdrawals" value={String(s.pendingWithdrawals ?? 0)} />
-        <Card title="Pending money ops" value={String(s.pendingTx)} />
-        <Card title="Pending KYC" value={String(s.pendingKyc)} />
-        <Card title="Premium threshold" value={money(s.premiumThreshold)} />
-        <Card title="All trades" value={String(s.trades)} />
-      </div>
-
-      <div className="mb-6 flex flex-wrap gap-2">
-        <Link to="/earnings" className="rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white">View earnings</Link>
-        <Link to="/transactions" className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted">Transactions</Link>
-        <Link to="/kyc" className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted">KYC queue</Link>
-        <Link to="/settings" className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted">Settings</Link>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-border bg-panel p-4">
-          <h2 className="mb-3 font-semibold">Earnings by type</h2>
-          <div className="space-y-2">
-            {(data.earningsByType || []).length === 0 ? (
-              <p className="text-sm text-secondary">No earnings yet.</p>
-            ) : (
-              data.earningsByType.map((r: any) => (
-                <div key={r.type} className="flex justify-between text-sm">
-                  <span className="capitalize text-secondary">{String(r.type).replaceAll('_', ' ')} ({r.count})</span>
-                  <span className="font-semibold text-buy">{money(r.amount)}</span>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-        <div className="rounded-xl border border-border bg-panel p-4">
-          <h2 className="mb-3 font-semibold">Recent earnings</h2>
-          <div className="space-y-2">
-            {(data.recentEarnings || []).length === 0 ? (
-              <p className="text-sm text-secondary">No recent entries.</p>
-            ) : (
-              data.recentEarnings.map((e: any) => (
-                <div key={e.id} className="flex justify-between text-sm">
-                  <span>{e.user?.name || 'Platform'} · <span className="capitalize text-secondary">{String(e.type).replaceAll('_', ' ')}</span></span>
-                  <span className="font-semibold text-buy">{money(e.amount)}</span>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-        <div className="rounded-xl border border-border bg-panel p-4">
-          <h2 className="mb-3 font-semibold">Recent users</h2>
-          <div className="space-y-2">
-            {data.recentUsers.map((u: any) => (
-              <Link key={u.id} to={`/users/${u.id}`} className="flex justify-between rounded-md px-2 py-2 text-sm hover:bg-muted">
-                <span>{u.name}</span>
-                <span className="text-secondary">{u.funded ? 'Funded' : 'Demo'}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 rounded-xl border border-border bg-panel p-4">
-        <h2 className="mb-3 font-semibold">Recent transactions</h2>
-        <div className="space-y-2">
-          {data.recentTx.map((t: any) => (
-            <div key={t.id} className="flex justify-between text-sm">
-              <span>{t.user.name} · {t.type} · <span className="capitalize text-secondary">{t.status}</span></span>
-              <span className={t.amount >= 0 ? 'text-buy' : 'text-sell'}>{money(t.amount)}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
 }
 
 function EarningsPage() {

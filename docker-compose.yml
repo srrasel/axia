@@ -34,34 +34,48 @@ services:
       NOWPAYMENTS_IPN_SECRET: ${NOWPAYMENTS_IPN_SECRET:-}
     ports:
       - "4000:4000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://127.0.0.1:4000/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
     depends_on:
       db:
         condition: service_healthy
     restart: unless-stopped
 
-  # Empty VITE_API_URL → browser calls same-origin /api (proxied by nginx to api)
+  # SPA always uses same-origin /api (ignore env host — avoids NetworkError)
   web:
     build:
       context: .
       args:
-        VITE_API_URL: ${VITE_API_URL:-}
+        VITE_API_URL: ""
     container_name: seekapa-web
     ports:
       - "3000:80"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     restart: unless-stopped
 
   admin:
     build:
       context: ./admin
       args:
-        VITE_API_URL: ${VITE_API_URL:-}
+        VITE_API_URL: ""
     container_name: seekapa-admin
     ports:
       - "3001:80"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     restart: unless-stopped
 
   # Public nginx gateway — only for VPS/SSL (needs free :80/:443 + certs).
