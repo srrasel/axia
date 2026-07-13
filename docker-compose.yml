@@ -64,8 +64,11 @@ services:
       - api
     restart: unless-stopped
 
-  # Public nginx gateway — :80 ACME + redirect, :443 HTTPS
+  # Public nginx gateway — only for VPS/SSL (needs free :80/:443 + certs).
+  # Local: docker compose up -d --build
+  # VPS:   docker compose --profile gateway up -d --build
   nginx:
+    profiles: ["gateway"]
     image: nginx:alpine
     container_name: seekapa-nginx
     ports:
@@ -83,6 +86,7 @@ services:
 
   # Used by deploy/ssl-init.sh and renew
   certbot:
+    profiles: ["gateway"]
     image: certbot/certbot
     container_name: seekapa-certbot
     volumes:

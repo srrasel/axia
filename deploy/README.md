@@ -52,6 +52,12 @@ CORS_ORIGIN=https://my.nitajfx.online,https://account.nitajfx.online
 ```
 
 ```bash
+docker compose --profile gateway up --build -d
+```
+
+Local Windows/dev (no SSL gateway — use ports 3000/3001/4000):
+
+```bash
 docker compose up --build -d
 ```
 
