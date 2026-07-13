@@ -428,8 +428,8 @@ export function OrderPanel({
   return (
     <div
       className={clsx(
-        'panel flex min-h-0 shrink-0 flex-col',
-        className ?? 'h-full w-[17.5rem] border-l xl:w-72',
+        'panel flex h-full min-h-0 flex-col overflow-hidden',
+        className ?? 'w-[17.5rem] border-l xl:w-72',
       )}
     >
       <div className="flex shrink-0 items-baseline justify-between gap-2 border-b border-border px-3 py-2">
@@ -442,7 +442,7 @@ export function OrderPanel({
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-3 py-2.5">
+      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-contain px-3 py-2.5 [-webkit-overflow-scrolling:touch]">
         {/* Sell / Buy */}
         <div className="grid grid-cols-2 gap-1.5">
           <button
@@ -604,7 +604,7 @@ export function OrderPanel({
           ) : null}
         </div>
 
-        <div className="mt-auto pt-1">
+        <div className="pt-1">
           <div className="mb-1 flex justify-between text-[10px] text-text-secondary">
             <span>Sentiment</span>
             <span>
@@ -623,7 +623,7 @@ export function OrderPanel({
         ) : null}
       </div>
 
-      <div className="shrink-0 border-t border-border p-2.5">
+      <div className="shrink-0 border-t border-border bg-panel p-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
           disabled={!canInvest}

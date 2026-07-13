@@ -55,7 +55,7 @@ function Login() {
           <div className="flex flex-col items-center gap-2">
             <BrandLogo variant="light" className="h-12" />
             <span className="text-xs font-semibold uppercase tracking-wide text-secondary">CRM</span>
-          </div>
+        </div>
           <p className="mt-2 text-sm text-secondary">
             {tempToken ? 'Enter Google Authenticator code' : 'Manager · Employee · Admin desk'}
           </p>
@@ -98,8 +98,8 @@ function Login() {
           {tempToken ? 'Verify & sign in' : 'Sign in'}
         </button>
         {tempToken ? (
-          <button
-            type="button"
+        <button
+          type="button"
             className="mt-3 h-9 w-full text-sm text-secondary"
             onClick={() => {
               setTempToken(null)
@@ -741,8 +741,8 @@ function SettingsPage() {
                 Preview: 1 {originalCurrency} = {ratePreview.toFixed(4)} {nextCur}
               </span>
             ) : null}
-          </div>
-        </section>
+        </div>
+      </section>
       ) : null}
 
       <div className="space-y-6">

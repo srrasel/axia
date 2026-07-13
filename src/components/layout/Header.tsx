@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  ArrowLeft,
   ChevronDown,
   CreditCard,
   Globe,
@@ -86,93 +85,79 @@ export function Header({ showClose }: { showClose?: boolean }) {
         <BrandLogo className="h-8 sm:h-10" />
       </Link>
 
-      {!showClose ? (
-        <div className="relative hidden shrink-0 sm:block">
-          <div className="flex items-center gap-2.5 rounded-xl border border-border bg-muted/40 py-1 pl-2.5 pr-1">
-            <span
-              className={clsx(
-                'h-2 w-2 shrink-0 rounded-full',
-                isLiveAccount ? 'bg-buy shadow-[0_0_0_3px_rgba(34,160,107,0.2)]' : 'bg-link',
-              )}
-            />
-            <div className="min-w-0">
-              <select
-                className="h-8 max-w-[9.5rem] appearance-none bg-transparent pr-5 text-sm font-semibold text-brand-ink outline-none"
-                value={activeAccountId}
-                onChange={(e) => switchAccount(e.target.value)}
-              >
-                {accounts.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.type === 'demo' ? 'Demo' : 'Live'} Account
-                  </option>
-                ))}
-              </select>
-              <div className="truncate text-[10px] leading-none text-text-secondary">
-                ID {account?.number || account?.id}
-              </div>
+      {/* Demo / Live account switch — compact on mobile, full on desktop */}
+      <div className="relative min-w-0 shrink">
+        <div className="flex items-center gap-1.5 rounded-xl border border-border bg-muted/40 py-0.5 pl-2 pr-0.5 sm:gap-2.5 sm:py-1 sm:pl-2.5 sm:pr-1">
+          <span
+            className={clsx(
+              'h-2 w-2 shrink-0 rounded-full',
+              isLiveAccount ? 'bg-buy shadow-[0_0_0_3px_rgba(34,160,107,0.2)]' : 'bg-link',
+            )}
+          />
+          <div className="min-w-0">
+            <select
+              aria-label="Switch demo or live account"
+              className="h-8 max-w-[6.75rem] appearance-none bg-transparent pr-4 text-xs font-semibold text-brand-ink outline-none sm:max-w-[9.5rem] sm:pr-5 sm:text-sm"
+              value={activeAccountId}
+              onChange={(e) => switchAccount(e.target.value)}
+            >
+              {accounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.type === 'demo' ? 'Demo' : 'Live'}
+                  {a.number ? ` · ${String(a.number).slice(-4)}` : ''}
+                </option>
+              ))}
+            </select>
+            <div className="hidden truncate text-[10px] leading-none text-text-secondary sm:block">
+              ID {account?.number || account?.id}
             </div>
-            <ChevronDown size={14} className="pointer-events-none mr-1.5 text-text-secondary" />
           </div>
+          <ChevronDown size={14} className="pointer-events-none mr-1 text-text-secondary sm:mr-1.5" />
         </div>
-      ) : null}
+      </div>
 
-      {!showClose ? (
-        <div className="ml-1 hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto lg:flex xl:gap-2">
-          <Metric label="Free Margin" value={formatMoney(metrics.freeMargin)} />
-          <Metric label="Used Funds" value={formatMoney(metrics.usedFunds)} />
-          <Metric label="Equity" value={formatMoney(metrics.equity)} className="positive" />
-          <Metric
-            label="Total PnL"
-            value={formatMoney(metrics.totalPnl)}
-            className={metrics.totalPnl >= 0 ? 'positive' : 'negative'}
-          />
-          <Metric
-            label="Margin Level"
-            value={metrics.usedFunds > 0 ? `${metrics.marginLevel.toFixed(2)}%` : '—'}
-            className="positive"
-          />
-          {isLiveAccount ? (
-            <span className="ml-1 inline-flex items-center gap-1.5 rounded-full bg-buy/10 px-2.5 py-1 text-[10px] font-bold tracking-wide text-buy">
-              <span className="h-1.5 w-1.5 rounded-full bg-buy" />
-              LIVE
-              {liveData ? null : <span className="font-medium opacity-70">· SIM</span>}
-            </span>
-          ) : (
-            <span className="ml-1 inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold tracking-wide text-text-secondary">
-              <span className="h-1.5 w-1.5 rounded-full bg-link" />
-              DEMO
-            </span>
-          )}
-        </div>
-      ) : (
-        <div className="min-w-0 flex-1 px-1 sm:px-2">
-          <div className="truncate text-sm font-semibold text-brand-ink">Account</div>
-          <div className="hidden truncate text-[11px] text-text-secondary sm:block">
-            Manage profile, security & funding
-          </div>
-        </div>
-      )}
-
-      {!showClose ? (
-        <button
-          type="button"
-          onClick={() => navigate('/account/deposit')}
-          className="ml-auto h-9 shrink-0 rounded-xl border border-brand bg-panel px-3 text-sm font-semibold text-brand-ink transition-colors hover:bg-sidebar-active sm:h-10 sm:px-4"
-        >
-          Deposit
-        </button>
-      ) : null}
-
-      <div
-        className={clsx(
-          'relative flex shrink-0 items-center gap-0.5 sm:gap-1',
-          !showClose && 'ml-0',
-          showClose && 'ml-auto',
+      <div className="ml-1 hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto lg:flex xl:gap-2">
+        <Metric label="Free Margin" value={formatMoney(metrics.freeMargin)} />
+        <Metric label="Used Funds" value={formatMoney(metrics.usedFunds)} />
+        <Metric label="Equity" value={formatMoney(metrics.equity)} className="positive" />
+        <Metric
+          label="Total PnL"
+          value={formatMoney(metrics.totalPnl)}
+          className={metrics.totalPnl >= 0 ? 'positive' : 'negative'}
+        />
+        <Metric
+          label="Margin Level"
+          value={metrics.usedFunds > 0 ? `${metrics.marginLevel.toFixed(2)}%` : '—'}
+          className="positive"
+        />
+        {isLiveAccount ? (
+          <span className="ml-1 inline-flex items-center gap-1.5 rounded-full bg-buy/10 px-2.5 py-1 text-[10px] font-bold tracking-wide text-buy">
+            <span className="h-1.5 w-1.5 rounded-full bg-buy" />
+            LIVE
+            {liveData ? null : <span className="font-medium opacity-70">· SIM</span>}
+          </span>
+        ) : (
+          <span className="ml-1 inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold tracking-wide text-text-secondary">
+            <span className="h-1.5 w-1.5 rounded-full bg-link" />
+            DEMO
+          </span>
         )}
+      </div>
+
+      <div className="min-w-0 flex-1 lg:hidden" />
+
+      <button
+        type="button"
+        onClick={() => navigate('/account/deposit')}
+        className="h-9 shrink-0 rounded-xl border-2 border-accent bg-panel px-2.5 text-sm font-semibold text-brand-ink shadow-[0_0_0_1px_rgba(245,197,24,0.25)] transition-colors hover:bg-accent/15 sm:h-10 sm:px-4"
+        style={{ borderColor: 'var(--color-accent)' }}
       >
-        {!showClose ? (
-          <span className="mr-1 hidden tabular-nums text-xs text-text-secondary sm:inline">{time}</span>
-        ) : null}
+        <span className="sm:hidden">Dep</span>
+        <span className="hidden sm:inline">Deposit</span>
+      </button>
+
+      <div className="relative flex shrink-0 items-center gap-0.5 sm:gap-1">
+        <span className="mr-1 hidden tabular-nums text-xs text-text-secondary sm:inline">{time}</span>
 
         <button
           type="button"
@@ -220,20 +205,6 @@ export function Header({ showClose }: { showClose?: boolean }) {
           ) : null}
         </div>
 
-        {showClose ? (
-          <button
-            type="button"
-            aria-label="Back to platform"
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border bg-panel px-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-muted hover:text-brand-ink sm:h-10 sm:px-3"
-            onClick={() => navigate('/platform')}
-          >
-            <ArrowLeft size={16} className="sm:hidden" />
-            <X size={16} className="hidden sm:block" strokeWidth={1.75} />
-            <span className="hidden sm:inline">Close</span>
-            <span className="sm:hidden">Back</span>
-          </button>
-        ) : null}
-
         <div className="relative ml-0.5" ref={userMenuRef}>
           <button
             type="button"
@@ -272,6 +243,45 @@ export function Header({ showClose }: { showClose?: boolean }) {
                   </div>
                 </div>
               </div>
+              <div className="border-b border-border px-3 py-3">
+                <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-text-secondary">
+                  Trading account
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {accounts.map((a) => {
+                    const active = a.id === activeAccountId
+                    const live = a.type === 'live'
+                    return (
+                      <button
+                        key={a.id}
+                        type="button"
+                        onClick={() => {
+                          switchAccount(a.id)
+                          setUserOpen(false)
+                        }}
+                        className={clsx(
+                          'rounded-xl border px-3 py-2.5 text-left transition-colors',
+                          active
+                            ? live
+                              ? 'border-buy bg-buy/10'
+                              : 'border-link bg-link/10'
+                            : 'border-border hover:bg-muted',
+                        )}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={clsx('h-1.5 w-1.5 rounded-full', live ? 'bg-buy' : 'bg-link')}
+                          />
+                          <span className="text-xs font-semibold">{live ? 'Live' : 'Demo'}</span>
+                        </div>
+                        <div className="mt-0.5 truncate text-[10px] text-text-secondary">
+                          #{a.number || a.id}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
               <div className="py-1.5">
                 {userMenu.map(({ to, icon: Icon, label }) => (
                   <Link
@@ -306,6 +316,18 @@ export function Header({ showClose }: { showClose?: boolean }) {
             </div>
           ) : null}
         </div>
+
+        {showClose ? (
+          <button
+            type="button"
+            aria-label="Close and return to platform"
+            title="Back to platform"
+            className="ml-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-panel text-text-secondary transition-colors hover:bg-muted hover:text-brand-ink sm:h-10 sm:w-10"
+            onClick={() => navigate('/platform')}
+          >
+            <X size={18} strokeWidth={2} />
+          </button>
+        ) : null}
       </div>
     </header>
   )

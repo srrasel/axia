@@ -78,8 +78,8 @@ export function Watchlist({
   const activeLabel = CATEGORIES.find((c) => c.key === category)?.label || 'NitajFX Favorites'
 
   return (
-    <div className={clsx('panel flex h-full shrink-0 flex-col', className ?? 'w-56 border-r lg:w-64')}>
-      <div className="border-b border-border p-3">
+    <div className={clsx('panel flex h-full min-h-0 flex-col overflow-hidden', className ?? 'w-56 border-r lg:w-64')}>
+      <div className="shrink-0 border-b border-border p-3">
         <div className="relative">
           <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary" />
           <input
@@ -125,7 +125,7 @@ export function Watchlist({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {filtered.length === 0 ? (
           <p className="px-3 py-6 text-center text-xs text-text-secondary">
             {category === 'favorites' ? 'Star symbols to add favorites.' : 'No assets in this list.'}

@@ -100,11 +100,11 @@ export function TradingPage() {
               onClose={() => setSheet(null)}
             >
               {sheet === 'markets' ? (
-                <Watchlist className="h-full w-full border-0" onSelect={() => setSheet(null)} />
+                <Watchlist className="h-full min-h-0 w-full border-0" onSelect={() => setSheet(null)} />
               ) : (
                 <OrderPanel
                   key={tradeSide}
-                  className="h-full w-full border-0"
+                  className="h-full min-h-0 w-full border-0"
                   initialSide={tradeSide}
                   onPlaced={() => setSheet(null)}
                 />
@@ -168,7 +168,8 @@ function MobileSheet({
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
       <button type="button" className="absolute inset-0 bg-black/45" aria-label="Close" onClick={onClose} />
-      <div className="absolute inset-x-0 bottom-0 flex max-h-[88dvh] flex-col overflow-hidden rounded-t-2xl border-t border-border bg-panel shadow-2xl">
+      <div className="absolute inset-x-0 bottom-0 flex max-h-[min(92dvh,100%)] flex-col overflow-hidden rounded-t-2xl border-t border-border bg-panel shadow-2xl pb-[env(safe-area-inset-bottom)]">
+        <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border" aria-hidden />
         <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
           <h3 className="text-sm font-semibold">{title}</h3>
           <button
@@ -180,7 +181,7 @@ function MobileSheet({
             <X size={18} />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
       </div>
     </div>
   )
