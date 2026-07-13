@@ -1,4 +1,8 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+/**
+ * Empty / unset VITE_API_URL → same-origin `/api/...` (via nginx proxy).
+ * Set VITE_API_URL only if you must call the API on another host.
+ */
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
 const TOKEN_KEY = 'seekapa_token'
 
@@ -19,7 +23,17 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   const token = getToken()
   if (token) headers.Authorization = `Bearer ${token}`
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers })
+  const url = `${API_URL}${path.startsWith('/') ? path : `/${path}`}`
+
+  let res: Response
+  try {
+    res = await fetch(url, { ...options, headers })
+  } catch {
+    throw new Error(
+      'Cannot reach API. Check that the backend is running and you are using the correct site URL.',
+    )
+  }
+
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error((data as { error?: string }).error || res.statusText || 'Request failed')
   return data as T

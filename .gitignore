@@ -6,6 +6,11 @@ dist-ssr
 backend/.env
 admin/.env
 
+# SSL / Let's Encrypt (do not commit private keys)
+deploy/certbot/conf/
+deploy/certbot/www/
+!deploy/certbot/www/.gitkeep
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

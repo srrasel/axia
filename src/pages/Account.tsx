@@ -9,13 +9,17 @@ import { PREMIUM_THRESHOLD } from '../types'
 import {
   AlertCircle,
   Briefcase,
+  Building2,
   Check,
+  Copy,
   CreditCard,
   Diamond,
   FileWarning,
+  Lock,
   Pencil,
   Upload,
   Users,
+  Wallet,
 } from 'lucide-react'
 
 function PageShell({ title, children }: { title: string; children: ReactNode }) {
@@ -641,10 +645,11 @@ export function DepositPage() {
   const navigate = useNavigate()
   const live = accounts.find((a) => a.type === 'live')
   const [amount, setAmount] = useState(500)
-  const [method, setMethod] = useState<'stripe' | 'nowpayments' | 'crypto' | 'bank'>('stripe')
+  const [method, setMethod] = useState<'stripe' | 'nowpayments' | 'bank'>('stripe')
   const [bankReference, setBankReference] = useState('')
-  const [cryptoNetwork, setCryptoNetwork] = useState<'usdt_trc20' | 'usdt_erc20' | 'btc' | 'eth'>('usdt_trc20')
-  const [cryptoTxHash, setCryptoTxHash] = useState('')
+  const [cryptoCoin, setCryptoCoin] = useState('USDT')
+  const [copied, setCopied] = useState<string | null>(null)
+  const [card, setCard] = useState({ name: '', number: '', expiry: '', cvc: '' })
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [info, setInfo] = useState<{
@@ -663,6 +668,8 @@ export function DepositPage() {
     }
     configured: Record<string, boolean>
   } | null>(null)
+
+  const currency = getPlatformCurrency()
 
   useEffect(() => {
     void api<{
@@ -694,6 +701,27 @@ export function DepositPage() {
       .catch(() => null)
   }, [])
 
+  const copyText = async (label: string, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopied(label)
+      window.setTimeout(() => setCopied(null), 1600)
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const formatCardNumber = (raw: string) => {
+    const digits = raw.replace(/\D/g, '').slice(0, 16)
+    return digits.replace(/(\d{4})(?=\d)/g, '$1 ').trim()
+  }
+
+  const formatExpiry = (raw: string) => {
+    const digits = raw.replace(/\D/g, '').slice(0, 4)
+    if (digits.length <= 2) return digits
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`
+  }
+
   if (accountType === 'demo') {
     return (
       <PageShell title="Deposit">
@@ -717,214 +745,337 @@ export function DepositPage() {
     )
   }
 
-  const methods = [
+  const tabs = [
     {
       id: 'stripe' as const,
-      title: 'Stripe (Card)',
-      desc: 'Visa / Mastercard — instant when paid',
-      badge: info?.configured?.stripe ? 'Live' : 'Test mode',
+      title: 'Card',
+      desc: 'Visa · Mastercard',
+      icon: CreditCard,
     },
     {
       id: 'nowpayments' as const,
-      title: 'Crypto gateway',
-      desc: 'NOWPayments — 100+ coins, auto-credit when paid',
-      badge: info?.configured?.nowpayments ? 'Live' : 'Test mode',
-    },
-    {
-      id: 'crypto' as const,
-      title: 'Crypto (Manual)',
-      desc: 'Send to our wallet — admin confirms',
-      badge: 'Needs approval',
+      title: 'Crypto',
+      desc: 'USDT · BTC · ETH',
+      icon: Wallet,
     },
     {
       id: 'bank' as const,
-      title: 'Bank Transfer',
-      desc: 'Wire funds — admin approves after arrival',
-      badge: 'Needs approval',
+      title: 'Bank',
+      desc: 'Wire transfer',
+      icon: Building2,
     },
   ]
+
+  const cryptoOptions = [
+    { id: 'USDT', name: 'Tether', network: 'TRC20 / ERC20' },
+    { id: 'BTC', name: 'Bitcoin', network: 'Bitcoin' },
+    { id: 'ETH', name: 'Ethereum', network: 'ERC20' },
+    { id: 'USDC', name: 'USD Coin', network: 'ERC20' },
+    { id: 'LTC', name: 'Litecoin', network: 'Litecoin' },
+    { id: 'TRX', name: 'TRON', network: 'TRC20' },
+  ]
+
+  const walletPreview =
+    cryptoCoin === 'BTC'
+      ? info?.wallets?.btc
+      : cryptoCoin === 'ETH'
+        ? info?.wallets?.eth
+        : info?.wallets?.usdtTrc20
 
   return (
     <PageShell title="Deposit">
       <form
-        className="mx-auto max-w-xl space-y-5"
+        className="mx-auto max-w-lg space-y-6"
         onSubmit={async (e: FormEvent) => {
           e.preventDefault()
           setBusy(true)
           setError(null)
+          if (method === 'stripe') {
+            const digits = card.number.replace(/\s/g, '')
+            if (digits.length < 12 || card.expiry.length < 4 || card.cvc.length < 3 || !card.name.trim()) {
+              setBusy(false)
+              setError('Enter complete card details to continue')
+              return
+            }
+          }
           const err = await deposit(amount, method, {
             method,
             bankReference,
-            cryptoNetwork,
-            cryptoTxHash,
+            cryptoNetwork:
+              cryptoCoin === 'BTC' ? 'btc' : cryptoCoin === 'ETH' ? 'eth' : 'usdt_trc20',
           })
           setBusy(false)
           setError(err)
-          if (!err && (method === 'bank' || method === 'crypto')) {
+          if (!err && method === 'bank') {
             navigate('/account/transactions')
           }
         }}
       >
-        <p className="text-sm text-text-secondary">
-          Total deposited: {formatMoney(user?.totalDeposited ?? 0)} · Premium at {formatMoney(PREMIUM_THRESHOLD)}
-        </p>
+        <div className="rounded-2xl border border-border bg-panel p-5">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <div className="text-xs font-medium uppercase tracking-wide text-text-secondary">Deposit amount</div>
+              <div className="mt-1 text-sm text-text-secondary">
+                Total deposited {formatMoney(user?.totalDeposited ?? 0)}
+              </div>
+            </div>
+            <div className="text-right text-xs text-text-secondary">
+              Premium from {formatMoney(PREMIUM_THRESHOLD)}
+            </div>
+          </div>
 
-        <label className="block text-sm">
-          <span className="mb-1 block font-medium">Amount ({getPlatformCurrency().code})</span>
-          <input
-            type="number"
-            min={1}
-            value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
-            className="h-11 w-full rounded-lg border border-border px-3 outline-none"
-            required
-          />
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {[100, 500, 1000, 5000].map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setAmount(v)}
-              className="rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted"
-            >
-              {getPlatformCurrency().symbol}
-              {v}
-            </button>
-          ))}
-        </div>
+          <div className="relative mt-4">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg font-semibold text-text-secondary">
+              {currency.symbol}
+            </span>
+            <input
+              type="number"
+              min={1}
+              value={amount}
+              onChange={(e) => setAmount(Number(e.target.value))}
+              className="h-14 w-full rounded-xl border border-border bg-muted/40 pl-10 pr-4 text-2xl font-semibold outline-none transition-colors focus:border-[#F0B90B]"
+              required
+            />
+          </div>
 
-        <div>
-          <div className="mb-2 text-sm font-medium">Payment method</div>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {methods.map((m) => (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {[100, 250, 500, 1000, 5000].map((v) => (
               <button
-                key={m.id}
+                key={v}
                 type="button"
-                onClick={() => setMethod(m.id)}
+                onClick={() => setAmount(v)}
                 className={clsx(
-                  'rounded-xl border p-3 text-left transition-colors',
-                  method === m.id ? 'border-brand bg-sidebar-active' : 'border-border hover:bg-muted',
+                  'rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors',
+                  amount === v
+                    ? 'border-[#F0B90B] bg-[#F0B90B]/10 text-[#F0B90B]'
+                    : 'border-border text-text-secondary hover:bg-muted',
                 )}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm font-semibold">{m.title}</span>
-                  <span
-                    className={clsx(
-                      'rounded-full px-2 py-0.5 text-[10px] font-semibold',
-                      m.badge.includes('approval') || m.badge.includes('Test')
-                        ? 'bg-sell/10 text-sell'
-                        : 'bg-buy/10 text-buy',
-                    )}
-                  >
-                    {m.badge}
-                  </span>
-                </div>
-                <p className="mt-1 text-[11px] text-text-secondary">{m.desc}</p>
+                {currency.symbol}
+                {v}
               </button>
             ))}
           </div>
         </div>
 
-        {method === 'bank' && info?.bank ? (
-          <div className="space-y-3 rounded-xl border border-border bg-muted/40 p-4 text-sm">
-            <div className="font-semibold">Transfer to this bank account</div>
-            <div className="grid gap-1 text-xs text-text-secondary sm:grid-cols-2">
+        <div>
+          <div className="mb-3 text-sm font-semibold">Payment method</div>
+          <div className="grid grid-cols-3 gap-2">
+            {tabs.map((t) => {
+              const Icon = t.icon
+              const active = method === t.id
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setMethod(t.id)}
+                  className={clsx(
+                    'rounded-2xl border p-3 text-left transition-all',
+                    active
+                      ? 'border-[#F0B90B] bg-[#F0B90B]/10 shadow-[0_0_0_1px_rgba(240,185,11,0.2)]'
+                      : 'border-border hover:bg-muted',
+                  )}
+                >
+                  <Icon size={18} className={active ? 'text-[#F0B90B]' : 'text-text-secondary'} />
+                  <div className="mt-2 text-sm font-semibold">{t.title}</div>
+                  <div className="mt-0.5 text-[11px] text-text-secondary">{t.desc}</div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {method === 'stripe' ? (
+          <div className="space-y-4 rounded-2xl border border-border bg-panel p-5">
+            <div className="flex items-center justify-between gap-2">
               <div>
-                Bank: <span className="font-medium text-text">{info.bank.bankName}</span>
+                <div className="text-sm font-semibold">Card details</div>
+                <p className="mt-0.5 text-xs text-text-secondary">Pay securely with Visa or Mastercard</p>
               </div>
-              <div>
-                Name: <span className="font-medium text-text">{info.bank.accountName}</span>
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-text-secondary">
+                <Lock size={12} />
+                Stripe
               </div>
-              <div className="sm:col-span-2">
-                IBAN: <span className="font-medium text-text">{info.bank.iban}</span>
-              </div>
-              <div>
-                SWIFT: <span className="font-medium text-text">{info.bank.swift}</span>
-              </div>
-              <div className="sm:col-span-2">{info.bank.referenceHint}</div>
             </div>
-            <label className="block text-xs">
-              <span className="mb-1 block font-medium text-text">Your payment reference (optional)</span>
+
+            <label className="block text-sm">
+              <span className="mb-1.5 block text-xs font-medium text-text-secondary">Name on card</span>
+              <input
+                value={card.name}
+                onChange={(e) => setCard((c) => ({ ...c, name: e.target.value }))}
+                className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B]"
+                placeholder="Full name"
+                autoComplete="cc-name"
+              />
+            </label>
+
+            <label className="block text-sm">
+              <span className="mb-1.5 block text-xs font-medium text-text-secondary">Card number</span>
+              <div className="relative">
+                <input
+                  value={card.number}
+                  onChange={(e) => setCard((c) => ({ ...c, number: formatCardNumber(e.target.value) }))}
+                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 pr-12 font-mono outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B]"
+                  placeholder="ACCT-000003"
+                  inputMode="numeric"
+                  autoComplete="cc-number"
+                />
+                <CreditCard size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-secondary" />
+              </div>
+            </label>
+
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block text-sm">
+                <span className="mb-1.5 block text-xs font-medium text-text-secondary">Expiry</span>
+                <input
+                  value={card.expiry}
+                  onChange={(e) => setCard((c) => ({ ...c, expiry: formatExpiry(e.target.value) }))}
+                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B]"
+                  placeholder="MM/YY"
+                  inputMode="numeric"
+                  autoComplete="cc-exp"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1.5 block text-xs font-medium text-text-secondary">CVC</span>
+                <input
+                  value={card.cvc}
+                  onChange={(e) => setCard((c) => ({ ...c, cvc: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B]"
+                  placeholder="123"
+                  inputMode="numeric"
+                  autoComplete="cc-csc"
+                />
+              </label>
+            </div>
+
+            <p className="flex items-start gap-2 rounded-xl bg-muted/50 px-3 py-2.5 text-[11px] leading-relaxed text-text-secondary">
+              <Lock size={13} className="mt-0.5 shrink-0 text-[#F0B90B]" />
+              Card data is processed by Stripe Checkout. You will be redirected to complete payment securely.
+            </p>
+          </div>
+        ) : null}
+
+        {method === 'nowpayments' ? (
+          <div className="space-y-4 rounded-2xl border border-border bg-panel p-5">
+            <div>
+              <div className="text-sm font-semibold">Select cryptocurrency</div>
+              <p className="mt-0.5 text-xs text-text-secondary">Pay with NOWPayments — balance credits after confirmation</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {cryptoOptions.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setCryptoCoin(c.id)}
+                  className={clsx(
+                    'rounded-xl border px-3 py-3 text-left transition-all',
+                    cryptoCoin === c.id
+                      ? 'border-[#F0B90B] bg-[#F0B90B]/10'
+                      : 'border-border hover:bg-muted',
+                  )}
+                >
+                  <div className="text-sm font-semibold">{c.id}</div>
+                  <div className="mt-0.5 text-[11px] text-text-secondary">{c.name}</div>
+                  <div className="mt-1 text-[10px] text-text-secondary">{c.network}</div>
+                </button>
+              ))}
+            </div>
+
+            {walletPreview ? (
+              <div className="rounded-xl border border-border bg-muted/30 p-3">
+                <div className="mb-1.5 flex items-center justify-between gap-2 text-xs font-medium text-text-secondary">
+                  <span>Deposit address preview ({cryptoCoin})</span>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1 text-[#F0B90B] hover:underline"
+                    onClick={() => void copyText('wallet', walletPreview)}
+                  >
+                    <Copy size={12} />
+                    {copied === 'wallet' ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+                <div className="break-all font-mono text-[11px] text-text">{walletPreview}</div>
+              </div>
+            ) : null}
+
+            <p className="text-[11px] leading-relaxed text-text-secondary">
+              You will choose the exact network and pay on the NOWPayments invoice page.
+              {info?.configured?.nowpayments ? '' : ' Gateway key not set — test checkout may be used.'}
+            </p>
+          </div>
+        ) : null}
+
+        {method === 'bank' && info?.bank ? (
+          <div className="space-y-4 rounded-2xl border border-border bg-panel p-5">
+            <div>
+              <div className="text-sm font-semibold">Bank transfer details</div>
+              <p className="mt-0.5 text-xs text-text-secondary">Transfer funds, then submit for admin approval</p>
+            </div>
+
+            <div className="space-y-2">
+              {(
+                [
+                  ['Bank name', info.bank.bankName],
+                  ['Account name', info.bank.accountName],
+                  ['IBAN / Account', info.bank.iban],
+                  ['SWIFT / BIC', info.bank.swift],
+                ] as const
+              ).map(([label, value]) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/30 px-3 py-2.5"
+                >
+                  <div className="min-w-0">
+                    <div className="text-[11px] text-text-secondary">{label}</div>
+                    <div className="truncate text-sm font-medium">{value}</div>
+                  </div>
+                  <button
+                    type="button"
+                    className="shrink-0 rounded-lg border border-border p-2 text-text-secondary hover:text-[#F0B90B]"
+                    onClick={() => void copyText(label, value)}
+                    aria-label={`Copy ${label}`}
+                  >
+                    {copied === label ? <Check size={14} className="text-buy" /> : <Copy size={14} />}
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs text-text-secondary">{info.bank.referenceHint}</p>
+
+            <label className="block text-sm">
+              <span className="mb-1.5 block text-xs font-medium text-text-secondary">Your payment reference</span>
               <input
                 value={bankReference}
                 onChange={(e) => setBankReference(e.target.value)}
-                className="h-10 w-full rounded-lg border border-border bg-panel px-3 text-sm outline-none"
-                placeholder="Reference / transfer ID"
+                className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B]"
+                placeholder="Transfer ID / reference (optional)"
               />
             </label>
-            <p className="text-[11px] text-sell">
-              Bank deposits stay pending until an admin confirms the funds and approves the payment.
+
+            <p className="rounded-xl border border-sell/30 bg-sell/5 px-3 py-2.5 text-[11px] text-sell">
+              Bank deposits stay pending until an admin confirms the funds.
             </p>
           </div>
-        ) : null}
-
-        {method === 'crypto' && info?.wallets ? (
-          <div className="space-y-3 rounded-xl border border-border bg-muted/40 p-4 text-sm">
-            <div className="font-semibold">Send crypto to our wallet</div>
-            <label className="block text-xs">
-              <span className="mb-1 block font-medium text-text">Network</span>
-              <select
-                value={cryptoNetwork}
-                onChange={(e) => setCryptoNetwork(e.target.value as typeof cryptoNetwork)}
-                className="h-10 w-full rounded-lg border border-border bg-panel px-2 text-sm"
-              >
-                <option value="usdt_trc20">USDT (TRC20)</option>
-                <option value="usdt_erc20">USDT (ERC20)</option>
-                <option value="btc">BTC</option>
-                <option value="eth">ETH</option>
-              </select>
-            </label>
-            <div className="break-all rounded-lg border border-border bg-panel px-3 py-2 font-mono text-xs">
-              {cryptoNetwork === 'usdt_trc20'
-                ? info.wallets.usdtTrc20
-                : cryptoNetwork === 'usdt_erc20'
-                  ? info.wallets.usdtErc20
-                  : cryptoNetwork === 'btc'
-                    ? info.wallets.btc
-                    : info.wallets.eth}
-            </div>
-            <label className="block text-xs">
-              <span className="mb-1 block font-medium text-text">Transaction hash (optional)</span>
-              <input
-                value={cryptoTxHash}
-                onChange={(e) => setCryptoTxHash(e.target.value)}
-                className="h-10 w-full rounded-lg border border-border bg-panel px-3 text-sm outline-none"
-                placeholder="Paste TX hash after sending"
-              />
-            </label>
-            <p className="text-[11px] text-sell">
-              Manual crypto deposits require admin approval after blockchain confirmation.
-            </p>
-          </div>
-        ) : null}
-
-        {method === 'stripe' || method === 'nowpayments' ? (
-          <p
-            className={clsx(
-              'rounded-lg px-3 py-2 text-xs',
-              info?.configured[method] ? 'bg-buy/10 text-buy' : 'bg-muted text-text-secondary',
-            )}
-          >
-            {info?.configured[method]
-              ? method === 'nowpayments'
-                ? 'You will be redirected to NOWPayments to pay with crypto. Your balance credits automatically after confirmation.'
-                : 'You will be redirected to Stripe Checkout. Your balance credits after a successful card payment.'
-              : 'Gateway API key not set yet — you will use a local test checkout that credits instantly for demo. Admin can paste the key under Settings → Payments.'}
-          </p>
         ) : null}
 
         {error ? <p className="text-sm text-sell">{error}</p> : null}
+
         <button
           type="submit"
           disabled={busy || amount <= 0}
-          className="h-11 w-full rounded-lg btn-brand text-sm font-semibold disabled:opacity-50"
+          className="auth-btn h-12 w-full rounded-xl bg-[#fcd535] text-[15px] font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30] disabled:opacity-50"
+          style={{ color: '#202630' }}
         >
           {busy
             ? 'Processing…'
-            : method === 'stripe' || method === 'nowpayments'
-              ? 'Continue to payment'
-              : 'Submit for approval'}
+            : method === 'stripe'
+              ? `Pay ${currency.symbol}${amount.toFixed(2)} with card`
+              : method === 'nowpayments'
+                ? `Continue with ${cryptoCoin}`
+                : 'Submit bank deposit'}
         </button>
       </form>
     </PageShell>
