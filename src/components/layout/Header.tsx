@@ -61,7 +61,7 @@ export function Header() {
 
   useEffect(() => {
     if (!userOpen && !langOpen && !notifOpen) return
-    const onDoc = (e: MouseEvent) => {
+    const onDoc = (e: Event) => {
       const target = e.target as Node
       if (userOpen && userMenuRef.current && !userMenuRef.current.contains(target)) setUserOpen(false)
       if (langOpen && langRef.current && !langRef.current.contains(target)) setLangOpen(false)
@@ -74,16 +74,20 @@ export function Header() {
         setNotifOpen(false)
       }
     }
-    document.addEventListener('mousedown', onDoc)
+    // Defer so the opening tap/click does not immediately close on mobile
+    const timer = window.setTimeout(() => {
+      document.addEventListener('pointerdown', onDoc)
+    }, 0)
     document.addEventListener('keydown', onKey)
     return () => {
-      document.removeEventListener('mousedown', onDoc)
+      window.clearTimeout(timer)
+      document.removeEventListener('pointerdown', onDoc)
       document.removeEventListener('keydown', onKey)
     }
   }, [userOpen, langOpen, notifOpen])
 
   return (
-    <header className="panel relative z-40 flex h-14 shrink-0 items-center gap-1.5 border-b pl-[15px] pr-2 sm:h-16 sm:gap-3 sm:px-5">
+    <header className="panel relative z-40 flex h-14 shrink-0 items-center gap-1.5 overflow-visible border-b pl-[15px] pr-2 sm:h-16 sm:gap-3 sm:px-5">
       <Link to="/platform" className="flex shrink-0 items-center pr-[5px]">
         <BrandLogo className="h-9 sm:h-10" />
       </Link>
@@ -241,7 +245,7 @@ export function Header() {
             ) : null}
           </button>
           {notifOpen ? (
-            <div className="panel absolute right-0 top-12 z-[60] w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border shadow-2xl sm:top-14">
+            <div className="panel fixed right-[5px] top-[3.5rem] z-[60] w-[calc(100vw-10px)] max-w-[22rem] overflow-hidden rounded-2xl border shadow-2xl sm:absolute sm:right-0 sm:top-14 sm:w-[min(22rem,calc(100vw-1.5rem))] sm:max-w-none">
               <div className="flex items-center justify-between border-b border-border px-4 py-3">
                 <div className="text-sm font-semibold">Notifications</div>
                 {unreadCount > 0 ? (
@@ -254,7 +258,7 @@ export function Header() {
                   </button>
                 ) : null}
               </div>
-              <div className="max-h-[min(22rem,60vh)] overflow-y-auto">
+              <div className="max-h-[min(22rem,60vh)] overflow-y-auto overscroll-contain">
                 {notifications.length === 0 ? (
                   <div className="px-4 py-10 text-center text-sm text-text-secondary">
                     No notifications yet.

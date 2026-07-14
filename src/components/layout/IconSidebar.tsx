@@ -113,7 +113,7 @@ export function IconSidebar() {
 
       {/* Mobile bottom bar */}
       <nav
-        className="panel fixed inset-x-0 bottom-[5px] z-40 flex h-auto min-h-14 items-stretch justify-around border-t px-0 py-[5px] md:hidden"
+        className="panel fixed inset-x-0 bottom-[5px] z-40 flex items-stretch justify-around border-t px-0 pb-1.5 pt-1 md:hidden"
         aria-label="Mobile navigation"
       >
         {items.slice(0, 5).map(({ to, icon: Icon, label, end }) => (
@@ -123,24 +123,15 @@ export function IconSidebar() {
             end={end}
             className={({ isActive }) =>
               clsx(
-                'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-text-secondary',
+                'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 text-text-secondary',
                 isActive && 'text-white',
               )
             }
           >
-            {({ isActive }) => (
-              <>
-                <span
-                  className={clsx(
-                    'flex items-center justify-center rounded-md p-[10px]',
-                    isActive && 'bg-sidebar-active',
-                  )}
-                >
-                  <Icon size={ICON_PX} strokeWidth={1.75} className="h-6 w-6" />
-                </span>
-                <span className="max-w-full truncate px-0.5 text-[9px] font-medium">{label}</span>
-              </>
-            )}
+            <Icon size={ICON_PX} strokeWidth={1.75} className="h-6 w-6" />
+            <span className="max-w-full truncate px-0.5 pb-0.5 text-[11px] font-medium leading-tight">
+              {label}
+            </span>
           </NavLink>
         ))}
       </nav>

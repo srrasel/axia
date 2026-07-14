@@ -64,7 +64,7 @@ export function TradingPage() {
           <TradesTable />
 
           {/* Mobile / tablet trade action bar — sits above bottom nav on phones */}
-          <div className="panel fixed inset-x-0 bottom-[calc(5px+4.75rem)] z-30 flex gap-2 border-t p-2 md:bottom-0 lg:hidden">
+          <div className="panel fixed inset-x-0 bottom-[calc(5px+3.25rem)] z-30 flex gap-2 border-t p-2 md:bottom-0 lg:hidden">
             <button
               type="button"
               onClick={() => setSheet('markets')}
