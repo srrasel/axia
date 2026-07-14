@@ -1,13 +1,12 @@
 import { Outlet } from 'react-router-dom'
-import { AlertBanner, Header, Toast } from './Header'
+import { Header, Toast } from './Header'
 import { IconSidebar } from './IconSidebar'
 
 export function PlatformLayout() {
   return (
     <div className="flex h-full flex-col bg-muted">
       <Header />
-      <AlertBanner />
-      <div className="flex min-h-0 flex-1">
+      <div className="relative flex min-h-0 flex-1 overflow-x-clip overflow-y-hidden">
         <IconSidebar />
         <main className="min-w-0 flex-1 overflow-hidden pb-[7.5rem] md:pb-16 lg:pb-0">
           <Outlet />
@@ -21,8 +20,7 @@ export function PlatformLayout() {
 export function AccountLayout() {
   return (
     <div className="flex h-full flex-col bg-muted">
-      <Header showClose />
-      <AlertBanner />
+      <Header />
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <Outlet />
       </div>

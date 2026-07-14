@@ -78,7 +78,7 @@ export function PortfolioPage() {
   ]
 
   return (
-    <div className="flex h-full flex-col md:flex-row">
+    <div className="flex h-full min-h-0 flex-col md:flex-row">
       <div className="panel flex shrink-0 flex-row overflow-x-auto border-b md:w-52 md:flex-col md:border-b-0 md:border-r">
         {nav.map((item) => (
           <button
@@ -100,7 +100,7 @@ export function PortfolioPage() {
         </div>
       </div>
 
-      <div className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-5">
+      <div className="min-w-0 flex-1 overflow-x-clip overflow-y-auto p-4 sm:p-5 [scrollbar-gutter:stable]">
         {section === 'journal' ? (
           <TradingJournal />
         ) : section === 'calendar' ? (
@@ -110,15 +110,15 @@ export function PortfolioPage() {
             <h1 className="text-xl font-semibold">Portfolio</h1>
             <p className="text-sm text-text-secondary">Explore your open orders by market.</p>
 
-            <div className="mt-5 grid gap-4 lg:grid-cols-[220px_1fr_180px]">
-              <div className="space-y-4">
+            <div className="mt-5 grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)_180px]">
+              <div className="min-w-0 space-y-4">
                 <div className="rounded-lg border border-border bg-panel p-4">
                   <div className="mb-2 text-sm font-semibold">Trades source ratio</div>
                   <div className="flex h-2 overflow-hidden rounded-full bg-muted">
                     <div className="bg-link" style={{ width: `${100 - selfPct}%` }} />
                     <div className="bg-brand" style={{ width: `${selfPct}%` }} />
                   </div>
-                  <div className="mt-2 flex justify-between text-[11px] text-text-secondary">
+                  <div className="mt-2 flex justify-between text-[11px] tabular-nums text-text-secondary">
                     <span>Discover Social {(100 - selfPct).toFixed(0)}%</span>
                     <span>Self {selfPct.toFixed(0)}%</span>
                   </div>
@@ -126,10 +126,10 @@ export function PortfolioPage() {
 
                 <div className="rounded-lg border border-border bg-panel p-4">
                   <div className="mb-2 text-sm font-semibold">Trades Allocation</div>
-                  <div className="relative mx-auto h-40 w-40">
-                    <ResponsiveContainer>
+                  <div className="relative mx-auto h-40 w-40 overflow-hidden">
+                    <ResponsiveContainer width="100%" height="100%" debounce={80}>
                       <PieChart>
-                        <Pie data={allocation} dataKey="value" innerRadius={48} outerRadius={70} paddingAngle={2}>
+                        <Pie data={allocation} dataKey="value" innerRadius={48} outerRadius={70} paddingAngle={2} isAnimationActive={false}>
                           {allocation.map((a) => (
                             <Cell key={a.name} fill={a.color} />
                           ))}
@@ -149,22 +149,22 @@ export function PortfolioPage() {
                           <span className="h-2 w-2 rounded-full" style={{ background: a.color }} />
                           {a.name}
                         </span>
-                        <span>{a.value.toFixed(0)}%</span>
+                        <span className="tabular-nums">{a.value.toFixed(0)}%</span>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-lg border border-border bg-panel p-4">
+              <div className="min-w-0 rounded-lg border border-border bg-panel p-4">
                 <div className="mb-3 text-sm font-semibold">Performance by category</div>
-                <div className="h-64">
-                  <ResponsiveContainer>
+                <div className="h-64 w-full min-w-0 overflow-hidden">
+                  <ResponsiveContainer width="100%" height="100%" debounce={80}>
                     <BarChart data={performance}>
                       <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                      <YAxis tick={{ fontSize: 11 }} />
+                      <YAxis width={48} tick={{ fontSize: 11 }} />
                       <Tooltip formatter={(v) => formatMoney(Number(v))} />
-                      <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
+                      <Bar dataKey="pnl" radius={[4, 4, 0, 0]} isAnimationActive={false}>
                         {performance.map((p) => (
                           <Cell key={p.name} fill={p.fill} />
                         ))}
@@ -174,7 +174,7 @@ export function PortfolioPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg border border-border bg-panel p-4">
+              <div className="min-w-0 rounded-lg border border-border bg-panel p-4">
                 <div className="mb-3 text-sm font-semibold">Trade source</div>
                 {(['all', 'self', 'social'] as const).map((s) => (
                   <label key={s} className="mb-2 flex items-center gap-2 text-sm capitalize">
@@ -197,37 +197,47 @@ export function PortfolioPage() {
                     {cat} ({list.length} Trades)
                   </button>
                   {expanded[cat] ? (
-                    <div className="overflow-x-auto">
-                      <table className="w-full min-w-[640px] text-sm">
-                        <thead className="bg-muted text-xs text-text-secondary">
+                    <div className="overflow-x-auto [scrollbar-gutter:stable]">
+                      <table className="w-full min-w-[640px] table-fixed text-sm">
+                        <colgroup>
+                          <col className="w-[22%]" />
+                          <col className="w-[16%]" />
+                          <col className="w-[22%]" />
+                          <col className="w-[10%]" />
+                          <col className="w-[12%]" />
+                          <col className="w-[18%]" />
+                        </colgroup>
+                        <thead className="bg-transparent text-[16px] text-text-secondary">
                           <tr>
-                            <th className="px-4 py-2 text-left font-medium">Symbol</th>
-                            <th className="px-4 py-2 text-left font-medium">Order ID</th>
-                            <th className="px-4 py-2 text-left font-medium">Open Time</th>
-                            <th className="px-4 py-2 text-left font-medium">Type</th>
-                            <th className="px-4 py-2 text-left font-medium">Volume</th>
-                            <th className="px-4 py-2 text-left font-medium">P&L</th>
+                            <th className="border-0 px-4 py-2 text-left font-medium">Symbol</th>
+                            <th className="border-0 px-4 py-2 text-left font-medium">Order ID</th>
+                            <th className="border-0 px-4 py-2 text-left font-medium">Open Time</th>
+                            <th className="border-0 px-4 py-2 text-left font-medium">Type</th>
+                            <th className="border-0 px-4 py-2 text-left font-medium">Volume</th>
+                            <th className="border-0 px-4 py-2 text-right font-medium">P&L</th>
                           </tr>
                         </thead>
                         <tbody>
                           {list.map((t) => {
                             const q = quotes.find((x) => x.symbol === t.symbol)
                             const pnl = calcPnl(t)
+                            const pct = q?.percentChange ?? 0
                             return (
                               <tr key={t.id} className="border-t border-border">
-                                <td className="px-4 py-2">
-                                  <div className="font-semibold">{t.symbol}</div>
+                                <td className="overflow-hidden px-4 py-2">
+                                  <div className="truncate font-semibold">{t.symbol}</div>
                                   <div
                                     className={clsx(
-                                      'text-[11px]',
-                                      (q?.percentChange ?? 0) >= 0 ? 'positive' : 'negative',
+                                      'truncate text-[11px] tabular-nums',
+                                      pct >= 0 ? 'positive' : 'negative',
                                     )}
                                   >
-                                    {formatPrice(t.currentPrice, t.symbol)} ({(q?.percentChange ?? 0).toFixed(2)}%)
+                                    {formatPrice(t.currentPrice, t.symbol)} ({pct >= 0 ? '+' : ''}
+                                    {pct.toFixed(2)}%)
                                   </div>
                                 </td>
-                                <td className="px-4 py-2">#{t.id}</td>
-                                <td className="px-4 py-2">{t.openTime}</td>
+                                <td className="truncate px-4 py-2 tabular-nums">#{t.id}</td>
+                                <td className="truncate px-4 py-2 tabular-nums">{t.openTime}</td>
                                 <td className="px-4 py-2">
                                   <span
                                     className={clsx(
@@ -238,8 +248,13 @@ export function PortfolioPage() {
                                     {t.side}
                                   </span>
                                 </td>
-                                <td className="px-4 py-2">{t.volume} Lot</td>
-                                <td className={clsx('px-4 py-2 font-semibold', pnl >= 0 ? 'positive' : 'negative')}>
+                                <td className="px-4 py-2 tabular-nums">{t.volume} Lot</td>
+                                <td
+                                  className={clsx(
+                                    'px-4 py-2 text-right font-semibold tabular-nums',
+                                    pnl >= 0 ? 'positive' : 'negative',
+                                  )}
+                                >
                                   {formatMoney(pnl)}
                                 </td>
                               </tr>

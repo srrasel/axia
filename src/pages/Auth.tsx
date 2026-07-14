@@ -6,11 +6,11 @@ import { Toast } from '../components/layout/Header'
 import { BrandLogo } from '../components/BrandLogo'
 
 const AUTH_BTN =
-  'auth-btn h-12 w-full rounded-lg bg-[#fcd535] text-[15px] font-semibold tracking-wide !text-[#202630] transition-all duration-200 hover:bg-[#ceaf30] hover:shadow-[0_0_0_1px_rgba(252,213,53,0.15)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60'
+  'auth-btn h-12 w-full cursor-pointer rounded-lg bg-[#fcd535] text-[15px] font-semibold tracking-wide !text-[#202630] transition-colors duration-200 hover:bg-[#ceaf30] disabled:cursor-not-allowed disabled:opacity-60'
 const AUTH_BTN_STYLE = { color: '#202630' } as const
 const AUTH_LINK = 'font-semibold text-[#fcd535] transition-colors hover:text-[#ceaf30]'
 const AUTH_INPUT =
-  'h-12 w-full rounded-lg border border-[#2b3139] bg-transparent px-3.5 text-[15px] text-[#EAECEF] outline-none transition-all duration-200 placeholder:text-[#848e9c] hover:border-[#F0B90B] focus:border-[#F0B90B] focus:shadow-[0_0_0_3px_rgba(240,185,11,0.12)]'
+  'auth-input h-12 w-full rounded-lg border border-[#2b3139] bg-transparent px-3.5 text-[15px] text-[#EAECEF] outline-none transition-all duration-200 placeholder:text-[#848e9c] hover:border-[#F0B90B] focus:border-[#F0B90B] focus:shadow-[0_0_0_3px_rgba(240,185,11,0.12)]'
 
 export function LoginPage() {
   const { login, verifyLogin2fa, isAuthenticated } = useApp()
@@ -110,6 +110,7 @@ export function LoginPage() {
           {loading ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
+      <SocialAuth mode="login" />
       <p className="mt-8 text-center text-sm text-[#848e9c]">
         Don&apos;t have an account?{' '}
         <Link to="/register" className={AUTH_LINK}>
@@ -175,6 +176,7 @@ export function RegisterPage() {
           {loading ? 'Creating…' : 'Create account'}
         </button>
       </form>
+      <SocialAuth mode="register" />
       <p className="mt-8 text-center text-sm text-[#848e9c]">
         Already registered?{' '}
         <Link to="/login" className={AUTH_LINK}>
@@ -189,6 +191,88 @@ export function RegisterPage() {
 function AuthError({ message }: { message: string }) {
   return (
     <p className="rounded-lg border border-sell/40 bg-transparent px-3.5 py-2.5 text-sm text-sell">{message}</p>
+  )
+}
+
+const SOCIAL_BTN =
+  'flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-[#333B47] bg-transparent text-[15px] font-semibold text-[#EAECEF] transition-colors hover:border-[#848e9c] hover:bg-[#1e2329]'
+
+function GoogleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+      <path
+        fill="#FFC107"
+        d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
+      />
+      <path
+        fill="#FF3D00"
+        d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"
+      />
+    </svg>
+  )
+}
+
+function TelegramIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="#2AABEE"
+        d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0z"
+      />
+      <path
+        fill="#fff"
+        d="M17.943 7.236c.14-.613-.504-.988-.987-.72L5.68 13.03c-.48.266-.446.905.07 1.16l2.736 1.36 1.07 3.428c.16.512.748.651 1.13.262l1.728-1.767 3.33 2.456c.48.354 1.164.087 1.285-.512l1.914-11.18zM10.55 15.31l-.28 2.018-.99-3.167 7.108-4.656-5.838 5.805z"
+      />
+    </svg>
+  )
+}
+
+function SocialAuth({ mode }: { mode: 'login' | 'register' }) {
+  const [notice, setNotice] = useState<string | null>(null)
+  const action = mode === 'login' ? 'Sign in' : 'Sign up'
+  const googleUrl = import.meta.env.VITE_GOOGLE_AUTH_URL as string | undefined
+  const telegramUrl = import.meta.env.VITE_TELEGRAM_AUTH_URL as string | undefined
+
+  const onProvider = (provider: 'google' | 'telegram') => {
+    const url = provider === 'google' ? googleUrl : telegramUrl
+    if (url) {
+      window.location.href = url
+      return
+    }
+    setNotice(
+      `${provider === 'google' ? 'Google' : 'Telegram'} ${action.toLowerCase()} is being set up. Use email for now.`,
+    )
+  }
+
+  return (
+    <div className="mt-6">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="h-px flex-1 bg-[#333B47]" />
+        <span className="text-[12px] font-medium uppercase tracking-wide text-[#848e9c]">Or continue with</span>
+        <div className="h-px flex-1 bg-[#333B47]" />
+      </div>
+      <div className="space-y-3">
+        <button type="button" className={SOCIAL_BTN} onClick={() => onProvider('google')}>
+          <GoogleIcon />
+          {action} with Google
+        </button>
+        <button type="button" className={SOCIAL_BTN} onClick={() => onProvider('telegram')}>
+          <TelegramIcon />
+          {action} with Telegram
+        </button>
+      </div>
+      {notice ? (
+        <p className="mt-3 text-center text-[12px] leading-relaxed text-[#848e9c]">{notice}</p>
+      ) : null}
+    </div>
   )
 }
 
@@ -213,7 +297,10 @@ function AuthShell({
             'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(252,213,53,0.08), transparent 55%)',
         }}
       />
-      <div className="relative w-full max-w-[420px]">
+      <div
+        className="relative w-full max-w-[420px] rounded-[24px] border border-[#333B47] p-10"
+        style={{ padding: 40, borderRadius: 24, border: '1px solid #333B47' }}
+      >
         <div className="mb-10 text-center">
           <div className="flex justify-center">
             <BrandLogo variant="dark" className="h-11 sm:h-12" />
@@ -295,7 +382,7 @@ function PasswordField({
           tabIndex={-1}
           aria-label={visible ? 'Hide password' : 'Show password'}
           onClick={() => setVisible((v) => !v)}
-          className="absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent text-[#848e9c] transition-colors hover:text-[#F0B90B]"
+          className="absolute right-3.5 top-1/2 z-20 -translate-y-1/2 cursor-pointer bg-transparent p-0.5 text-[#848e9c] transition-colors hover:text-[#F0B90B]"
         >
           {visible ? <EyeOff size={18} strokeWidth={1.75} /> : <Eye size={18} strokeWidth={1.75} />}
         </button>

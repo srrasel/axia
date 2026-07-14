@@ -41,7 +41,7 @@ function PageShell({ title, children }: { title: string; children: ReactNode }) 
           >
             <Menu size={18} />
           </button>
-          <div className="min-w-0 truncate text-sm font-semibold">{title}</div>
+          <div className="min-w-0 truncate text-[20px] font-semibold leading-tight">{title}</div>
         </div>
         <div className="flex-1 overflow-y-auto p-3 sm:p-5">{children}</div>
       </div>
@@ -479,11 +479,11 @@ export function ManageAccountsPage() {
       {/* Desktop table */}
       <div className="hidden overflow-auto rounded-lg border border-border md:block">
         <table className="w-full min-w-[800px] text-left text-sm">
-          <thead className="bg-muted text-xs text-text-secondary">
+          <thead className="bg-transparent text-[16px] text-text-secondary">
             <tr>
               {['Account', 'Platform', 'Leverage', 'Currency', 'Equity', 'Balance', 'Credit', 'Action'].map(
                 (h) => (
-                  <th key={h} className="px-3 py-2 font-medium">
+                  <th key={h} className="border-0 px-3 py-2 font-medium">
                     {h}
                   </th>
                 ),
@@ -635,13 +635,13 @@ export function TransactionsPage() {
           {/* Desktop table */}
           <div className="hidden overflow-auto rounded-lg border border-border md:block">
             <table className="w-full text-left text-sm">
-              <thead className="bg-muted text-xs text-text-secondary">
+              <thead className="bg-transparent text-[16px] text-text-secondary">
                 <tr>
-                  <th className="px-3 py-2">Type and account</th>
-                  <th className="px-3 py-2">Date</th>
-                  <th className="px-3 py-2">Amount</th>
-                  <th className="px-3 py-2">Payment</th>
-                  <th className="px-3 py-2">Status</th>
+                  <th className="border-0 px-3 py-2 font-medium">Type and account</th>
+                  <th className="border-0 px-3 py-2 font-medium">Date</th>
+                  <th className="border-0 px-3 py-2 font-medium">Amount</th>
+                  <th className="border-0 px-3 py-2 font-medium">Payment</th>
+                  <th className="border-0 px-3 py-2 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -1052,10 +1052,10 @@ export function DepositPage() {
                 type="button"
                 onClick={() => setAmount(v)}
                 className={clsx(
-                  'rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors',
+                  'rounded-full border bg-transparent px-3.5 py-1.5 text-xs font-semibold transition-colors',
                   amount === v
-                    ? 'border-[#F0B90B] bg-[#F0B90B]/10 text-[#F0B90B]'
-                    : 'border-border text-text-secondary hover:bg-muted',
+                    ? 'border-[#F0B90B] text-[#F0B90B]'
+                    : 'border-border text-text-secondary hover:border-[#F0B90B]/50 hover:text-brand-ink',
                 )}
               >
                 {currency.symbol}
@@ -1077,10 +1077,10 @@ export function DepositPage() {
                   type="button"
                   onClick={() => setMethod(t.id)}
                   className={clsx(
-                    'flex items-center gap-3 rounded-2xl border p-3 text-left transition-all sm:block',
+                    'flex items-center gap-3 rounded-2xl border bg-transparent p-3 text-left transition-all sm:block',
                     active
-                      ? 'border-[#F0B90B] bg-[#F0B90B]/10 shadow-[0_0_0_1px_rgba(240,185,11,0.2)]'
-                      : 'border-border hover:bg-muted',
+                      ? 'border-[#F0B90B]'
+                      : 'border-border hover:border-[#F0B90B]/50',
                   )}
                 >
                   <Icon size={18} className={clsx('shrink-0', active ? 'text-[#F0B90B]' : 'text-text-secondary')} />
@@ -1179,10 +1179,10 @@ export function DepositPage() {
                   type="button"
                   onClick={() => setCryptoCoin(c.id)}
                   className={clsx(
-                    'rounded-xl border px-3 py-3 text-left transition-all',
+                    'rounded-xl border bg-transparent px-3 py-3 text-left transition-all',
                     cryptoCoin === c.id
-                      ? 'border-[#F0B90B] bg-[#F0B90B]/10'
-                      : 'border-border hover:bg-muted',
+                      ? 'border-[#F0B90B]'
+                      : 'border-border hover:border-[#F0B90B]/50',
                   )}
                 >
                   <div className="text-sm font-semibold">{c.id}</div>

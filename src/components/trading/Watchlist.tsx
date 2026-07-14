@@ -86,14 +86,14 @@ export function Watchlist({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search..."
-            className="h-10 w-full rounded-md border border-border bg-muted pl-8 pr-3 text-sm outline-none sm:h-9"
+            className="h-10 w-full rounded-md border border-border bg-muted pl-8 pr-3 text-sm outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B] sm:h-9"
           />
         </div>
 
         <div className="relative mt-3">
           <button
             type="button"
-            className="flex h-9 w-full items-center justify-between rounded-md border border-border bg-panel px-3 text-xs font-semibold"
+            className="flex h-9 w-full items-center justify-between rounded-md border border-border bg-panel px-3 text-[14px] font-semibold transition-colors hover:border-[#F0B90B]"
             onClick={() => setOpenMenu((v) => !v)}
           >
             <span>{activeLabel}</span>
@@ -106,7 +106,7 @@ export function Watchlist({
                   key={c.key}
                   type="button"
                   className={clsx(
-                    'flex w-full px-3 py-2 text-left text-xs hover:bg-muted',
+                    'flex w-full px-3 py-2 text-left text-[14px] hover:bg-muted',
                     category === c.key && 'bg-muted font-semibold',
                   )}
                   onClick={() => {

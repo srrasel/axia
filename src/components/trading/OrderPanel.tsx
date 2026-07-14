@@ -64,7 +64,7 @@ function ToggleSwitch({
       aria-label={label}
       onClick={() => onChange(!checked)}
       className={clsx(
-        'relative h-5 w-9 shrink-0 rounded-full transition-colors',
+        'relative h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors',
         checked ? 'bg-brand' : 'bg-border',
       )}
     >
@@ -449,7 +449,7 @@ export function OrderPanel({
             type="button"
             onClick={() => setSide('sell')}
             className={clsx(
-              'rounded-lg border px-2.5 py-2 text-left transition-colors',
+              'cursor-pointer rounded-lg border px-2.5 py-2 text-left transition-colors',
               side === 'sell' ? 'border-sell bg-sell/10' : 'border-border hover:bg-muted',
             )}
           >
@@ -462,7 +462,7 @@ export function OrderPanel({
             type="button"
             onClick={() => setSide('buy')}
             className={clsx(
-              'rounded-lg border px-2.5 py-2 text-left transition-colors',
+              'cursor-pointer rounded-lg border px-2.5 py-2 text-left transition-colors',
               side === 'buy' ? 'border-buy bg-buy/10' : 'border-border hover:bg-muted',
             )}
           >
@@ -629,7 +629,7 @@ export function OrderPanel({
           disabled={!canInvest}
           onClick={() => void onInvest()}
           className={clsx(
-            'h-10 w-full rounded-lg text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50',
+            'h-10 w-full cursor-pointer rounded-lg text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50',
             side === 'buy' ? 'bg-buy hover:brightness-95' : 'bg-sell hover:brightness-95',
           )}
         >

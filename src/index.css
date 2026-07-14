@@ -48,6 +48,11 @@ body,
 #root {
   height: 100%;
   margin: 0;
+  overflow-x: clip;
+}
+
+html {
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -62,13 +67,31 @@ input,
 select,
 textarea {
   font-family: inherit;
-  color: inherit;
 }
 
 input,
 select,
 textarea {
+  color: inherit;
   background: var(--color-panel);
+}
+
+button:not(:disabled),
+.btn-brand:not(:disabled),
+.auth-btn:not(:disabled),
+[role='switch'],
+[role='button']:not([aria-disabled='true']) {
+  cursor: pointer;
+}
+
+button:disabled,
+.btn-brand:disabled,
+.auth-btn:disabled {
+  cursor: not-allowed;
+}
+
+select {
+  cursor: pointer;
 }
 
 ::-webkit-scrollbar {
@@ -98,14 +121,25 @@ html.dark ::-webkit-scrollbar-thumb {
   border-color: var(--color-border);
 }
 
-/* Primary actions: always dark fill + white label */
+.tab-label-active {
+  color: #ffffff !important;
+}
+
+.tab-label-inactive {
+  color: #707a8a !important;
+}
+
+/* Primary actions — match auth Sign in yellow */
 .btn-brand {
-  background: var(--color-brand);
-  color: var(--color-on-brand) !important;
+  background: #fcd535;
+  color: #202630 !important;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
 }
 
 .btn-brand:hover:not(:disabled) {
-  opacity: 0.92;
+  background: #ceaf30;
+  opacity: 1;
 }
 
 .btn-brand:disabled {
@@ -126,17 +160,41 @@ html.dark ::-webkit-scrollbar-thumb {
   color: #202630 !important;
 }
 
-.toast {
-  animation: slide-up 0.25s ease;
+/* Keep autofilled fields from changing background (Chrome / Safari) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-text);
+  caret-color: var(--color-text);
+  box-shadow: 0 0 0 1000px var(--color-panel) inset;
+  transition: background-color 99999s ease-in-out 0s;
 }
 
-@keyframes slide-up {
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus,
+.auth-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #eaecef !important;
+  caret-color: #eaecef;
+  box-shadow: 0 0 0 1000px #181a20 inset !important;
+  border-color: #2b3139 !important;
+  transition: background-color 99999s ease-in-out 0s;
+}
+
+.toast {
+  animation: toast-in 0.28s ease;
+}
+
+@keyframes toast-in {
   from {
-    transform: translateY(12px);
+    transform: translate(-50%, -12px);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translate(-50%, 0);
     opacity: 1;
   }
 }

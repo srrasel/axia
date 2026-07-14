@@ -12,7 +12,6 @@ import {
   Sun,
   User,
   Wallet,
-  X,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../context/AppContext'
@@ -29,7 +28,7 @@ const userMenu = [
   { to: '/account/verification', icon: ShieldCheck, label: 'Verification' },
 ]
 
-export function Header({ showClose }: { showClose?: boolean }) {
+export function Header() {
   const {
     metrics,
     activeAccountId,
@@ -54,7 +53,17 @@ export function Header({ showClose }: { showClose?: boolean }) {
   const isLiveAccount = accountType === 'live'
 
   useEffect(() => {
-    const id = window.setInterval(() => setTime(new Date().toLocaleTimeString('en-GB')), 1000)
+    const tick = () =>
+      setTime(
+        new Date().toLocaleTimeString('en-GB', {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        }),
+      )
+    tick()
+    const id = window.setInterval(tick, 1000)
     return () => window.clearInterval(id)
   }, [])
 
@@ -80,13 +89,13 @@ export function Header({ showClose }: { showClose?: boolean }) {
   }, [userOpen, langOpen])
 
   return (
-    <header className="panel flex h-14 shrink-0 items-center gap-1.5 border-b px-2 sm:h-16 sm:gap-3 sm:px-5">
-      <Link to="/platform" className="flex shrink-0 items-center">
-        <BrandLogo className="h-8 sm:h-10" />
+    <header className="panel relative z-40 flex h-14 shrink-0 items-center gap-1.5 border-b px-2 sm:h-16 sm:gap-3 sm:px-5">
+      <Link to="/platform" className="flex shrink-0 items-center pr-[5px]">
+        <BrandLogo className="h-9 sm:h-10" />
       </Link>
 
       {/* Demo / Live account switch — compact on mobile, full on desktop */}
-      <div className="relative min-w-0 shrink">
+      <div className="relative min-w-0 shrink-0">
         <div className="flex items-center gap-1.5 rounded-xl border border-border bg-muted/40 py-0.5 pl-2 pr-0.5 sm:gap-2.5 sm:py-1 sm:pl-2.5 sm:pr-1">
           <span
             className={clsx(
@@ -116,7 +125,7 @@ export function Header({ showClose }: { showClose?: boolean }) {
         </div>
       </div>
 
-      <div className="ml-1 hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto lg:flex xl:gap-2">
+      <div className="ml-1 hidden min-w-0 flex-1 items-center gap-1 overflow-hidden lg:flex xl:gap-2">
         <Metric label="Free Margin" value={formatMoney(metrics.freeMargin)} />
         <Metric label="Used Funds" value={formatMoney(metrics.usedFunds)} />
         <Metric label="Equity" value={formatMoney(metrics.equity)} className="positive" />
@@ -131,49 +140,49 @@ export function Header({ showClose }: { showClose?: boolean }) {
           className="positive"
         />
         {isLiveAccount ? (
-          <span className="ml-1 inline-flex items-center gap-1.5 rounded-full bg-buy/10 px-2.5 py-1 text-[10px] font-bold tracking-wide text-buy">
+          <span className="ml-1 inline-flex min-w-[4.25rem] shrink-0 items-center justify-center gap-1.5 rounded-full bg-buy/10 px-2.5 py-1 text-[10px] font-bold tracking-wide text-buy">
             <span className="h-1.5 w-1.5 rounded-full bg-buy" />
             LIVE
-            {liveData ? null : <span className="font-medium opacity-70">· SIM</span>}
+            {!liveData ? <span className="font-medium opacity-70">· SIM</span> : null}
           </span>
         ) : (
-          <span className="ml-1 inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold tracking-wide text-text-secondary">
+          <span className="ml-1 inline-flex min-w-[4.25rem] shrink-0 items-center justify-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold tracking-wide text-text-secondary">
             <span className="h-1.5 w-1.5 rounded-full bg-link" />
             DEMO
           </span>
         )}
       </div>
 
-      <div className="min-w-0 flex-1 lg:hidden" />
+      <div className="min-w-0 flex-1 lg:hidden" aria-hidden />
 
-      <button
-        type="button"
-        onClick={() => navigate('/account/deposit')}
-        className="h-9 shrink-0 rounded-xl border-2 border-accent bg-panel px-2.5 text-sm font-semibold text-brand-ink shadow-[0_0_0_1px_rgba(245,197,24,0.25)] transition-colors hover:bg-accent/15 sm:h-10 sm:px-4"
-        style={{ borderColor: 'var(--color-accent)' }}
-      >
-        <span className="sm:hidden">Dep</span>
-        <span className="hidden sm:inline">Deposit</span>
-      </button>
+      <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+        <button
+          type="button"
+          onClick={() => navigate('/account/deposit')}
+          className="auth-btn h-9 shrink-0 cursor-pointer rounded-xl bg-[#fcd535] px-2.5 text-sm font-semibold !text-[#202630] transition-colors hover:bg-[#ceaf30] sm:h-10 sm:px-4"
+        >
+          Deposit
+        </button>
 
-      <div className="relative flex shrink-0 items-center gap-0.5 sm:gap-1">
-        <span className="mr-1 hidden tabular-nums text-xs text-text-secondary sm:inline">{time}</span>
+        <span className="mr-1 hidden w-[4.75rem] text-right tabular-nums text-xs text-text-secondary sm:inline">
+          {time}
+        </span>
 
         <button
           type="button"
           aria-label="Toggle theme"
-          className="hidden h-9 w-9 items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-muted hover:text-brand-ink sm:flex sm:h-10 sm:w-10"
+          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-muted hover:text-brand-ink sm:h-10 sm:w-10"
           onClick={() => setDarkMode(!darkMode)}
         >
-          {darkMode ? <Sun size={20} strokeWidth={1.75} /> : <Moon size={20} strokeWidth={1.75} />}
+          {darkMode ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
         </button>
 
-        <div className="relative hidden sm:block" ref={langRef}>
+        <div className="relative" ref={langRef}>
           <button
             type="button"
             aria-label="Language"
             className={clsx(
-              'flex h-9 w-9 items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-muted hover:text-brand-ink sm:h-10 sm:w-10',
+              'flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-muted hover:text-brand-ink sm:h-10 sm:w-10',
               langOpen && 'bg-muted text-brand-ink',
             )}
             onClick={() => {
@@ -181,10 +190,10 @@ export function Header({ showClose }: { showClose?: boolean }) {
               setUserOpen(false)
             }}
           >
-            <Globe size={20} strokeWidth={1.75} />
+            <Globe size={18} strokeWidth={1.75} />
           </button>
           {langOpen ? (
-            <div className="panel absolute right-0 top-12 z-50 min-w-[8.5rem] overflow-hidden rounded-xl border shadow-xl">
+            <div className="panel absolute right-0 top-12 z-[60] min-w-[8.5rem] overflow-hidden rounded-xl border shadow-xl">
               {(['en', 'ar'] as const).map((lang) => (
                 <button
                   key={lang}
@@ -211,7 +220,7 @@ export function Header({ showClose }: { showClose?: boolean }) {
             aria-label="User menu"
             aria-expanded={userOpen}
             className={clsx(
-              'flex items-center gap-1 rounded-xl py-0.5 pl-0.5 pr-1 transition-colors hover:bg-muted sm:gap-1.5 sm:pr-2',
+              'flex cursor-pointer items-center rounded-full p-0.5 transition-colors hover:bg-muted',
               userOpen && 'bg-muted',
             )}
             onClick={() => {
@@ -220,16 +229,9 @@ export function Header({ showClose }: { showClose?: boolean }) {
             }}
           >
             <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={40} ring />
-            <ChevronDown
-              size={16}
-              className={clsx(
-                'hidden text-text-secondary transition-transform sm:block',
-                userOpen && 'rotate-180',
-              )}
-            />
           </button>
           {userOpen ? (
-            <div className="panel absolute right-0 top-12 z-50 w-[min(18rem,calc(100vw-1rem))] overflow-hidden rounded-2xl border shadow-2xl sm:top-14 sm:w-72">
+            <div className="panel absolute right-0 top-12 z-[60] w-[min(18rem,calc(100%-1rem))] overflow-hidden rounded-2xl border shadow-2xl sm:top-14 sm:w-72">
               <div className="flex items-center gap-3 border-b border-border bg-muted/40 px-4 py-3.5">
                 <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={44} />
                 <div className="min-w-0">
@@ -265,7 +267,7 @@ export function Header({ showClose }: { showClose?: boolean }) {
                             ? live
                               ? 'border-buy bg-buy/10'
                               : 'border-link bg-link/10'
-                            : 'border-border hover:bg-muted',
+                            : 'border-border hover:bg-[#29313d]',
                         )}
                       >
                         <div className="flex items-center gap-1.5">
@@ -288,7 +290,7 @@ export function Header({ showClose }: { showClose?: boolean }) {
                     key={to}
                     to={to}
                     onClick={() => setUserOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-muted hover:text-brand-ink"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-[#29313d] hover:text-brand-ink"
                   >
                     <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-brand-ink">
                       <Icon size={18} strokeWidth={1.75} />
@@ -300,7 +302,7 @@ export function Header({ showClose }: { showClose?: boolean }) {
               <div className="border-t border-border py-1.5">
                 <button
                   type="button"
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-sell transition-colors hover:bg-muted"
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-sell transition-colors hover:bg-[#29313d]"
                   onClick={() => {
                     setUserOpen(false)
                     logout()
@@ -316,18 +318,6 @@ export function Header({ showClose }: { showClose?: boolean }) {
             </div>
           ) : null}
         </div>
-
-        {showClose ? (
-          <button
-            type="button"
-            aria-label="Close and return to platform"
-            title="Back to platform"
-            className="ml-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-panel text-text-secondary transition-colors hover:bg-muted hover:text-brand-ink sm:h-10 sm:w-10"
-            onClick={() => navigate('/platform')}
-          >
-            <X size={18} strokeWidth={2} />
-          </button>
-        ) : null}
       </div>
     </header>
   )
@@ -343,25 +333,9 @@ function Metric({
   className?: string
 }) {
   return (
-    <div className="min-w-0 shrink-0 rounded-lg px-2.5 py-1.5 xl:px-3">
+    <div className="min-w-[4.75rem] shrink-0 rounded-lg px-2.5 py-1.5 xl:min-w-[5.25rem] xl:px-3">
       <div className="text-[10px] font-medium uppercase tracking-wide text-text-secondary">{label}</div>
-      <div className={`text-sm font-semibold tabular-nums leading-tight ${className}`}>{value}</div>
-    </div>
-  )
-}
-
-export function AlertBanner() {
-  const { user } = useApp()
-  if (user?.funded) return null
-  return (
-    <div className="flex shrink-0 items-start gap-2 border-b border-alert-border bg-alert px-3 py-2 text-sm sm:items-center sm:px-4">
-      <span className="shrink-0">⚠️</span>
-      <span className="min-w-0 leading-snug">
-        Action Required:{' '}
-        <Link to="/account/deposit" className="font-semibold text-link underline">
-          Fund your account
-        </Link>
-      </span>
+      <div className={`truncate text-sm font-semibold tabular-nums leading-tight ${className}`}>{value}</div>
     </div>
   )
 }
@@ -373,7 +347,7 @@ export function Toast() {
     <button
       type="button"
       onClick={clearToast}
-      className="toast fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-3 z-[100] max-w-[calc(100vw-1.5rem)] rounded-lg bg-brand px-4 py-3 text-sm font-medium text-on-brand shadow-lg sm:right-5 sm:max-w-sm"
+      className="toast pointer-events-auto fixed left-1/2 top-[max(1rem,env(safe-area-inset-top))] z-[100] max-w-[min(24rem,calc(100%-1.5rem))] -translate-x-1/2 rounded-xl border border-[#fcd535]/40 bg-[#181a20] px-5 py-2.5 text-sm font-medium text-[#fcd535] shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
     >
       {toast}
     </button>

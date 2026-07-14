@@ -475,7 +475,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }),
       })
       await refreshAll()
-      showToast(input.pending ? 'Pending order placed' : `${input.side.toUpperCase()} opened`)
+      const lotLabel = Number.isInteger(input.volume) ? String(input.volume) : input.volume.toFixed(2)
+      showToast(
+        input.pending
+          ? `Pending ${input.side.toUpperCase()} · ${selectedSymbol} · ${lotLabel} lot`
+          : `${input.side.toUpperCase()} · ${selectedSymbol} · ${lotLabel} lot`,
+      )
       return null
     } catch (e) {
       return e instanceof Error ? e.message : 'Order failed'

@@ -36,8 +36,9 @@ type Props = {
 }
 
 function SidebarBody({ onClose, showClose }: { onClose?: () => void; showClose?: boolean }) {
-  const { user, logout, accounts } = useApp()
+  const { user, logout, accounts, accountType } = useApp()
   const navigate = useNavigate()
+  const isLiveAccount = accountType === 'live'
   const live = accounts.filter((a) => a.type === 'live').length
   const demo = accounts.filter((a) => a.type === 'demo').length
   const kycPending = Math.max(
@@ -48,39 +49,46 @@ function SidebarBody({ onClose, showClose }: { onClose?: () => void; showClose?:
 
   return (
     <>
+      {showClose ? (
+        <div className="flex w-full shrink-0 items-center justify-end border-b border-border px-2 py-1.5">
+          <button
+            type="button"
+            className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-[#29313d] hover:text-brand-ink"
+            onClick={close}
+            aria-label="Close menu"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      ) : null}
+
       <button
         type="button"
         onClick={() => {
           close()
           navigate('/platform')
         }}
-        className="flex items-center gap-2 px-4 py-3 text-sm text-text-secondary hover:text-brand-ink"
+        className="mx-2 mt-3 mb-3 flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-muted/60 px-3 py-3 text-sm font-medium text-text-secondary transition-colors hover:bg-[#29313d] hover:text-brand-ink"
       >
         <ArrowLeft size={16} /> To Platform
       </button>
 
-      <div className="flex items-center gap-3 border-b border-border px-4 pb-4">
+      <div className="mx-2 mb-1 flex items-center gap-3 rounded-xl border border-border bg-muted/40 px-3 py-3.5">
         <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={44} />
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold">{user?.name}</div>
+          <div className="truncate text-sm font-semibold text-text">{user?.name}</div>
           <div className="truncate text-xs text-text-secondary">{user?.email}</div>
-          <div className="mt-0.5 text-[11px] text-text-secondary">
-            {live} live account{live !== 1 ? 's' : ''} | {demo} demo account{demo !== 1 ? 's' : ''}
+          <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-panel px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-text-secondary ring-1 ring-border">
+            <span className={clsx('h-1.5 w-1.5 rounded-full', isLiveAccount ? 'bg-buy' : 'bg-link')} />
+            {isLiveAccount ? 'Live' : 'Demo'}
+          </div>
+          <div className="mt-1 text-[10px] text-text-secondary">
+            {live} live · {demo} demo
           </div>
         </div>
-        {showClose ? (
-          <button
-            type="button"
-            className="rounded-lg p-2 text-text-secondary hover:bg-muted"
-            onClick={close}
-            aria-label="Close menu"
-          >
-            <X size={18} />
-          </button>
-        ) : null}
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-2">
+      <nav className="flex flex-1 flex-col gap-2 overflow-y-auto py-1.5">
         {links.map(({ to, icon: Icon, label, badgeKey }) => {
           const badge = badgeKey === 'kyc' ? kycPending : 0
           return (
@@ -90,22 +98,35 @@ function SidebarBody({ onClose, showClose }: { onClose?: () => void; showClose?:
               onClick={close}
               className={({ isActive }) =>
                 clsx(
-                  'relative mx-2 flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-text-secondary hover:bg-muted',
-                  isActive &&
-                    'bg-sidebar-active font-medium text-brand-ink before:absolute before:bottom-1 before:left-0 before:top-1 before:w-1 before:rounded-r before:bg-link',
+                  'mx-2 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-text-secondary transition-colors hover:bg-[#29313d] hover:text-brand-ink',
+                  isActive && 'bg-[#29313d] font-medium text-brand-ink',
                 )
               }
             >
-              <Icon size={17} strokeWidth={1.75} className="shrink-0" />
-              <span className="flex-1">{label}</span>
-              {badge > 0 ? (
-                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-sell px-1 text-[10px] font-bold text-white">
-                  {badge}
-                </span>
-              ) : null}
+              {({ isActive }) => (
+                <>
+                  <span
+                    className={clsx(
+                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-brand-ink',
+                      isActive ? 'bg-[#fcd535]/15 text-[#fcd535]' : 'bg-muted',
+                    )}
+                  >
+                    <Icon size={18} strokeWidth={1.75} />
+                  </span>
+                  <span className="flex-1">{label}</span>
+                  {badge > 0 ? (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-sell px-1 text-[10px] font-bold text-white">
+                      {badge}
+                    </span>
+                  ) : null}
+                </>
+              )}
             </NavLink>
           )
         })}
+      </nav>
+
+      <div className="border-t border-border py-1.5">
         <button
           type="button"
           onClick={() => {
@@ -113,12 +134,14 @@ function SidebarBody({ onClose, showClose }: { onClose?: () => void; showClose?:
             close()
             navigate('/login')
           }}
-          className="mx-2 mt-1 flex w-[calc(100%-1rem)] items-center gap-3 rounded-md px-3 py-2.5 text-sm text-text-secondary hover:bg-muted"
+          className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-sell transition-colors hover:bg-[#29313d]"
         >
-          <LogOut size={17} strokeWidth={1.75} />
-          Sign Out
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-sell/10">
+            <LogOut size={18} strokeWidth={1.75} />
+          </span>
+          Sign out
         </button>
-      </nav>
+      </div>
     </>
   )
 }
@@ -135,7 +158,7 @@ export function AccountSidebar({ open = false, onClose }: Props) {
 
   return (
     <>
-      <aside className="panel hidden w-64 shrink-0 flex-col border-r md:flex">
+      <aside className="panel hidden w-72 shrink-0 flex-col border-r md:flex">
         <SidebarBody />
       </aside>
 

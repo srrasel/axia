@@ -36,11 +36,12 @@ export function TradingPage() {
             type="button"
             onClick={() => setTab(key)}
             className={clsx(
-              'shrink-0 border-b-2 px-2 py-2.5 text-sm sm:px-0',
+              'shrink-0 border-b-2 px-2 py-2.5 text-sm font-medium sm:px-0',
               tab === key
-                ? 'border-brand font-semibold text-brand-ink'
-                : 'border-transparent text-text-secondary',
+                ? 'tab-label-active border-brand'
+                : 'tab-label-inactive border-transparent',
             )}
+            style={{ color: tab === key ? '#ffffff' : '#707A8A' }}
           >
             {label}
           </button>
@@ -75,7 +76,7 @@ export function TradingPage() {
             <button
               type="button"
               onClick={() => openTrade('sell')}
-              className="flex h-11 min-w-0 flex-[1.4] flex-col items-center justify-center rounded-lg bg-sell px-1 text-white"
+              className="flex h-11 min-w-0 flex-[1.4] cursor-pointer flex-col items-center justify-center rounded-lg bg-sell px-1 text-white"
             >
               <span className="text-[10px] font-medium leading-none opacity-90">Sell</span>
               <span className="truncate text-xs font-semibold tabular-nums">
@@ -85,7 +86,7 @@ export function TradingPage() {
             <button
               type="button"
               onClick={() => openTrade('buy')}
-              className="flex h-11 min-w-0 flex-[1.4] flex-col items-center justify-center rounded-lg bg-buy px-1 text-white"
+              className="flex h-11 min-w-0 flex-[1.4] cursor-pointer flex-col items-center justify-center rounded-lg bg-buy px-1 text-white"
             >
               <span className="text-[10px] font-medium leading-none opacity-90">Buy</span>
               <span className="truncate text-xs font-semibold tabular-nums">

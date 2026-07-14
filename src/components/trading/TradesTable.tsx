@@ -30,11 +30,12 @@ export function TradesTable() {
             type="button"
             onClick={() => setTab(key)}
             className={clsx(
-              'shrink-0 border-b-2 py-2 text-sm sm:py-2.5',
+              'shrink-0 border-b-2 py-2 text-sm font-medium sm:py-2.5',
               tab === key
-                ? 'border-brand font-semibold text-brand-ink'
-                : 'border-transparent text-text-secondary',
+                ? 'tab-label-active border-brand'
+                : 'tab-label-inactive border-transparent',
             )}
+            style={{ color: tab === key ? '#ffffff' : '#707A8A' }}
           >
             {label}
           </button>
@@ -43,18 +44,18 @@ export function TradesTable() {
 
       <div className="flex-1 overflow-auto">
         <table className="w-full min-w-[1100px] text-left text-sm">
-          <thead className="sticky top-0 bg-muted text-xs text-text-secondary">
+          <thead className="sticky top-0 bg-transparent text-[16px] text-text-secondary">
             <tr>
-              <th className="px-3 py-2 font-medium">Order</th>
-              <th className="px-3 py-2 font-medium">Asset</th>
-              <th className="px-3 py-2 font-medium">Type</th>
-              <th className="px-3 py-2 font-medium">Volume</th>
-              <th className="px-3 py-2 font-medium">Open</th>
-              <th className="px-3 py-2 font-medium">Current</th>
-              <th className="px-3 py-2 font-medium">SL / TP</th>
-              <th className="px-3 py-2 font-medium">PnL</th>
-              <th className="px-3 py-2 font-medium">Swap</th>
-              <th className="px-3 py-2 font-medium">Action</th>
+              <th className="border-0 px-3 py-2 font-medium">Order</th>
+              <th className="border-0 px-3 py-2 font-medium">Asset</th>
+              <th className="border-0 px-3 py-2 font-medium">Type</th>
+              <th className="border-0 px-3 py-2 font-medium">Volume</th>
+              <th className="border-0 px-3 py-2 font-medium">Open</th>
+              <th className="border-0 px-3 py-2 font-medium">Current</th>
+              <th className="border-0 px-3 py-2 font-medium">SL / TP</th>
+              <th className="border-0 px-3 py-2 font-medium">PnL</th>
+              <th className="border-0 px-3 py-2 font-medium">Swap</th>
+              <th className="border-0 px-3 py-2 font-medium">Action</th>
             </tr>
           </thead>
           <tbody>

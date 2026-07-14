@@ -27,56 +27,67 @@ const items = [
 
 const ICON_PX = 24
 
+function RailLink({
+  to,
+  end,
+  label,
+  icon: Icon,
+}: {
+  to: string
+  end?: boolean
+  label: string
+  icon: typeof LineChart
+}) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      aria-label={label}
+      className={({ isActive }) =>
+        clsx(
+          'group relative mb-[10px] flex shrink-0 items-center justify-center rounded-full p-[10px] transition-colors last:mb-0',
+          'text-text-secondary hover:bg-sidebar-active hover:text-brand-ink',
+          isActive && 'bg-sidebar-active text-brand-ink',
+        )
+      }
+    >
+      {({ isActive }) => (
+        <>
+          {isActive ? (
+            <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r bg-link" />
+          ) : null}
+          <Icon size={ICON_PX} strokeWidth={1.75} className="h-6 w-6" />
+          <span
+            className={clsx(
+              'pointer-events-none absolute left-full top-1/2 z-50 ml-2.5 -translate-y-1/2',
+              'whitespace-nowrap rounded-2xl bg-black px-3.5 py-2 text-sm font-semibold text-white shadow-lg',
+              'opacity-0 transition-opacity duration-150 group-hover:opacity-100',
+            )}
+          >
+            {label}
+          </span>
+        </>
+      )}
+    </NavLink>
+  )
+}
+
 export function IconSidebar() {
   return (
     <>
-      {/* Desktop / tablet vertical rail */}
+      {/* Desktop / tablet: 10px + 24px icon + 10px padding ≈ 44–64 */}
       <aside
-        className="panel hidden w-14 shrink-0 flex-col items-center border-r py-2 md:flex"
+        className="panel hidden w-[64px] shrink-0 flex-col items-center overflow-x-clip overflow-y-auto border-r py-[10px] md:flex"
         aria-label="Main navigation"
       >
-        <nav className="flex w-full flex-1 flex-col items-center gap-1 overflow-y-auto px-1">
-          {items.map(({ to, icon: Icon, label, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              title={label}
-              aria-label={label}
-              className={({ isActive }) =>
-                clsx(
-                  'group relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
-                  'text-text-secondary hover:bg-sidebar-active hover:text-brand-ink',
-                  isActive && 'bg-sidebar-active text-brand-ink ring-1 ring-border',
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive ? (
-                    <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r bg-link" />
-                  ) : null}
-                  <Icon size={ICON_PX} strokeWidth={1.75} className="h-6 w-6" />
-                </>
-              )}
-            </NavLink>
+        <nav className="flex w-full flex-1 flex-col items-center overflow-visible px-[10px]">
+          {items.map(({ to, icon, label, end }) => (
+            <RailLink key={to} to={to} end={end} label={label} icon={icon} />
           ))}
         </nav>
 
-        <div className="mt-1 w-full border-t border-border px-1 pt-1.5">
-          <NavLink
-            to="/account/details"
-            title="Settings"
-            aria-label="Settings"
-            className={({ isActive }) =>
-              clsx(
-                'flex h-10 w-10 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-sidebar-active hover:text-brand-ink',
-                isActive && 'bg-sidebar-active text-brand-ink ring-1 ring-border',
-              )
-            }
-          >
-            <Settings size={ICON_PX} strokeWidth={1.75} className="h-6 w-6" />
-          </NavLink>
+        <div className="mt-[10px] w-full border-t border-border px-[10px] pt-[10px]">
+          <RailLink to="/account/details" label="Settings" icon={Settings} />
         </div>
       </aside>
 
@@ -101,7 +112,7 @@ export function IconSidebar() {
               <>
                 <span
                   className={clsx(
-                    'flex h-8 w-8 items-center justify-center rounded-md',
+                    'flex items-center justify-center rounded-md p-[10px]',
                     isActive && 'bg-sidebar-active',
                   )}
                 >

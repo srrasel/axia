@@ -102,7 +102,7 @@ export function TradingJournal() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search symbol, order ID, or note…"
-            className="h-10 w-full rounded-lg border border-border bg-panel pl-9 pr-3 text-sm outline-none focus:border-brand"
+            className="h-10 w-full rounded-lg border border-border bg-panel pl-9 pr-3 text-sm outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B]"
           />
         </div>
         <select
@@ -128,16 +128,16 @@ export function TradingJournal() {
       <div className="overflow-hidden rounded-lg border border-border bg-panel">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left text-sm">
-            <thead className="bg-muted text-xs text-text-secondary">
+            <thead className="bg-transparent text-[16px] text-text-secondary">
               <tr>
-                <th className="px-3 py-2.5 font-medium">Closed</th>
-                <th className="px-3 py-2.5 font-medium">Symbol</th>
-                <th className="px-3 py-2.5 font-medium">Side</th>
-                <th className="px-3 py-2.5 font-medium">Volume</th>
-                <th className="px-3 py-2.5 font-medium">Open</th>
-                <th className="px-3 py-2.5 font-medium">Close</th>
-                <th className="px-3 py-2.5 font-medium">PnL</th>
-                <th className="px-3 py-2.5 font-medium">Note</th>
+                <th className="border-0 px-3 py-2.5 font-medium">Closed</th>
+                <th className="border-0 px-3 py-2.5 font-medium">Symbol</th>
+                <th className="border-0 px-3 py-2.5 font-medium">Side</th>
+                <th className="border-0 px-3 py-2.5 font-medium">Volume</th>
+                <th className="border-0 px-3 py-2.5 font-medium">Open</th>
+                <th className="border-0 px-3 py-2.5 font-medium">Close</th>
+                <th className="border-0 px-3 py-2.5 font-medium">PnL</th>
+                <th className="border-0 px-3 py-2.5 font-medium">Note</th>
               </tr>
             </thead>
             <tbody>
