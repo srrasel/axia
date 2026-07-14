@@ -64,7 +64,7 @@ export function TradingPage() {
           <TradesTable />
 
           {/* Mobile / tablet trade action bar — sits above bottom nav on phones */}
-          <div className="panel fixed inset-x-0 bottom-14 z-30 flex gap-2 border-t p-2 md:bottom-0 lg:hidden">
+          <div className="panel fixed inset-x-0 bottom-[calc(5px+4.75rem)] z-30 flex gap-2 border-t p-2 md:bottom-0 lg:hidden">
             <button
               type="button"
               onClick={() => setSheet('markets')}
@@ -169,7 +169,7 @@ function MobileSheet({
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
       <button type="button" className="absolute inset-0 bg-black/45" aria-label="Close" onClick={onClose} />
-      <div className="absolute inset-x-0 bottom-0 flex max-h-[min(92dvh,100%)] flex-col overflow-hidden rounded-t-2xl border-t border-border bg-panel shadow-2xl pb-[env(safe-area-inset-bottom)]">
+      <div className="absolute inset-x-0 bottom-0 flex max-h-[min(92dvh,100%)] flex-col overflow-hidden rounded-t-2xl border-t border-border bg-panel shadow-2xl pb-[max(5px,env(safe-area-inset-bottom))]">
         <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border" aria-hidden />
         <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
           <h3 className="text-sm font-semibold">{title}</h3>

@@ -83,7 +83,7 @@ export function Header() {
   }, [userOpen, langOpen, notifOpen])
 
   return (
-    <header className="panel relative z-40 flex h-14 shrink-0 items-center gap-1.5 border-b pl-[5px] pr-2 sm:h-16 sm:gap-3 sm:px-5">
+    <header className="panel relative z-40 flex h-14 shrink-0 items-center gap-1.5 border-b pl-[15px] pr-2 sm:h-16 sm:gap-3 sm:px-5">
       <Link to="/platform" className="flex shrink-0 items-center pr-[5px]">
         <BrandLogo className="h-9 sm:h-10" />
       </Link>
