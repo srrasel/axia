@@ -297,10 +297,7 @@ function AuthShell({
             'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(252,213,53,0.08), transparent 55%)',
         }}
       />
-      <div
-        className="relative w-full max-w-[420px] rounded-[24px] border border-[#333B47] p-10"
-        style={{ padding: 40, borderRadius: 24, border: '1px solid #333B47' }}
-      >
+      <div className="relative w-full max-w-[420px] rounded-none border-0 p-[10px] sm:rounded-[24px] sm:border sm:border-[#333B47] sm:p-10">
         <div className="mb-10 text-center">
           <div className="flex justify-center">
             <BrandLogo variant="dark" className="h-11 sm:h-12" />
