@@ -103,15 +103,22 @@ export function Header() {
 
       {/* Demo / Live account switch — compact on mobile, full on desktop */}
       <div className="relative min-w-0 shrink-0">
-        <div className="relative flex cursor-pointer items-center gap-1.5 rounded-xl border border-border py-0.5 pl-2 pr-0.5 sm:gap-2.5 sm:py-1 sm:pl-2.5 sm:pr-1">
+        <div className="relative flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-[#29313d] py-0.5 pl-2 pr-0.5 sm:gap-2.5 sm:py-1 sm:pl-2.5 sm:pr-1">
           <span
             className={clsx(
               'pointer-events-none relative z-0 h-2 w-2 shrink-0 rounded-full',
-              isLiveAccount ? 'bg-buy shadow-[0_0_0_3px_rgba(34,160,107,0.2)]' : 'bg-link',
+              isLiveAccount
+                ? 'bg-buy shadow-[0_0_0_3px_rgba(34,160,107,0.2)]'
+                : 'bg-link shadow-[0_0_0_3px_rgba(96,165,250,0.2)]',
             )}
           />
           <div className="pointer-events-none relative z-0 min-w-0 pr-5 sm:pr-6">
-            <div className="h-8 max-w-[6.75rem] truncate pr-1 text-xs font-semibold leading-8 text-brand-ink sm:max-w-[9.5rem] sm:text-sm">
+            <div
+              className={clsx(
+                'h-8 max-w-[6.75rem] truncate pr-1 text-xs font-semibold leading-8 sm:max-w-[9.5rem] sm:text-sm',
+                isLiveAccount ? 'text-buy' : 'text-link',
+              )}
+            >
               {account
                 ? `${account.type === 'demo' ? 'Demo' : 'Live'}${
                     account.number ? ` · ${String(account.number).slice(-4)}` : ''
@@ -124,7 +131,10 @@ export function Header() {
           </div>
           <ChevronDown
             size={14}
-            className="pointer-events-none absolute right-1.5 top-1/2 z-0 -translate-y-1/2 text-text-secondary sm:right-2"
+            className={clsx(
+              'pointer-events-none absolute right-1.5 top-1/2 z-0 -translate-y-1/2 sm:right-2',
+              isLiveAccount ? 'text-buy' : 'text-link',
+            )}
             aria-hidden
           />
           <select
@@ -238,7 +248,7 @@ export function Header() {
           >
             <Bell size={18} strokeWidth={1.75} />
             {unreadCount > 0 ? (
-              <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-sell px-1 text-[10px] font-bold leading-none text-white sm:right-2 sm:top-2">
+              <span className="absolute right-[2px] top-[2px] flex h-4 min-w-4 items-center justify-center rounded-full bg-sell px-1 text-[10px] font-bold leading-none text-white">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             ) : null}
