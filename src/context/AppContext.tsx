@@ -21,7 +21,7 @@ import type {
   User,
 } from '../types'
 import { PREMIUM_THRESHOLD } from '../types'
-import { formatMoney, setPlatformCurrency } from '../data/mock'
+import { calcMargin, formatMoney, formatPrice, setPlatformCurrency } from '../data/mock'
 
 type ApiUser = User & {
   accounts?: TradingAccount[]
@@ -476,10 +476,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
       })
       await refreshAll()
       const lotLabel = Number.isInteger(input.volume) ? String(input.volume) : input.volume.toFixed(2)
+      const q = quotes.find((x) => x.symbol === selectedSymbol)
+      const price =
+        input.pending && input.triggerPrice != null
+          ? input.triggerPrice
+          : input.side === 'buy'
+            ? (q?.ask ?? q?.price)
+            : (q?.bid ?? q?.price)
+      const priceLabel = price != null ? formatPrice(price, selectedSymbol) : '—'
+      const margin = calcMargin(
+        {
+          volume: input.volume,
+          openPrice: price ?? q?.price ?? 0,
+          category: q?.category ?? 'forex',
+          symbol: selectedSymbol,
+        },
+        activeAccount?.leverage ?? '1:100',
+      )
       showToast(
         input.pending
-          ? `Pending ${input.side.toUpperCase()} · ${selectedSymbol} · ${lotLabel} lot`
-          : `${input.side.toUpperCase()} · ${selectedSymbol} · ${lotLabel} lot`,
+          ? `Pending ${input.side.toUpperCase()} ${selectedSymbol} @ ${priceLabel} · ${lotLabel} lot · ${formatMoney(margin)}`
+          : `${input.side.toUpperCase()} ${selectedSymbol} @ ${priceLabel} · ${lotLabel} lot · ${formatMoney(margin)}`,
       )
       return null
     } catch (e) {

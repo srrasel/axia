@@ -65,7 +65,7 @@ function ToggleSwitch({
       onClick={() => onChange(!checked)}
       className={clsx(
         'relative h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors',
-        checked ? 'bg-brand' : 'bg-border',
+        checked ? 'bg-[#22a06b]' : 'bg-border',
       )}
     >
       <span

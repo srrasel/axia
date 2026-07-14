@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
+  Bell,
   ChevronDown,
   CreditCard,
   Globe,
@@ -37,20 +38,24 @@ export function Header() {
     switchAccount,
     darkMode,
     setDarkMode,
-    liveData,
     user,
     language,
     setLanguage,
     logout,
+    notifications,
+    markNotificationsRead,
   } = useApp()
   const [time, setTime] = useState(() => new Date().toLocaleTimeString('en-GB'))
   const [langOpen, setLangOpen] = useState(false)
   const [userOpen, setUserOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const langRef = useRef<HTMLDivElement>(null)
+  const notifRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const account = accounts.find((a) => a.id === activeAccountId)
   const isLiveAccount = accountType === 'live'
+  const unreadCount = notifications.filter((n) => !n.read).length
 
   useEffect(() => {
     const tick = () =>
@@ -68,16 +73,18 @@ export function Header() {
   }, [])
 
   useEffect(() => {
-    if (!userOpen && !langOpen) return
+    if (!userOpen && !langOpen && !notifOpen) return
     const onDoc = (e: MouseEvent) => {
       const target = e.target as Node
       if (userOpen && userMenuRef.current && !userMenuRef.current.contains(target)) setUserOpen(false)
       if (langOpen && langRef.current && !langRef.current.contains(target)) setLangOpen(false)
+      if (notifOpen && notifRef.current && !notifRef.current.contains(target)) setNotifOpen(false)
     }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setUserOpen(false)
         setLangOpen(false)
+        setNotifOpen(false)
       }
     }
     document.addEventListener('mousedown', onDoc)
@@ -86,7 +93,7 @@ export function Header() {
       document.removeEventListener('mousedown', onDoc)
       document.removeEventListener('keydown', onKey)
     }
-  }, [userOpen, langOpen])
+  }, [userOpen, langOpen, notifOpen])
 
   return (
     <header className="panel relative z-40 flex h-14 shrink-0 items-center gap-1.5 border-b px-2 sm:h-16 sm:gap-3 sm:px-5">
@@ -150,18 +157,6 @@ export function Header() {
           value={metrics.usedFunds > 0 ? `${metrics.marginLevel.toFixed(2)}%` : '—'}
           className="positive"
         />
-        {isLiveAccount ? (
-          <span className="ml-1 inline-flex min-w-[4.25rem] shrink-0 items-center justify-center gap-1.5 rounded-full bg-buy/10 px-2.5 py-1 text-[10px] font-bold tracking-wide text-buy">
-            <span className="h-1.5 w-1.5 rounded-full bg-buy" />
-            LIVE
-            {!liveData ? <span className="font-medium opacity-70">· SIM</span> : null}
-          </span>
-        ) : (
-          <span className="ml-1 inline-flex min-w-[4.25rem] shrink-0 items-center justify-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold tracking-wide text-text-secondary">
-            <span className="h-1.5 w-1.5 rounded-full bg-link" />
-            DEMO
-          </span>
-        )}
       </div>
 
       <div className="min-w-0 flex-1 lg:hidden" aria-hidden />
@@ -199,6 +194,7 @@ export function Header() {
             onClick={() => {
               setLangOpen((v) => !v)
               setUserOpen(false)
+              setNotifOpen(false)
             }}
           >
             <Globe size={18} strokeWidth={1.75} />
@@ -210,7 +206,7 @@ export function Header() {
                   key={lang}
                   type="button"
                   className={clsx(
-                    'block w-full px-3.5 py-2.5 text-left text-sm transition-colors hover:bg-muted',
+                    'block w-full px-3.5 py-2.5 text-left text-sm transition-colors hover:bg-[#28303c]',
                     language === lang && 'font-semibold text-brand-ink',
                   )}
                   onClick={() => {
@@ -221,6 +217,81 @@ export function Header() {
                   {lang === 'en' ? 'English' : 'العربية'}
                 </button>
               ))}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="relative" ref={notifRef}>
+          <button
+            type="button"
+            aria-label="Notifications"
+            aria-expanded={notifOpen}
+            className={clsx(
+              'relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:h-10 sm:w-10',
+              notifOpen && 'bg-[#28303c] text-brand-ink',
+            )}
+            onClick={() => {
+              setNotifOpen((v) => !v)
+              setUserOpen(false)
+              setLangOpen(false)
+            }}
+          >
+            <Bell size={18} strokeWidth={1.75} />
+            {unreadCount > 0 ? (
+              <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-sell px-1 text-[10px] font-bold leading-none text-white sm:right-2 sm:top-2">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            ) : null}
+          </button>
+          {notifOpen ? (
+            <div className="panel absolute right-0 top-12 z-[60] w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border shadow-2xl sm:top-14">
+              <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                <div className="text-sm font-semibold">Notifications</div>
+                {unreadCount > 0 ? (
+                  <button
+                    type="button"
+                    className="text-xs font-medium text-[#fcd535] hover:underline"
+                    onClick={() => void markNotificationsRead()}
+                  >
+                    Mark all read
+                  </button>
+                ) : null}
+              </div>
+              <div className="max-h-[min(22rem,60vh)] overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <div className="px-4 py-10 text-center text-sm text-text-secondary">
+                    No notifications yet.
+                  </div>
+                ) : (
+                  notifications.slice(0, 8).map((n) => (
+                    <div
+                      key={n.id}
+                      className={clsx(
+                        'border-b border-border/70 px-4 py-3 last:border-b-0',
+                        !n.read && 'bg-[#28303c]/50',
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 text-sm font-medium text-text">{n.title}</div>
+                        <div className="shrink-0 text-[10px] text-text-secondary">{n.time}</div>
+                      </div>
+                      <p className="mt-1 line-clamp-2 text-xs text-text-secondary">{n.body}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="border-t border-border p-2">
+                <button
+                  type="button"
+                  className="w-full rounded-lg px-3 py-2 text-center text-sm font-medium text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink"
+                  onClick={() => {
+                    setNotifOpen(false)
+                    navigate('/notifications')
+                  }}
+                >
+                  View all notifications
+                </button>
+              </div>
             </div>
           ) : null}
         </div>
@@ -237,6 +308,7 @@ export function Header() {
             onClick={() => {
               setUserOpen((v) => !v)
               setLangOpen(false)
+              setNotifOpen(false)
             }}
           >
             <UserAvatar
@@ -367,11 +439,20 @@ function Metric({
 export function Toast() {
   const { toast, clearToast } = useApp()
   if (!toast) return null
+  const isBuy = /\bBUY\b/i.test(toast)
+  const isSell = /\bSELL\b/i.test(toast)
   return (
     <button
       type="button"
       onClick={clearToast}
-      className="toast pointer-events-auto fixed left-1/2 top-[max(1rem,env(safe-area-inset-top))] z-[100] max-w-[min(24rem,calc(100%-1.5rem))] -translate-x-1/2 rounded-xl border border-[#fcd535]/40 bg-[#181a20] px-5 py-2.5 text-sm font-medium text-[#fcd535] shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
+      className={clsx(
+        'toast pointer-events-auto fixed right-3 top-[max(4.25rem,calc(env(safe-area-inset-top)+3.75rem))] z-[100] max-w-[min(22rem,calc(100%-1.5rem))] rounded-xl border px-4 py-2.5 text-left text-sm font-medium shadow-[0_8px_24px_rgba(0,0,0,0.45)] sm:right-5',
+        isBuy
+          ? 'border-buy/40 bg-[#181a20] text-buy'
+          : isSell
+            ? 'border-sell/40 bg-[#181a20] text-sell'
+            : 'border-[#fcd535]/40 bg-[#181a20] text-[#fcd535]',
+      )}
     >
       {toast}
     </button>

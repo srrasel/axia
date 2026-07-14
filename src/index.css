@@ -185,16 +185,16 @@ select:-webkit-autofill {
 }
 
 .toast {
-  animation: toast-in 0.28s ease;
+  animation: toast-in-right 0.28s ease;
 }
 
-@keyframes toast-in {
+@keyframes toast-in-right {
   from {
-    transform: translate(-50%, -12px);
+    transform: translateX(12px);
     opacity: 0;
   }
   to {
-    transform: translate(-50%, 0);
+    transform: translateX(0);
     opacity: 1;
   }
 }
