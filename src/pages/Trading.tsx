@@ -172,7 +172,7 @@ function MobileSheet({
       <div className="absolute inset-x-0 bottom-0 flex max-h-[min(92dvh,100%)] flex-col overflow-hidden rounded-t-2xl border-t border-border bg-panel shadow-2xl pb-[max(5px,env(safe-area-inset-bottom))]">
         <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border" aria-hidden />
         <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-          <h3 className="text-sm font-semibold">{title}</h3>
+          <h3 className="text-[20px] font-semibold">{title}</h3>
           <button
             type="button"
             onClick={onClose}
