@@ -96,32 +96,43 @@ export function Header() {
 
       {/* Demo / Live account switch — compact on mobile, full on desktop */}
       <div className="relative min-w-0 shrink-0">
-        <div className="flex items-center gap-1.5 rounded-xl border border-border bg-muted/40 py-0.5 pl-2 pr-0.5 sm:gap-2.5 sm:py-1 sm:pl-2.5 sm:pr-1">
+        <div className="relative flex cursor-pointer items-center gap-1.5 rounded-xl border border-border py-0.5 pl-2 pr-0.5 sm:gap-2.5 sm:py-1 sm:pl-2.5 sm:pr-1">
           <span
             className={clsx(
-              'h-2 w-2 shrink-0 rounded-full',
+              'pointer-events-none relative z-0 h-2 w-2 shrink-0 rounded-full',
               isLiveAccount ? 'bg-buy shadow-[0_0_0_3px_rgba(34,160,107,0.2)]' : 'bg-link',
             )}
           />
-          <div className="min-w-0">
-            <select
-              aria-label="Switch demo or live account"
-              className="h-8 max-w-[6.75rem] appearance-none bg-transparent pr-4 text-xs font-semibold text-brand-ink outline-none sm:max-w-[9.5rem] sm:pr-5 sm:text-sm"
-              value={activeAccountId}
-              onChange={(e) => switchAccount(e.target.value)}
-            >
-              {accounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.type === 'demo' ? 'Demo' : 'Live'}
-                  {a.number ? ` · ${String(a.number).slice(-4)}` : ''}
-                </option>
-              ))}
-            </select>
+          <div className="pointer-events-none relative z-0 min-w-0 pr-5 sm:pr-6">
+            <div className="h-8 max-w-[6.75rem] truncate pr-1 text-xs font-semibold leading-8 text-brand-ink sm:max-w-[9.5rem] sm:text-sm">
+              {account
+                ? `${account.type === 'demo' ? 'Demo' : 'Live'}${
+                    account.number ? ` · ${String(account.number).slice(-4)}` : ''
+                  }`
+                : 'Account'}
+            </div>
             <div className="hidden truncate text-[10px] leading-none text-text-secondary sm:block">
               ID {account?.number || account?.id}
             </div>
           </div>
-          <ChevronDown size={14} className="pointer-events-none mr-1 text-text-secondary sm:mr-1.5" />
+          <ChevronDown
+            size={14}
+            className="pointer-events-none absolute right-1.5 top-1/2 z-0 -translate-y-1/2 text-text-secondary sm:right-2"
+            aria-hidden
+          />
+          <select
+            aria-label="Switch demo or live account"
+            className="absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none opacity-0"
+            value={activeAccountId}
+            onChange={(e) => switchAccount(e.target.value)}
+          >
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.type === 'demo' ? 'Demo' : 'Live'}
+                {a.number ? ` · ${String(a.number).slice(-4)}` : ''}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -171,7 +182,7 @@ export function Header() {
         <button
           type="button"
           aria-label="Toggle theme"
-          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-muted hover:text-brand-ink sm:h-10 sm:w-10"
+          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:h-10 sm:w-10"
           onClick={() => setDarkMode(!darkMode)}
         >
           {darkMode ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
@@ -182,8 +193,8 @@ export function Header() {
             type="button"
             aria-label="Language"
             className={clsx(
-              'flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-muted hover:text-brand-ink sm:h-10 sm:w-10',
-              langOpen && 'bg-muted text-brand-ink',
+              'flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:h-10 sm:w-10',
+              langOpen && 'bg-[#28303c] text-brand-ink',
             )}
             onClick={() => {
               setLangOpen((v) => !v)
@@ -220,15 +231,21 @@ export function Header() {
             aria-label="User menu"
             aria-expanded={userOpen}
             className={clsx(
-              'flex cursor-pointer items-center rounded-full bg-transparent p-1.5 transition-colors hover:bg-[#29313d]',
-              userOpen && 'bg-[#29313d]',
+              'flex cursor-pointer items-center rounded-full bg-transparent p-1.5 transition-colors hover:bg-[#28303c]',
+              userOpen && 'bg-[#28303c]',
             )}
             onClick={() => {
               setUserOpen((v) => !v)
               setLangOpen(false)
             }}
           >
-            <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={40} plain />
+            <UserAvatar
+              photoUrl={user?.photoUrl}
+              name={user?.name}
+              size={40}
+              plain
+              className="border border-[#28303c]"
+            />
           </button>
           {userOpen ? (
             <div className="panel absolute right-0 top-12 z-[60] w-[min(18rem,calc(100%-1rem))] overflow-hidden rounded-2xl border shadow-2xl sm:top-14 sm:w-72">
