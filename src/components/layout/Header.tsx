@@ -165,7 +165,7 @@ export function Header() {
         <button
           type="button"
           onClick={() => navigate('/account/deposit')}
-          className="auth-btn h-9 shrink-0 cursor-pointer rounded-xl bg-[#fcd535] px-2.5 text-sm font-semibold !text-[#202630] transition-colors hover:bg-[#ceaf30] sm:h-10 sm:px-4"
+          className="auth-btn h-9 shrink-0 cursor-pointer rounded-[8px] bg-[#fcd535] px-2.5 text-sm font-semibold !text-[#202630] transition-colors hover:bg-[#ceaf30] sm:h-10 sm:px-4"
         >
           Deposit
         </button>
