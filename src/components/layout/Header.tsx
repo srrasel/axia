@@ -321,8 +321,8 @@ export function Header() {
             />
           </button>
           {userOpen ? (
-            <div className="panel fixed right-[5px] top-[3.5rem] z-[60] w-[calc(100vw-10px)] max-w-[18rem] overflow-hidden rounded-2xl border shadow-2xl sm:absolute sm:right-0 sm:top-14 sm:w-72 sm:max-w-none">
-              <div className="flex items-center gap-3 border-b border-border px-4 py-3.5">
+            <div className="panel fixed right-[5px] top-[3.5rem] z-[60] flex max-h-[calc(100dvh-4.5rem)] w-[calc(100vw-10px)] max-w-[18rem] flex-col overflow-hidden rounded-2xl border shadow-2xl sm:absolute sm:right-0 sm:top-14 sm:max-h-[min(32rem,calc(100dvh-5rem))] sm:w-72 sm:max-w-none">
+              <div className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3.5">
                 <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={44} plain />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-semibold text-text">{user?.name}</div>
@@ -335,75 +335,77 @@ export function Header() {
                   </div>
                 </div>
               </div>
-              <div className="border-b border-border px-3 py-3">
-                <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-text-secondary">
-                  Trading account
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
+                <div className="border-b border-border px-3 py-3">
+                  <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-text-secondary">
+                    Trading account
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {accounts.map((a) => {
+                      const active = a.id === activeAccountId
+                      const live = a.type === 'live'
+                      return (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={() => {
+                            switchAccount(a.id)
+                            setUserOpen(false)
+                          }}
+                          className={clsx(
+                            'rounded-xl border px-3 py-2.5 text-left transition-colors',
+                            active
+                              ? live
+                                ? 'border-buy bg-buy/10'
+                                : 'border-link bg-link/10'
+                              : 'border-border hover:bg-[#29313d]',
+                          )}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className={clsx('h-1.5 w-1.5 rounded-full', live ? 'bg-buy' : 'bg-link')}
+                            />
+                            <span className="text-xs font-semibold">{live ? 'Live' : 'Demo'}</span>
+                          </div>
+                          <div className="mt-0.5 truncate text-[10px] text-text-secondary">
+                            #{a.number || a.id}
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {accounts.map((a) => {
-                    const active = a.id === activeAccountId
-                    const live = a.type === 'live'
-                    return (
-                      <button
-                        key={a.id}
-                        type="button"
-                        onClick={() => {
-                          switchAccount(a.id)
-                          setUserOpen(false)
-                        }}
-                        className={clsx(
-                          'rounded-xl border px-3 py-2.5 text-left transition-colors',
-                          active
-                            ? live
-                              ? 'border-buy bg-buy/10'
-                              : 'border-link bg-link/10'
-                            : 'border-border hover:bg-[#29313d]',
-                        )}
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className={clsx('h-1.5 w-1.5 rounded-full', live ? 'bg-buy' : 'bg-link')}
-                          />
-                          <span className="text-xs font-semibold">{live ? 'Live' : 'Demo'}</span>
-                        </div>
-                        <div className="mt-0.5 truncate text-[10px] text-text-secondary">
-                          #{a.number || a.id}
-                        </div>
-                      </button>
-                    )
-                  })}
+                <div className="py-1.5">
+                  {userMenu.map(({ to, icon: Icon, label }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      onClick={() => setUserOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-[#29313d] hover:text-brand-ink"
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center text-brand-ink">
+                        <Icon size={18} strokeWidth={1.75} />
+                      </span>
+                      {label}
+                    </Link>
+                  ))}
                 </div>
-              </div>
-              <div className="py-1.5">
-                {userMenu.map(({ to, icon: Icon, label }) => (
-                  <Link
-                    key={to}
-                    to={to}
-                    onClick={() => setUserOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-[#29313d] hover:text-brand-ink"
+                <div className="border-t border-border py-1.5">
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-sell transition-colors hover:bg-[#29313d]"
+                    onClick={() => {
+                      setUserOpen(false)
+                      logout()
+                      navigate('/login')
+                    }}
                   >
-                    <span className="flex h-9 w-9 items-center justify-center text-brand-ink">
-                      <Icon size={18} strokeWidth={1.75} />
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-sell/10">
+                      <LogOut size={18} strokeWidth={1.75} />
                     </span>
-                    {label}
-                  </Link>
-                ))}
-              </div>
-              <div className="border-t border-border py-1.5">
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-sell transition-colors hover:bg-[#29313d]"
-                  onClick={() => {
-                    setUserOpen(false)
-                    logout()
-                    navigate('/login')
-                  }}
-                >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-sell/10">
-                    <LogOut size={18} strokeWidth={1.75} />
-                  </span>
-                  Sign out
-                </button>
+                    Sign out
+                  </button>
+                </div>
               </div>
             </div>
           ) : null}
