@@ -108,6 +108,21 @@ html.dark ::-webkit-scrollbar-thumb {
   background: #3a4250;
 }
 
+@media (max-width: 767px) {
+  ::-webkit-scrollbar {
+    width: 1px;
+    height: 1px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 1px;
+  }
+
+  * {
+    scrollbar-width: thin;
+  }
+}
+
 .positive {
   color: var(--color-buy);
 }
