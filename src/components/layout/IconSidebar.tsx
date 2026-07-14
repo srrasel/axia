@@ -80,7 +80,7 @@ function RailLink({
         ? createPortal(
             <span
               role="tooltip"
-              className="pointer-events-none fixed z-[200] -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#29313d] p-[5px] text-[13px] font-semibold leading-none text-white shadow-md"
+              className="pointer-events-none fixed z-[200] -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#29313d] p-[10px] text-[13px] font-semibold leading-none text-white shadow-md"
               style={{ top: tip.top, left: tip.left }}
             >
               {label}

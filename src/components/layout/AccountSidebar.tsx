@@ -4,7 +4,6 @@ import {
   CreditCard,
   FileText,
   History,
-  LogOut,
   Smartphone,
   User,
   Users,
@@ -22,10 +21,10 @@ const links = [
   { to: '/account/details', icon: User, label: 'Account details' },
   { to: '/account/manage', icon: Layers, label: 'Manage accounts' },
   { to: '/account/transactions', icon: History, label: 'Transactions history' },
-  { to: '/account/verification', icon: ShieldCheck, label: 'Verification center', badgeKey: 'kyc' as const },
-  { to: '/account/withdraw', icon: Wallet, label: 'Withdraw' },
-  { to: '/account/invite', icon: Users, label: 'Invite a friend' },
   { to: '/account/deposit', icon: CreditCard, label: 'Deposit' },
+  { to: '/account/withdraw', icon: Wallet, label: 'Withdraw' },
+  { to: '/account/verification', icon: ShieldCheck, label: 'Verification center', badgeKey: 'kyc' as const },
+  { to: '/account/invite', icon: Users, label: 'Invite a friend' },
   { to: '/account/questionnaire', icon: FileText, label: 'View Questionnaire' },
   { to: '/account/mobile', icon: Smartphone, label: 'Get mobile app' },
 ]
@@ -36,7 +35,7 @@ type Props = {
 }
 
 function SidebarBody({ onClose, showClose }: { onClose?: () => void; showClose?: boolean }) {
-  const { user, logout, accounts, accountType } = useApp()
+  const { user, accounts, accountType } = useApp()
   const navigate = useNavigate()
   const isLiveAccount = accountType === 'live'
   const live = accounts.filter((a) => a.type === 'live').length
@@ -118,23 +117,6 @@ function SidebarBody({ onClose, showClose }: { onClose?: () => void; showClose?:
           )
         })}
       </nav>
-
-      <div className="border-t border-border py-1.5">
-        <button
-          type="button"
-          onClick={() => {
-            logout()
-            close()
-            navigate('/login')
-          }}
-          className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-sell transition-colors hover:bg-[#29313d]"
-        >
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-sell/10">
-            <LogOut size={18} strokeWidth={1.75} />
-          </span>
-          Sign out
-        </button>
-      </div>
     </>
   )
 }
