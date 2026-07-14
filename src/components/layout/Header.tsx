@@ -83,7 +83,7 @@ export function Header() {
   }, [userOpen, langOpen, notifOpen])
 
   return (
-    <header className="panel relative z-40 flex h-14 shrink-0 items-center gap-1.5 border-b px-2 sm:h-16 sm:gap-3 sm:px-5">
+    <header className="panel relative z-40 flex h-14 shrink-0 items-center gap-1.5 border-b pl-[5px] pr-2 sm:h-16 sm:gap-3 sm:px-5">
       <Link to="/platform" className="flex shrink-0 items-center pr-[5px]">
         <BrandLogo className="h-9 sm:h-10" />
       </Link>
@@ -180,7 +180,7 @@ export function Header() {
           {darkMode ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
         </button>
 
-        <div className="relative" ref={langRef}>
+        <div className="relative hidden sm:block" ref={langRef}>
           <button
             type="button"
             aria-label="Language"
@@ -317,10 +317,10 @@ export function Header() {
             />
           </button>
           {userOpen ? (
-            <div className="panel absolute right-0 top-12 z-[60] w-[min(18rem,calc(100%-1rem))] overflow-hidden rounded-2xl border shadow-2xl sm:top-14 sm:w-72">
-              <div className="flex items-center gap-3 border-b border-border bg-muted/40 px-4 py-3.5">
-                <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={44} />
-                <div className="min-w-0">
+            <div className="panel fixed right-[5px] top-[3.5rem] z-[60] w-[calc(100vw-10px)] max-w-[18rem] overflow-hidden rounded-2xl border shadow-2xl sm:absolute sm:right-0 sm:top-14 sm:w-72 sm:max-w-none">
+              <div className="flex items-center gap-3 border-b border-border px-4 py-3.5">
+                <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={44} plain />
+                <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-semibold text-text">{user?.name}</div>
                   <div className="truncate text-xs text-text-secondary">{user?.email}</div>
                   <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-panel px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-text-secondary ring-1 ring-border">

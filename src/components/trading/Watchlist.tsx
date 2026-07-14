@@ -25,7 +25,6 @@ const CATEGORIES: Array<{ key: CategoryKey; label: string }> = [
   { key: 'commodity', label: 'Commodities' },
   { key: 'crypto', label: 'Crypto' },
   { key: 'arabian', label: 'Arabian Markets' },
-  { key: 'favorites', label: 'Favorites' },
 ]
 
 function loadFavorites(): string[] {
@@ -100,7 +99,7 @@ export function Watchlist({
             <ChevronDown size={14} className={clsx('text-text-secondary transition', openMenu && 'rotate-180')} />
           </button>
           {openMenu ? (
-            <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-md border border-border bg-panel shadow-lg">
+            <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-md border border-border bg-[#1e2023] shadow-lg">
               {CATEGORIES.map((c) => (
                 <button
                   key={c.key}
@@ -115,9 +114,6 @@ export function Watchlist({
                   }}
                 >
                   {c.label}
-                  {c.key === 'favorites' ? (
-                    <span className="ml-auto text-[10px] text-text-secondary">{favorites.length}</span>
-                  ) : null}
                 </button>
               ))}
             </div>
