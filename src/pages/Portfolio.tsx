@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Bar,
   BarChart,
@@ -10,14 +10,169 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { calcPnl, formatMoney, formatPrice } from '../data/mock'
 import { TradingJournal } from '../components/portfolio/TradingJournal'
 import { TradingCalendar } from '../components/portfolio/TradingCalendar'
 import clsx from 'clsx'
+import type { Quote, Trade } from '../types'
 
 type Section = 'portfolio' | 'journal' | 'calendar'
+
+const PAGE_SIZE = 10
+
+function CategoryTradesTable({ list, quotes }: { list: Trade[]; quotes: Quote[] }) {
+  const [page, setPage] = useState(1)
+  const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE))
+  const listKey = useMemo(() => list.map((t) => t.id).join(','), [list])
+
+  useEffect(() => {
+    setPage(1)
+  }, [listKey])
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages)
+  }, [page, totalPages])
+
+  const pageItems = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE
+    return list.slice(start, start + PAGE_SIZE)
+  }, [list, page])
+
+  const from = list.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
+  const to = Math.min(page * PAGE_SIZE, list.length)
+
+  const pageButtons = useMemo(() => {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1)
+    const pages = new Set(
+      [1, totalPages, page, page - 1, page + 1].filter((p) => p >= 1 && p <= totalPages),
+    )
+    return Array.from(pages).sort((a, b) => a - b)
+  }, [page, totalPages])
+
+  return (
+    <>
+      <div className="overflow-x-auto [scrollbar-gutter:stable]">
+        <table className="w-full min-w-[640px] table-fixed text-sm">
+          <colgroup>
+            <col className="w-[22%]" />
+            <col className="w-[16%]" />
+            <col className="w-[22%]" />
+            <col className="w-[10%]" />
+            <col className="w-[12%]" />
+            <col className="w-[18%]" />
+          </colgroup>
+          <thead className="bg-transparent text-[14px] text-text-secondary">
+            <tr>
+              <th className="border-0 px-4 py-2 text-left font-medium">Symbol</th>
+              <th className="border-0 px-4 py-2 text-left font-medium">Order ID</th>
+              <th className="border-0 px-4 py-2 text-left font-medium">Open Time</th>
+              <th className="border-0 px-4 py-2 text-left font-medium">Type</th>
+              <th className="border-0 px-4 py-2 text-left font-medium">Volume</th>
+              <th className="border-0 px-4 py-2 text-right font-medium">P&L</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pageItems.map((t) => {
+              const q = quotes.find((x) => x.symbol === t.symbol)
+              const pnl = calcPnl(t)
+              const pct = q?.percentChange ?? 0
+              return (
+                <tr key={t.id} className="border-t border-border">
+                  <td className="overflow-hidden px-4 py-2">
+                    <div className="truncate font-semibold">{t.symbol}</div>
+                    <div
+                      className={clsx(
+                        'truncate text-[11px] tabular-nums',
+                        pct >= 0 ? 'positive' : 'negative',
+                      )}
+                    >
+                      {formatPrice(t.currentPrice, t.symbol)} ({pct >= 0 ? '+' : ''}
+                      {pct.toFixed(2)}%)
+                    </div>
+                  </td>
+                  <td className="truncate px-4 py-2 tabular-nums">#{t.id}</td>
+                  <td className="truncate px-4 py-2 tabular-nums">{t.openTime}</td>
+                  <td className="px-4 py-2">
+                    <span
+                      className={clsx(
+                        'rounded px-2 py-0.5 text-xs font-semibold capitalize',
+                        t.side === 'buy' ? 'bg-buy/10 text-buy' : 'bg-sell/10 text-sell',
+                      )}
+                    >
+                      {t.side}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 tabular-nums">{t.volume} Lot</td>
+                  <td
+                    className={clsx(
+                      'px-4 py-2 text-right font-semibold tabular-nums',
+                      pnl >= 0 ? 'positive' : 'negative',
+                    )}
+                  >
+                    {formatMoney(pnl)}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {list.length > PAGE_SIZE ? (
+        <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs tabular-nums text-text-secondary">
+            Showing <span className="font-medium text-text">{from}</span>–
+            <span className="font-medium text-text">{to}</span> of{' '}
+            <span className="font-medium text-text">{list.length}</span>
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              aria-label="Previous page"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-[#29313d] hover:text-text disabled:pointer-events-none disabled:opacity-40"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            {pageButtons.map((p, i) => {
+              const prev = pageButtons[i - 1]
+              const showEllipsis = prev != null && p - prev > 1
+              return (
+                <span key={p} className="contents">
+                  {showEllipsis ? <span className="px-1 text-xs text-text-secondary">…</span> : null}
+                  <button
+                    type="button"
+                    onClick={() => setPage(p)}
+                    className={clsx(
+                      'inline-flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm font-medium tabular-nums transition-colors',
+                      p === page
+                        ? 'bg-[#29313d] text-text'
+                        : 'text-text-secondary hover:bg-[#29313d] hover:text-text',
+                    )}
+                  >
+                    {p}
+                  </button>
+                </span>
+              )
+            })}
+            <button
+              type="button"
+              aria-label="Next page"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-[#29313d] hover:text-text disabled:pointer-events-none disabled:opacity-40"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </>
+  )
+}
 
 export function PortfolioPage() {
   const [section, setSection] = useState<Section>('portfolio')
@@ -86,9 +241,9 @@ export function PortfolioPage() {
             type="button"
             onClick={() => setSection(item.id)}
             className={clsx(
-              'mx-1 my-2 shrink-0 rounded-md px-3 py-2.5 text-left text-sm transition-colors md:mx-2 md:my-0 md:mt-1 first:md:mt-3',
+              'mx-1 my-2 shrink-0 rounded-md px-3 py-2.5 text-left text-sm font-medium transition-colors md:mx-2 md:my-0 md:mt-1 first:md:mt-3',
               section === item.id
-                ? 'bg-sidebar-active font-semibold text-brand-ink'
+                ? 'bg-sidebar-active text-brand-ink'
                 : 'text-text-secondary hover:bg-muted hover:text-brand-ink',
             )}
           >
@@ -129,7 +284,14 @@ export function PortfolioPage() {
                   <div className="relative mx-auto h-40 w-40 overflow-hidden">
                     <ResponsiveContainer width="100%" height="100%" debounce={80}>
                       <PieChart>
-                        <Pie data={allocation} dataKey="value" innerRadius={48} outerRadius={70} paddingAngle={2} isAnimationActive={false}>
+                        <Pie
+                          data={allocation}
+                          dataKey="value"
+                          innerRadius={48}
+                          outerRadius={70}
+                          paddingAngle={2}
+                          isAnimationActive={false}
+                        >
                           {allocation.map((a) => (
                             <Cell key={a.name} fill={a.color} />
                           ))}
@@ -190,80 +352,13 @@ export function PortfolioPage() {
                 <div key={cat} className="overflow-hidden rounded-lg border border-border bg-panel">
                   <button
                     type="button"
-                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold capitalize"
+                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-[16px] font-semibold capitalize"
                     onClick={() => setExpanded((e) => ({ ...e, [cat]: !e[cat] }))}
                   >
                     {expanded[cat] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                     {cat} ({list.length} Trades)
                   </button>
-                  {expanded[cat] ? (
-                    <div className="overflow-x-auto [scrollbar-gutter:stable]">
-                      <table className="w-full min-w-[640px] table-fixed text-sm">
-                        <colgroup>
-                          <col className="w-[22%]" />
-                          <col className="w-[16%]" />
-                          <col className="w-[22%]" />
-                          <col className="w-[10%]" />
-                          <col className="w-[12%]" />
-                          <col className="w-[18%]" />
-                        </colgroup>
-                        <thead className="bg-transparent text-[16px] text-text-secondary">
-                          <tr>
-                            <th className="border-0 px-4 py-2 text-left font-medium">Symbol</th>
-                            <th className="border-0 px-4 py-2 text-left font-medium">Order ID</th>
-                            <th className="border-0 px-4 py-2 text-left font-medium">Open Time</th>
-                            <th className="border-0 px-4 py-2 text-left font-medium">Type</th>
-                            <th className="border-0 px-4 py-2 text-left font-medium">Volume</th>
-                            <th className="border-0 px-4 py-2 text-right font-medium">P&L</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {list.map((t) => {
-                            const q = quotes.find((x) => x.symbol === t.symbol)
-                            const pnl = calcPnl(t)
-                            const pct = q?.percentChange ?? 0
-                            return (
-                              <tr key={t.id} className="border-t border-border">
-                                <td className="overflow-hidden px-4 py-2">
-                                  <div className="truncate font-semibold">{t.symbol}</div>
-                                  <div
-                                    className={clsx(
-                                      'truncate text-[11px] tabular-nums',
-                                      pct >= 0 ? 'positive' : 'negative',
-                                    )}
-                                  >
-                                    {formatPrice(t.currentPrice, t.symbol)} ({pct >= 0 ? '+' : ''}
-                                    {pct.toFixed(2)}%)
-                                  </div>
-                                </td>
-                                <td className="truncate px-4 py-2 tabular-nums">#{t.id}</td>
-                                <td className="truncate px-4 py-2 tabular-nums">{t.openTime}</td>
-                                <td className="px-4 py-2">
-                                  <span
-                                    className={clsx(
-                                      'rounded px-2 py-0.5 text-xs font-semibold capitalize',
-                                      t.side === 'buy' ? 'bg-buy/10 text-buy' : 'bg-sell/10 text-sell',
-                                    )}
-                                  >
-                                    {t.side}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-2 tabular-nums">{t.volume} Lot</td>
-                                <td
-                                  className={clsx(
-                                    'px-4 py-2 text-right font-semibold tabular-nums',
-                                    pnl >= 0 ? 'positive' : 'negative',
-                                  )}
-                                >
-                                  {formatMoney(pnl)}
-                                </td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : null}
+                  {expanded[cat] ? <CategoryTradesTable list={list} quotes={quotes} /> : null}
                 </div>
               ))}
               {filteredOpen.length === 0 ? (

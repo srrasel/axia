@@ -122,7 +122,7 @@ export function LeaderboardPage() {
       <p className="mt-1 text-sm text-text-secondary">Demo rankings for social trading</p>
       <div className="mt-5 overflow-auto rounded-lg border border-border">
         <table className="w-full text-left text-sm">
-          <thead className="bg-transparent text-[16px] text-text-secondary">
+          <thead className="bg-transparent text-[14px] text-text-secondary">
             <tr>
               <th className="border-0 px-4 py-2 font-medium">Rank</th>
               <th className="border-0 px-4 py-2 font-medium">Trader</th>

@@ -44,7 +44,7 @@ export function TradesTable() {
 
       <div className="flex-1 overflow-auto">
         <table className="w-full min-w-[1100px] text-left text-sm">
-          <thead className="sticky top-0 bg-transparent text-[16px] text-text-secondary">
+          <thead className="sticky top-0 z-10 bg-[#29313d] text-[14px] text-text-secondary">
             <tr>
               <th className="border-0 px-3 py-2 font-medium">Order</th>
               <th className="border-0 px-3 py-2 font-medium">Asset</th>

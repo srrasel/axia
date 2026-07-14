@@ -220,15 +220,15 @@ export function Header() {
             aria-label="User menu"
             aria-expanded={userOpen}
             className={clsx(
-              'flex cursor-pointer items-center rounded-full p-0.5 transition-colors hover:bg-muted',
-              userOpen && 'bg-muted',
+              'flex cursor-pointer items-center rounded-full bg-transparent p-1.5 transition-colors hover:bg-[#29313d]',
+              userOpen && 'bg-[#29313d]',
             )}
             onClick={() => {
               setUserOpen((v) => !v)
               setLangOpen(false)
             }}
           >
-            <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={40} ring />
+            <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={40} plain />
           </button>
           {userOpen ? (
             <div className="panel absolute right-0 top-12 z-[60] w-[min(18rem,calc(100%-1rem))] overflow-hidden rounded-2xl border shadow-2xl sm:top-14 sm:w-72">
@@ -292,7 +292,7 @@ export function Header() {
                     onClick={() => setUserOpen(false)}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-[#29313d] hover:text-brand-ink"
                   >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-brand-ink">
+                    <span className="flex h-9 w-9 items-center justify-center text-brand-ink">
                       <Icon size={18} strokeWidth={1.75} />
                     </span>
                     {label}
@@ -333,9 +333,16 @@ function Metric({
   className?: string
 }) {
   return (
-    <div className="min-w-[4.75rem] shrink-0 rounded-lg px-2.5 py-1.5 xl:min-w-[5.25rem] xl:px-3">
-      <div className="text-[10px] font-medium uppercase tracking-wide text-text-secondary">{label}</div>
-      <div className={`truncate text-sm font-semibold tabular-nums leading-tight ${className}`}>{value}</div>
+    <div className="w-[6.75rem] shrink-0 rounded-lg px-2 py-1.5 xl:w-[7.5rem] xl:px-2.5">
+      <div className="truncate text-[10px] font-medium uppercase tracking-wide text-text-secondary">{label}</div>
+      <div
+        className={clsx(
+          'mt-0.5 block w-full truncate text-sm font-semibold leading-tight tabular-nums',
+          className,
+        )}
+      >
+        {value}
+      </div>
     </div>
   )
 }

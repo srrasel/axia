@@ -93,7 +93,7 @@ export function Watchlist({
         <div className="relative mt-3">
           <button
             type="button"
-            className="flex h-9 w-full items-center justify-between rounded-md border border-border bg-panel px-3 text-[14px] font-semibold transition-colors hover:border-[#F0B90B]"
+            className="flex h-9 w-full items-center justify-between rounded-md border border-border bg-panel px-3 text-[16px] font-semibold transition-colors hover:border-[#F0B90B] hover:bg-[#29313d]"
             onClick={() => setOpenMenu((v) => !v)}
           >
             <span>{activeLabel}</span>
@@ -106,8 +106,8 @@ export function Watchlist({
                   key={c.key}
                   type="button"
                   className={clsx(
-                    'flex w-full px-3 py-2 text-left text-[14px] hover:bg-muted',
-                    category === c.key && 'bg-muted font-semibold',
+                    'flex w-full px-3 py-2 text-left text-[16px] transition-colors hover:bg-[#29313d]',
+                    category === c.key && 'bg-[#29313d] font-semibold',
                   )}
                   onClick={() => {
                     setCategory(c.key)

@@ -1,3 +1,5 @@
+import { useState, type FocusEvent, type MouseEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { NavLink } from 'react-router-dom'
 import {
   BarChart3,
@@ -38,49 +40,67 @@ function RailLink({
   label: string
   icon: typeof LineChart
 }) {
+  const [tip, setTip] = useState<{ top: number; left: number } | null>(null)
+
+  const showTip = (e: MouseEvent<HTMLAnchorElement> | FocusEvent<HTMLAnchorElement>) => {
+    const r = e.currentTarget.getBoundingClientRect()
+    setTip({ top: r.top + r.height / 2, left: r.right + 8 })
+  }
+
+  const hideTip = () => setTip(null)
+
   return (
-    <NavLink
-      to={to}
-      end={end}
-      aria-label={label}
-      className={({ isActive }) =>
-        clsx(
-          'group relative mb-[10px] flex shrink-0 items-center justify-center rounded-full p-[10px] transition-colors last:mb-0',
-          'text-text-secondary hover:bg-sidebar-active hover:text-brand-ink',
-          isActive && 'bg-sidebar-active text-brand-ink',
-        )
-      }
-    >
-      {({ isActive }) => (
-        <>
-          {isActive ? (
-            <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r bg-link" />
-          ) : null}
-          <Icon size={ICON_PX} strokeWidth={1.75} className="h-6 w-6" />
-          <span
-            className={clsx(
-              'pointer-events-none absolute left-full top-1/2 z-50 ml-2.5 -translate-y-1/2',
-              'whitespace-nowrap rounded-2xl bg-black px-3.5 py-2 text-sm font-semibold text-white shadow-lg',
-              'opacity-0 transition-opacity duration-150 group-hover:opacity-100',
-            )}
-          >
-            {label}
-          </span>
-        </>
-      )}
-    </NavLink>
+    <>
+      <NavLink
+        to={to}
+        end={end}
+        aria-label={label}
+        onMouseEnter={showTip}
+        onMouseLeave={hideTip}
+        onFocus={showTip}
+        onBlur={hideTip}
+        className={({ isActive }) =>
+          clsx(
+            'relative mb-[10px] flex shrink-0 items-center justify-center rounded-full p-[10px] transition-colors last:mb-0',
+            'text-text-secondary hover:bg-sidebar-active hover:text-brand-ink',
+            isActive && 'bg-sidebar-active text-white',
+          )
+        }
+      >
+        {({ isActive }) => (
+          <>
+            {isActive ? (
+              <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r bg-[#fcd535]" />
+            ) : null}
+            <Icon size={ICON_PX} strokeWidth={1.75} className="h-6 w-6" />
+          </>
+        )}
+      </NavLink>
+      {tip
+        ? createPortal(
+            <span
+              role="tooltip"
+              className="pointer-events-none fixed z-[200] -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#29313d] p-[5px] text-[13px] font-semibold leading-none text-white shadow-md"
+              style={{ top: tip.top, left: tip.left }}
+            >
+              {label}
+            </span>,
+            document.body,
+          )
+        : null}
+    </>
   )
 }
 
 export function IconSidebar() {
   return (
     <>
-      {/* Desktop / tablet: 10px + 24px icon + 10px padding ≈ 44–64 */}
+      {/* Desktop / tablet */}
       <aside
-        className="panel hidden w-[64px] shrink-0 flex-col items-center overflow-x-clip overflow-y-auto border-r py-[10px] md:flex"
+        className="panel hidden w-[64px] shrink-0 flex-col items-center overflow-y-auto border-r py-[10px] md:flex"
         aria-label="Main navigation"
       >
-        <nav className="flex w-full flex-1 flex-col items-center overflow-visible px-[10px]">
+        <nav className="flex w-full flex-1 flex-col items-center px-[10px]">
           {items.map(({ to, icon, label, end }) => (
             <RailLink key={to} to={to} end={end} label={label} icon={icon} />
           ))}
@@ -104,7 +124,7 @@ export function IconSidebar() {
             className={({ isActive }) =>
               clsx(
                 'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-text-secondary',
-                isActive && 'text-brand-ink',
+                isActive && 'text-white',
               )
             }
           >

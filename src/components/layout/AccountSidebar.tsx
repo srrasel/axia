@@ -68,13 +68,13 @@ function SidebarBody({ onClose, showClose }: { onClose?: () => void; showClose?:
           close()
           navigate('/platform')
         }}
-        className="mx-2 mt-3 mb-3 flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-muted/60 px-3 py-3 text-sm font-medium text-text-secondary transition-colors hover:bg-[#29313d] hover:text-brand-ink"
+        className="auth-btn mx-2 mt-3 mb-3 flex w-[calc(100%-1rem)] cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#fcd535] px-3 py-3 text-[15px] font-semibold tracking-wide !text-[#202630] transition-colors duration-200 hover:bg-[#ceaf30]"
       >
         <ArrowLeft size={16} /> To Platform
       </button>
 
-      <div className="mx-2 mb-1 flex items-center gap-3 rounded-xl border border-border bg-muted/40 px-3 py-3.5">
-        <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={44} />
+      <div className="mx-2 mb-1 flex items-center gap-3 rounded-xl border border-border px-3 py-3.5">
+        <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={44} plain />
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold text-text">{user?.name}</div>
           <div className="truncate text-xs text-text-secondary">{user?.email}</div>
@@ -103,24 +103,17 @@ function SidebarBody({ onClose, showClose }: { onClose?: () => void; showClose?:
                 )
               }
             >
-              {({ isActive }) => (
-                <>
-                  <span
-                    className={clsx(
-                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-brand-ink',
-                      isActive ? 'bg-[#fcd535]/15 text-[#fcd535]' : 'bg-muted',
-                    )}
-                  >
-                    <Icon size={18} strokeWidth={1.75} />
+              <>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center text-brand-ink">
+                  <Icon size={18} strokeWidth={1.75} />
+                </span>
+                <span className="flex-1">{label}</span>
+                {badge > 0 ? (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-sell px-1 text-[10px] font-bold text-white">
+                    {badge}
                   </span>
-                  <span className="flex-1">{label}</span>
-                  {badge > 0 ? (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-sell px-1 text-[10px] font-bold text-white">
-                      {badge}
-                    </span>
-                  ) : null}
-                </>
-              )}
+                ) : null}
+              </>
             </NavLink>
           )
         })}

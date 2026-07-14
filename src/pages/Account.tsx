@@ -15,6 +15,8 @@ import {
   Copy,
   CreditCard,
   Diamond,
+  Eye,
+  EyeOff,
   FileWarning,
   Lock,
   Menu,
@@ -32,7 +34,7 @@ function PageShell({ title, children }: { title: string; children: ReactNode }) 
     <>
       <AccountSidebar open={navOpen} onClose={() => setNavOpen(false)} />
       <div className="panel flex min-w-0 flex-1 flex-col overflow-hidden border-l-0">
-        <div className="flex items-center gap-2 border-b border-border bg-muted px-3 py-3 sm:gap-3 sm:px-5">
+        <div className="flex items-center gap-2 border-b border-border px-3 py-3 sm:gap-3 sm:px-5">
           <button
             type="button"
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-panel text-text-secondary hover:bg-muted md:hidden"
@@ -43,7 +45,7 @@ function PageShell({ title, children }: { title: string; children: ReactNode }) 
           </button>
           <div className="min-w-0 truncate text-[20px] font-semibold leading-tight">{title}</div>
         </div>
-        <div className="flex-1 overflow-y-auto p-3 sm:p-5">{children}</div>
+        <div className="flex-1 overflow-y-auto p-3 pb-[50px] sm:p-5 sm:pb-[50px]">{children}</div>
       </div>
     </>
   )
@@ -479,7 +481,7 @@ export function ManageAccountsPage() {
       {/* Desktop table */}
       <div className="hidden overflow-auto rounded-lg border border-border md:block">
         <table className="w-full min-w-[800px] text-left text-sm">
-          <thead className="bg-transparent text-[16px] text-text-secondary">
+          <thead className="bg-transparent text-[14px] text-text-secondary">
             <tr>
               {['Account', 'Platform', 'Leverage', 'Currency', 'Equity', 'Balance', 'Credit', 'Action'].map(
                 (h) => (
@@ -635,7 +637,7 @@ export function TransactionsPage() {
           {/* Desktop table */}
           <div className="hidden overflow-auto rounded-lg border border-border md:block">
             <table className="w-full text-left text-sm">
-              <thead className="bg-transparent text-[16px] text-text-secondary">
+              <thead className="bg-transparent text-[14px] text-text-secondary">
                 <tr>
                   <th className="border-0 px-3 py-2 font-medium">Type and account</th>
                   <th className="border-0 px-3 py-2 font-medium">Date</th>
@@ -807,7 +809,7 @@ export function WithdrawPage() {
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
-                className="h-10 flex-1 rounded border border-border px-2 text-center"
+                className="no-spinner h-10 flex-1 rounded border border-border px-2 text-center outline-none transition-colors hover:border-[#fcd535] focus:border-[#fcd535]"
               />
               <button type="button" className="h-10 w-10 rounded border" onClick={() => setAmount((a) => a + 10)}>
                 +
@@ -1521,9 +1523,9 @@ function TabBtn({
       type="button"
       onClick={onClick}
       className={clsx(
-        'shrink-0 whitespace-nowrap border-b-2 px-2 pb-2.5 text-sm transition-colors sm:px-1',
+        'shrink-0 whitespace-nowrap border-b-2 px-2 pb-2.5 text-sm font-medium transition-colors sm:px-1',
         active
-          ? 'border-brand font-semibold text-brand-ink'
+          ? 'border-brand text-brand-ink'
           : 'border-transparent text-text-secondary hover:text-brand-ink',
       )}
     >
@@ -1555,10 +1557,35 @@ function Badge({ icon, label, muted }: { icon: ReactNode; label: string; muted?:
 }
 
 function Input({ label, type = 'text', name }: { label: string; type?: string; name?: string }) {
+  const [visible, setVisible] = useState(false)
+  const isPassword = type === 'password'
+
   return (
     <label className="block text-sm">
       <span className="mb-1 block font-medium">{label}</span>
-      <input name={name} type={type} className="h-10 w-full rounded border border-border px-3 outline-none" required />
+      <div className="relative">
+        <input
+          name={name}
+          type={isPassword && visible ? 'text' : type}
+          className={clsx(
+            'h-10 w-full rounded border border-border px-3 outline-none',
+            isPassword && 'pr-11',
+          )}
+          required
+          autoComplete={name === 'next' ? 'new-password' : name === 'current' ? 'current-password' : undefined}
+        />
+        {isPassword ? (
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label={visible ? 'Hide password' : 'Show password'}
+            onClick={() => setVisible((v) => !v)}
+            className="absolute right-3 top-1/2 z-10 -translate-y-1/2 cursor-pointer bg-transparent p-0.5 text-text-secondary transition-colors hover:text-brand-ink"
+          >
+            {visible ? <EyeOff size={18} strokeWidth={1.75} /> : <Eye size={18} strokeWidth={1.75} />}
+          </button>
+        ) : null}
+      </div>
     </label>
   )
 }

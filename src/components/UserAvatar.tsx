@@ -34,12 +34,14 @@ type UserAvatarProps = {
   size?: number
   className?: string
   ring?: boolean
+  /** No background or ring — icon/photo only. */
+  plain?: boolean
 }
 
 /**
  * Shows the user's photo when available; otherwise the default user silhouette icon.
  */
-export function UserAvatar({ photoUrl, name, size = 40, className, ring }: UserAvatarProps) {
+export function UserAvatar({ photoUrl, name, size = 40, className, ring, plain }: UserAvatarProps) {
   const iconSize = Math.round(size * 0.55)
 
   if (photoUrl) {
@@ -51,7 +53,7 @@ export function UserAvatar({ photoUrl, name, size = 40, className, ring }: UserA
         height={size}
         className={clsx(
           'shrink-0 rounded-full object-cover',
-          ring && 'ring-2 ring-border/60',
+          ring && !plain && 'ring-2 ring-border/60',
           className,
         )}
         style={{ width: size, height: size }}
@@ -62,8 +64,9 @@ export function UserAvatar({ photoUrl, name, size = 40, className, ring }: UserA
   return (
     <span
       className={clsx(
-        'inline-flex shrink-0 items-center justify-center rounded-full bg-muted text-text-secondary',
-        ring && 'ring-2 ring-border/60',
+        'inline-flex shrink-0 items-center justify-center rounded-full text-text-secondary',
+        !plain && 'bg-muted',
+        ring && !plain && 'ring-2 ring-border/60',
         className,
       )}
       style={{ width: size, height: size }}

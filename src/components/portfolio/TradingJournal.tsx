@@ -128,7 +128,7 @@ export function TradingJournal() {
       <div className="overflow-hidden rounded-lg border border-border bg-panel">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left text-sm">
-            <thead className="bg-transparent text-[16px] text-text-secondary">
+            <thead className="bg-transparent text-[14px] text-text-secondary">
               <tr>
                 <th className="border-0 px-3 py-2.5 font-medium">Closed</th>
                 <th className="border-0 px-3 py-2.5 font-medium">Symbol</th>
