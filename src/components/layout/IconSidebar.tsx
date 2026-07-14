@@ -113,7 +113,7 @@ export function IconSidebar() {
 
       {/* Mobile bottom bar */}
       <nav
-        className="panel fixed inset-x-0 bottom-0 z-40 flex h-14 items-stretch justify-around border-t px-0.5 md:hidden"
+        className="panel fixed inset-x-0 bottom-0 z-40 flex h-14 items-stretch justify-around border-t px-0.5 pb-[3px] md:hidden"
         aria-label="Mobile navigation"
       >
         {items.slice(0, 5).map(({ to, icon: Icon, label, end }) => (

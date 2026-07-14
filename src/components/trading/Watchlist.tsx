@@ -18,14 +18,14 @@ type CategoryKey =
   | 'crypto'
 
 const CATEGORIES: Array<{ key: CategoryKey; label: string }> = [
-  { key: 'favorites', label: 'Favorites' },
-  { key: 'seekapa', label: 'NitajFX Favorites' },
+  { key: 'seekapa', label: 'Popular' },
   { key: 'forex', label: 'Forex' },
-  { key: 'commodity', label: 'Commodities' },
+  { key: 'stock', label: 'Stock' },
   { key: 'index', label: 'Indices' },
-  { key: 'arabian', label: 'Arabian Markets' },
-  { key: 'stock', label: 'Stocks' },
+  { key: 'commodity', label: 'Commodities' },
   { key: 'crypto', label: 'Crypto' },
+  { key: 'arabian', label: 'Arabian Markets' },
+  { key: 'favorites', label: 'Favorites' },
 ]
 
 function loadFavorites(): string[] {
@@ -75,7 +75,7 @@ export function Watchlist({
     )
   }, [quotes, q, category, favorites])
 
-  const activeLabel = CATEGORIES.find((c) => c.key === category)?.label || 'NitajFX Favorites'
+  const activeLabel = CATEGORIES.find((c) => c.key === category)?.label || 'Popular'
 
   return (
     <div className={clsx('panel flex h-full min-h-0 flex-col overflow-hidden', className ?? 'w-56 border-r lg:w-64')}>

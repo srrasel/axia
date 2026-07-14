@@ -21,7 +21,18 @@ import type {
   User,
 } from '../types'
 import { PREMIUM_THRESHOLD } from '../types'
-import { calcMargin, formatMoney, formatPrice, setPlatformCurrency } from '../data/mock'
+import { formatMoney, formatPrice, setPlatformCurrency } from '../data/mock'
+
+export type AppToast =
+  | { kind: 'message'; text: string }
+  | {
+      kind: 'trade'
+      side: TradeSide
+      symbol: string
+      volume: number
+      priceLabel: string
+      pending?: boolean
+    }
 
 type ApiUser = User & {
   accounts?: TradingAccount[]
@@ -52,7 +63,7 @@ interface AppState {
   liveData: boolean
   isPremium: boolean
   chartIndicator: string
-  toast: string | null
+  toast: AppToast | null
   loading: boolean
   login: (
     email: string,
@@ -212,15 +223,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [liveData, setLiveData] = useState(false)
   const [isPremium, setIsPremium] = useState(false)
   const [chartIndicator, setChartIndicator] = useState('None')
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<AppToast | null>(null)
   const [loading, setLoading] = useState(true)
   const [, setCurrencyTick] = useState(0)
 
   const activeAccount = accounts.find((a) => a.id === activeAccountId) ?? accounts[0]
   const accountType = (activeAccount?.type ?? 'demo') as AccountType
 
-  const showToast = (msg: string) => {
-    setToast(msg)
+  const showToast = (msg: string | AppToast) => {
+    setToast(typeof msg === 'string' ? { kind: 'message', text: msg } : msg)
     window.setTimeout(() => setToast(null), 3200)
   }
 
@@ -475,7 +486,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }),
       })
       await refreshAll()
-      const lotLabel = Number.isInteger(input.volume) ? String(input.volume) : input.volume.toFixed(2)
       const q = quotes.find((x) => x.symbol === selectedSymbol)
       const price =
         input.pending && input.triggerPrice != null
@@ -484,20 +494,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
             ? (q?.ask ?? q?.price)
             : (q?.bid ?? q?.price)
       const priceLabel = price != null ? formatPrice(price, selectedSymbol) : '—'
-      const margin = calcMargin(
-        {
-          volume: input.volume,
-          openPrice: price ?? q?.price ?? 0,
-          category: q?.category ?? 'forex',
-          symbol: selectedSymbol,
-        },
-        activeAccount?.leverage ?? '1:100',
-      )
-      showToast(
-        input.pending
-          ? `Pending ${input.side.toUpperCase()} ${selectedSymbol} @ ${priceLabel} · ${lotLabel} lot · ${formatMoney(margin)}`
-          : `${input.side.toUpperCase()} ${selectedSymbol} @ ${priceLabel} · ${lotLabel} lot · ${formatMoney(margin)}`,
-      )
+      showToast({
+        kind: 'trade',
+        side: input.side,
+        symbol: selectedSymbol,
+        volume: input.volume,
+        priceLabel,
+        pending: Boolean(input.pending),
+      })
       return null
     } catch (e) {
       return e instanceof Error ? e.message : 'Order failed'

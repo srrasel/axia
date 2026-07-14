@@ -1,19 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  Bell,
-  ChevronDown,
-  CreditCard,
-  Globe,
-  History,
-  Layers,
-  LogOut,
-  Moon,
-  ShieldCheck,
-  Sun,
-  User,
-  Wallet,
-} from 'lucide-react'
+import { Bell, Check, ChevronDown, CreditCard, Globe, History, Layers, LogOut, Moon, ShieldCheck, Sun, User, Wallet, X } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../context/AppContext'
 import { formatMoney } from '../../data/mock'
@@ -101,8 +88,8 @@ export function Header() {
         <BrandLogo className="h-9 sm:h-10" />
       </Link>
 
-      {/* Demo / Live account switch — compact on mobile, full on desktop */}
-      <div className="relative min-w-0 shrink-0">
+      {/* Demo / Live account switch — desktop / tablet only */}
+      <div className="relative hidden min-w-0 shrink-0 sm:block">
         <div className="relative flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-[#29313d] py-0.5 pl-2 pr-0.5 sm:gap-2.5 sm:py-1 sm:pl-2.5 sm:pr-1">
           <span
             className={clsx(
@@ -187,7 +174,7 @@ export function Header() {
         <button
           type="button"
           aria-label="Toggle theme"
-          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:h-10 sm:w-10"
+          className="hidden h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:flex sm:h-10 sm:w-10"
           onClick={() => setDarkMode(!darkMode)}
         >
           {darkMode ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
@@ -449,22 +436,64 @@ function Metric({
 export function Toast() {
   const { toast, clearToast } = useApp()
   if (!toast) return null
-  const isBuy = /\bBUY\b/i.test(toast)
-  const isSell = /\bSELL\b/i.test(toast)
+
+  const volumeLabel =
+    toast.kind === 'trade'
+      ? Number.isInteger(toast.volume)
+        ? String(toast.volume)
+        : toast.volume.toFixed(2)
+      : ''
+
   return (
-    <button
-      type="button"
-      onClick={clearToast}
-      className={clsx(
-        'toast pointer-events-auto fixed right-3 top-[max(4.25rem,calc(env(safe-area-inset-top)+3.75rem))] z-[100] max-w-[min(22rem,calc(100%-1.5rem))] rounded-xl border px-4 py-2.5 text-left text-sm font-medium shadow-[0_8px_24px_rgba(0,0,0,0.45)] sm:right-5',
-        isBuy
-          ? 'border-buy/40 bg-[#181a20] text-buy'
-          : isSell
-            ? 'border-sell/40 bg-[#181a20] text-sell'
-            : 'border-[#fcd535]/40 bg-[#181a20] text-[#fcd535]',
-      )}
+    <div
+      role="status"
+      className="toast pointer-events-auto fixed right-3 top-[max(4.25rem,calc(env(safe-area-inset-top)+3.75rem))] z-[100] flex w-[min(22rem,calc(100%-1.5rem))] items-start gap-3 rounded-3xl bg-white px-4 py-3.5 text-left text-[#111] shadow-[0_12px_40px_rgba(0,0,0,0.35)] sm:right-5"
     >
-      {toast}
-    </button>
+      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#e5e7eb] bg-white">
+        {toast.kind === 'trade' ? (
+          <Check
+            size={16}
+            strokeWidth={2.5}
+            className={toast.side === 'buy' ? 'text-buy' : 'text-sell'}
+          />
+        ) : (
+          <Check size={16} strokeWidth={2.5} className="text-[#22a06b]" />
+        )}
+      </span>
+
+      <div className="min-w-0 flex-1 pt-0.5 text-[15px] leading-snug">
+        {toast.kind === 'trade' ? (
+          <>
+            <div>
+              {toast.pending ? (
+                <>
+                  Done! Pending {toast.side} of <span className="font-bold">{volumeLabel}</span>
+                </>
+              ) : (
+                <>
+                  Done! You have {toast.side === 'buy' ? 'bought' : 'sold'}{' '}
+                  <span className="font-bold">{volumeLabel}</span>
+                </>
+              )}
+            </div>
+            <div>
+              <span className="font-bold">{toast.symbol}</span> at{' '}
+              <span className="font-bold">{toast.priceLabel}.</span>
+            </div>
+          </>
+        ) : (
+          <div className="font-medium">{toast.text}</div>
+        )}
+      </div>
+
+      <button
+        type="button"
+        aria-label="Dismiss"
+        onClick={clearToast}
+        className="mt-0.5 shrink-0 cursor-pointer rounded-md p-0.5 text-[#6b7280] transition-colors hover:text-[#111]"
+      >
+        <X size={16} strokeWidth={2} />
+      </button>
+    </div>
   )
 }
