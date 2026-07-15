@@ -92,7 +92,7 @@ export function LoginPage() {
   }
 
   return (
-    <AuthShell title="Log In">
+    <AuthShell title="Log in">
       <form onSubmit={onSubmit} className="space-y-5">
         {error ? <AuthError message={error} /> : null}
         <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="Email" />
@@ -119,7 +119,7 @@ export function LoginPage() {
       <p className="mt-8 text-center text-sm text-[#848e9c]">
         Don&apos;t have an account?{' '}
         <Link to="/register" className={AUTH_LINK}>
-          Register Account
+          Create an Account
         </Link>
       </p>
       <Toast />
@@ -251,11 +251,13 @@ function AuthError({ message }: { message: string }) {
 }
 
 const SOCIAL_BTN =
-  'flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-[#333B47] bg-transparent text-[15px] font-semibold text-[#EAECEF] transition-colors hover:border-[#848e9c] hover:bg-[#1e2329]'
+  'relative flex h-12 w-full cursor-pointer items-center justify-center rounded-lg border border-[#333B47] bg-transparent text-[15px] font-semibold text-[#EAECEF] transition-colors hover:border-[#848e9c] hover:bg-[#1e2329]'
+
+const SOCIAL_ICON_WRAP = 'absolute left-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center'
 
 function GoogleIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+    <svg width="20" height="20" viewBox="0 0 48 48" className="block shrink-0" aria-hidden="true">
       <path
         fill="#FFC107"
         d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
@@ -278,7 +280,7 @@ function GoogleIcon() {
 
 function TelegramIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+    <svg width="20" height="20" viewBox="0 0 24 24" className="block shrink-0" aria-hidden="true">
       <path
         fill="#2AABEE"
         d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0z"
@@ -316,11 +318,15 @@ function SocialAuth() {
       </div>
       <div className="space-y-3">
         <button type="button" className={SOCIAL_BTN} onClick={() => onProvider('google')}>
-          <GoogleIcon />
+          <span className={SOCIAL_ICON_WRAP}>
+            <GoogleIcon />
+          </span>
           Continue with Google
         </button>
         <button type="button" className={SOCIAL_BTN} onClick={() => onProvider('telegram')}>
-          <TelegramIcon />
+          <span className={SOCIAL_ICON_WRAP}>
+            <TelegramIcon />
+          </span>
           Continue with Telegram
         </button>
       </div>
@@ -353,8 +359,8 @@ function AuthShell({
         }}
       />
       <div className="relative w-full max-w-[420px] rounded-none border-0 p-[10px] sm:rounded-[24px] sm:border sm:border-[#333B47] sm:p-10">
-        <div className="mb-5 text-center">
-          <div className="flex justify-center">
+        <div className="mb-5 text-left">
+          <div className="flex justify-start">
             <BrandLogo variant="dark" className="h-11 sm:h-12" />
           </div>
           <h1 className="mt-3 text-left text-[26px] font-semibold tracking-tight text-[#EAECEF] sm:text-[28px]">
