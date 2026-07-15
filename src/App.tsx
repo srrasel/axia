@@ -1,7 +1,7 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { AppProvider, useApp } from './context/AppContext'
 import { AccountLayout, PlatformLayout } from './components/layout/Layouts'
-import { LoginPage, RegisterPage } from './pages/Auth'
+import { LoginPage, RegisterPage, ForgotPasswordPage } from './pages/Auth'
 import { TradingPage } from './pages/Trading'
 import { PortfolioPage } from './pages/Portfolio'
 import {
@@ -38,6 +38,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         <Route element={<Protected />}>
           <Route element={<PlatformLayout />}>

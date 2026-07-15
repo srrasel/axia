@@ -92,20 +92,25 @@ export function LoginPage() {
   }
 
   return (
-    <AuthShell title="Welcome To Nitajfx" subtitle="Sign in to your NitajFX trading account">
+    <AuthShell title="Login" subtitle="Sign in to your NitajFX trading account">
       <form onSubmit={onSubmit} className="space-y-5">
         {error ? <AuthError message={error} /> : null}
         <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="Email" />
         <PasswordField label="Password" value={password} onChange={setPassword} placeholder="Password" />
-        <label className="flex items-center gap-2.5 text-sm text-[#848e9c]">
-          <input
-            type="checkbox"
-            checked={remember}
-            onChange={(e) => setRemember(e.target.checked)}
-            className="h-4 w-4 rounded border-[#2b3139] accent-[#fcd535]"
-          />
-          Remember me
-        </label>
+        <div className="flex items-center justify-between gap-3">
+          <label className="flex cursor-pointer items-center gap-2.5 text-sm text-[#848e9c]">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="auth-checkbox h-4 w-4 cursor-pointer rounded border border-[#2b3139]"
+            />
+            Remember me
+          </label>
+          <Link to="/forgot-password" className="text-sm font-medium text-[#fcd535] transition-colors hover:text-[#ceaf30]">
+            Forgot password?
+          </Link>
+        </div>
         <button type="submit" disabled={loading} className={AUTH_BTN} style={AUTH_BTN_STYLE}>
           {loading ? 'Signing in…' : 'Sign in'}
         </button>
@@ -117,6 +122,57 @@ export function LoginPage() {
           Create an account
         </Link>
       </p>
+      <Toast />
+    </AuthShell>
+  )
+}
+
+export function ForgotPasswordPage() {
+  const { isAuthenticated } = useApp()
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  if (isAuthenticated) return <Navigate to="/platform" replace />
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    // UI flow — reset email is handled by support / upcoming API
+    await new Promise((r) => window.setTimeout(r, 600))
+    setLoading(false)
+    setSent(true)
+  }
+
+  return (
+    <AuthShell
+      title="Forgot password"
+      subtitle="Enter your email and we’ll send reset instructions"
+    >
+      {sent ? (
+        <div className="space-y-5 text-center">
+          <p className="text-sm leading-relaxed text-[#848e9c]">
+            If an account exists for <span className="font-medium text-[#EAECEF]">{email}</span>, you’ll
+            receive password reset instructions shortly.
+          </p>
+          <Link to="/login" className={`${AUTH_BTN} inline-flex items-center justify-center`} style={AUTH_BTN_STYLE}>
+            Back to Sign in
+          </Link>
+        </div>
+      ) : (
+        <form onSubmit={onSubmit} className="space-y-5">
+          <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="Email" />
+          <button type="submit" disabled={loading || !email.trim()} className={AUTH_BTN} style={AUTH_BTN_STYLE}>
+            {loading ? 'Sending…' : 'Send reset link'}
+          </button>
+          <p className="text-center text-sm text-[#848e9c]">
+            Remembered it?{' '}
+            <Link to="/login" className={AUTH_LINK}>
+              Sign in
+            </Link>
+          </p>
+        </form>
+      )}
       <Toast />
     </AuthShell>
   )
@@ -155,7 +211,7 @@ export function RegisterPage() {
   }
 
   return (
-    <AuthShell title="Create account" subtitle="Start trading with NitajFX in minutes">
+    <AuthShell title="Create account">
       <form onSubmit={onSubmit} className="space-y-5">
         {error ? <AuthError message={error} /> : null}
         {referralCode ? (
@@ -256,7 +312,7 @@ function SocialAuth({ mode }: { mode: 'login' | 'register' }) {
     <div className="mt-6">
       <div className="mb-4 flex items-center gap-3">
         <div className="h-px flex-1 bg-[#333B47]" />
-        <span className="text-[12px] font-medium uppercase tracking-wide text-[#848e9c]">Or continue with</span>
+        <span className="text-[12px] font-medium capitalize tracking-wide text-[#848e9c]">Or continue with</span>
         <div className="h-px flex-1 bg-[#333B47]" />
       </div>
       <div className="space-y-3">
@@ -282,13 +338,13 @@ function AuthShell({
   children,
 }: {
   title: string
-  subtitle: string
+  subtitle?: string
   children: ReactNode
 }) {
   return (
     <div
       className="relative flex min-h-full items-center justify-center overflow-hidden px-4 py-10 sm:py-16"
-      style={{ background: '#181a20' }}
+      style={{ background: '#161a21' }}
     >
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.35]"
@@ -302,10 +358,10 @@ function AuthShell({
           <div className="flex justify-center">
             <BrandLogo variant="dark" className="h-11 sm:h-12" />
           </div>
-          <h1 className="mt-4 text-[26px] font-semibold tracking-tight text-[#EAECEF] sm:text-[28px]">
+          <h1 className="mt-3 text-[26px] font-semibold tracking-tight text-[#EAECEF] sm:text-[28px]">
             {title}
           </h1>
-          <p className="mt-1 text-[14px] leading-relaxed text-[#848e9c]">{subtitle}</p>
+          {subtitle ? <p className="mt-1 text-[14px] leading-relaxed text-[#848e9c]">{subtitle}</p> : null}
         </div>
         <div className="bg-transparent">{children}</div>
       </div>

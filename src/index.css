@@ -194,9 +194,27 @@ select:-webkit-autofill {
 .auth-input:-webkit-autofill:active {
   -webkit-text-fill-color: #eaecef !important;
   caret-color: #eaecef;
-  box-shadow: 0 0 0 1000px #181a20 inset !important;
+  box-shadow: 0 0 0 1000px #161a21 inset !important;
   border-color: #2b3139 !important;
   transition: background-color 99999s ease-in-out 0s;
+}
+
+.auth-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: transparent;
+  accent-color: transparent;
+  flex-shrink: 0;
+  background-image: none;
+}
+
+.auth-checkbox:checked {
+  background-color: transparent;
+  border-color: #fcd535;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23fcd535' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.5 6.5 11.5 12.5 4.5'/%3E%3C/svg%3E");
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .toast {
