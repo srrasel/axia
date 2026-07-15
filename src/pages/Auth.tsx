@@ -148,6 +148,7 @@ export function ForgotPasswordPage() {
     <AuthShell
       title="Forgot Password"
       subtitle="Enter your email. We'll send you a link to reset your password."
+      mobileTopSpaced
     >
       {sent ? (
         <div className="space-y-5 text-center">
@@ -341,14 +342,20 @@ function AuthShell({
   title,
   subtitle,
   children,
+  mobileTopSpaced,
 }: {
   title: string
   subtitle?: string
   children: ReactNode
+  mobileTopSpaced?: boolean
 }) {
   return (
     <div
-      className="relative flex min-h-full items-center justify-center overflow-hidden px-4 py-10 sm:py-16"
+      className={`relative flex min-h-full justify-center overflow-hidden px-4 ${
+        mobileTopSpaced
+          ? 'items-start pt-[30px] pb-10 sm:items-center sm:py-16'
+          : 'items-center py-10 sm:py-16'
+      }`}
       style={{ background: '#161a21' }}
     >
       <div
@@ -358,7 +365,11 @@ function AuthShell({
             'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(252,213,53,0.08), transparent 55%)',
         }}
       />
-      <div className="relative w-full max-w-[420px] rounded-none border-0 p-[10px] -mt-[20px] sm:mt-0 sm:rounded-[24px] sm:border sm:border-[#333B47] sm:p-10">
+      <div
+        className={`relative w-full max-w-[420px] rounded-none border-0 p-[10px] sm:mt-0 sm:rounded-[24px] sm:border sm:border-[#333B47] sm:p-10 ${
+          mobileTopSpaced ? 'mt-0' : '-mt-[20px]'
+        }`}
+      >
         <div className="mb-5 text-left">
           <div className="mb-[30px] flex justify-start sm:mb-0">
             <BrandLogo variant="dark" className="h-11 sm:h-12" />
