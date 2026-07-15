@@ -352,7 +352,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveAccountId(accountId)
     const boot = await api<any>(`/api/bootstrap?accountId=${encodeURIComponent(accountId)}`)
     applyBootstrap(boot)
-    showToast(`Welcome back, ${userData.name.split(' ')[0]}`)
     setLoading(false)
   }
 
@@ -448,7 +447,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUser(null)
     setAccounts([])
     setTrades([])
-    showToast('Signed out')
   }
 
   const updateProfile = async (patch: Partial<User>) => {
