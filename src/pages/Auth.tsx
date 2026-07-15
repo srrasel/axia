@@ -360,7 +360,7 @@ function AuthShell({
       />
       <div className="relative w-full max-w-[420px] rounded-none border-0 p-[10px] -mt-[20px] sm:mt-0 sm:rounded-[24px] sm:border sm:border-[#333B47] sm:p-10">
         <div className="mb-5 text-left">
-          <div className="mb-[10px] flex justify-start sm:mb-0">
+          <div className="mb-[25px] flex justify-start sm:mb-0">
             <BrandLogo variant="dark" className="h-11 sm:h-12" />
           </div>
           <h1 className="mt-3 text-left text-[26px] font-semibold tracking-tight text-[#EAECEF] sm:text-[28px]">
