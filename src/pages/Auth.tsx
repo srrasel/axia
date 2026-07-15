@@ -115,7 +115,7 @@ export function LoginPage() {
           {loading ? 'Logging in…' : 'Log In'}
         </button>
       </form>
-      <SocialAuth mode="login" />
+      <SocialAuth />
       <p className="mt-8 text-center text-sm text-[#848e9c]">
         Don&apos;t have an account?{' '}
         <Link to="/register" className={AUTH_LINK}>
@@ -232,7 +232,7 @@ export function RegisterPage() {
           {loading ? 'Creating…' : 'Create account'}
         </button>
       </form>
-      <SocialAuth mode="register" />
+      <SocialAuth />
       <p className="mt-8 text-center text-sm text-[#848e9c]">
         Already registered?{' '}
         <Link to="/login" className={AUTH_LINK}>
@@ -291,9 +291,8 @@ function TelegramIcon() {
   )
 }
 
-function SocialAuth({ mode }: { mode: 'login' | 'register' }) {
+function SocialAuth() {
   const [notice, setNotice] = useState<string | null>(null)
-  const action = mode === 'login' ? 'Log In' : 'Sign up'
   const googleUrl = import.meta.env.VITE_GOOGLE_AUTH_URL as string | undefined
   const telegramUrl = import.meta.env.VITE_TELEGRAM_AUTH_URL as string | undefined
 
@@ -304,7 +303,7 @@ function SocialAuth({ mode }: { mode: 'login' | 'register' }) {
       return
     }
     setNotice(
-      `${provider === 'google' ? 'Google' : 'Telegram'} ${action.toLowerCase()} is being set up. Use email for now.`,
+      `${provider === 'google' ? 'Google' : 'Telegram'} sign-in is being set up. Use email for now.`,
     )
   }
 
@@ -318,11 +317,11 @@ function SocialAuth({ mode }: { mode: 'login' | 'register' }) {
       <div className="space-y-3">
         <button type="button" className={SOCIAL_BTN} onClick={() => onProvider('google')}>
           <GoogleIcon />
-          {action} with Google
+          Continue with Google
         </button>
         <button type="button" className={SOCIAL_BTN} onClick={() => onProvider('telegram')}>
           <TelegramIcon />
-          {action} with Telegram
+          Continue with Telegram
         </button>
       </div>
       {notice ? (
@@ -358,7 +357,7 @@ function AuthShell({
           <div className="flex justify-center">
             <BrandLogo variant="dark" className="h-11 sm:h-12" />
           </div>
-          <h1 className="mt-3 text-[26px] font-semibold tracking-tight text-[#EAECEF] sm:text-[28px]">
+          <h1 className="mt-3 text-left text-[26px] font-semibold tracking-tight text-[#EAECEF] sm:text-[28px]">
             {title}
           </h1>
           {subtitle ? <p className="mt-1 text-[14px] leading-relaxed text-[#848e9c]">{subtitle}</p> : null}
