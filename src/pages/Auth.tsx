@@ -92,7 +92,7 @@ export function LoginPage() {
   }
 
   return (
-    <AuthShell title="Login" subtitle="Sign in to your NitajFX trading account">
+    <AuthShell title="Login">
       <form onSubmit={onSubmit} className="space-y-5">
         {error ? <AuthError message={error} /> : null}
         <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="Email" />
@@ -354,7 +354,7 @@ function AuthShell({
         }}
       />
       <div className="relative w-full max-w-[420px] rounded-none border-0 p-[10px] sm:rounded-[24px] sm:border sm:border-[#333B47] sm:p-10">
-        <div className="mb-10 text-center">
+        <div className="mb-5 text-center">
           <div className="flex justify-center">
             <BrandLogo variant="dark" className="h-11 sm:h-12" />
           </div>
