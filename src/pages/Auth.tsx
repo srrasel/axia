@@ -147,7 +147,7 @@ export function ForgotPasswordPage() {
   return (
     <AuthShell
       title="Forgot Password"
-      subtitle="Enter your email and we’ll send reset instructions"
+      subtitle="Enter your email. We'll send you a link to reset your password."
     >
       {sent ? (
         <div className="space-y-5 text-center">
@@ -156,19 +156,19 @@ export function ForgotPasswordPage() {
             receive password reset instructions shortly.
           </p>
           <Link to="/login" className={`${AUTH_BTN} inline-flex items-center justify-center`} style={AUTH_BTN_STYLE}>
-            Back to Sign in
+            Back to Log in
           </Link>
         </div>
       ) : (
         <form onSubmit={onSubmit} className="space-y-5">
           <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="Email" />
           <button type="submit" disabled={loading || !email.trim()} className={AUTH_BTN} style={AUTH_BTN_STYLE}>
-            {loading ? 'Sending…' : 'Send reset link'}
+            {loading ? 'Sending…' : 'Reset'}
           </button>
           <p className="text-center text-sm text-[#848e9c]">
             Remembered it?{' '}
             <Link to="/login" className={AUTH_LINK}>
-              Sign in
+              Log in
             </Link>
           </p>
         </form>
@@ -363,7 +363,7 @@ function AuthShell({
           <div className="mb-[30px] flex justify-start sm:mb-0">
             <BrandLogo variant="dark" className="h-11 sm:h-12" />
           </div>
-          <h1 className="mt-3 mb-[15px] text-left text-[26px] font-semibold tracking-tight text-[#EAECEF] sm:text-[28px]">
+          <h1 className="mt-3 mb-[20px] text-left text-[26px] font-semibold tracking-tight text-[#EAECEF] sm:text-[28px]">
             {title}
           </h1>
           {subtitle ? <p className="mt-1 text-[14px] leading-relaxed text-[#848e9c]">{subtitle}</p> : null}
