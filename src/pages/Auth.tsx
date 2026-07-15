@@ -146,7 +146,7 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthShell
-      title="Forgot password"
+      title="Forgot Password"
       subtitle="Enter your email and we’ll send reset instructions"
     >
       {sent ? (
