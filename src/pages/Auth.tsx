@@ -92,7 +92,7 @@ export function LoginPage() {
   }
 
   return (
-    <AuthShell title="Welcome back" subtitle="Sign in to your NitajFX trading account">
+    <AuthShell title="Welcome To Nitajfx" subtitle="Sign in to your NitajFX trading account">
       <form onSubmit={onSubmit} className="space-y-5">
         {error ? <AuthError message={error} /> : null}
         <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="Email" />
@@ -287,7 +287,7 @@ function AuthShell({
 }) {
   return (
     <div
-      className="relative flex min-h-full items-center justify-center overflow-hidden px-4 py-12 sm:py-16"
+      className="relative flex min-h-full items-center justify-center overflow-hidden px-4 py-10 sm:py-16"
       style={{ background: '#181a20' }}
     >
       <div
@@ -302,10 +302,10 @@ function AuthShell({
           <div className="flex justify-center">
             <BrandLogo variant="dark" className="h-11 sm:h-12" />
           </div>
-          <h1 className="mt-6 text-[26px] font-semibold tracking-tight text-[#EAECEF] sm:text-[28px]">
+          <h1 className="mt-4 text-[26px] font-semibold tracking-tight text-[#EAECEF] sm:text-[28px]">
             {title}
           </h1>
-          <p className="mt-2 text-[14px] leading-relaxed text-[#848e9c]">{subtitle}</p>
+          <p className="mt-1 text-[14px] leading-relaxed text-[#848e9c]">{subtitle}</p>
         </div>
         <div className="bg-transparent">{children}</div>
       </div>
