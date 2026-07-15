@@ -92,7 +92,7 @@ export function LoginPage() {
   }
 
   return (
-    <AuthShell title="Login">
+    <AuthShell title="Log In">
       <form onSubmit={onSubmit} className="space-y-5">
         {error ? <AuthError message={error} /> : null}
         <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="Email" />
@@ -112,14 +112,14 @@ export function LoginPage() {
           </Link>
         </div>
         <button type="submit" disabled={loading} className={AUTH_BTN} style={AUTH_BTN_STYLE}>
-          {loading ? 'Signing in…' : 'Sign in'}
+          {loading ? 'Logging in…' : 'Log In'}
         </button>
       </form>
       <SocialAuth mode="login" />
       <p className="mt-8 text-center text-sm text-[#848e9c]">
         Don&apos;t have an account?{' '}
         <Link to="/register" className={AUTH_LINK}>
-          Create an account
+          Register Account
         </Link>
       </p>
       <Toast />
@@ -293,7 +293,7 @@ function TelegramIcon() {
 
 function SocialAuth({ mode }: { mode: 'login' | 'register' }) {
   const [notice, setNotice] = useState<string | null>(null)
-  const action = mode === 'login' ? 'Sign in' : 'Sign up'
+  const action = mode === 'login' ? 'Log In' : 'Sign up'
   const googleUrl = import.meta.env.VITE_GOOGLE_AUTH_URL as string | undefined
   const telegramUrl = import.meta.env.VITE_TELEGRAM_AUTH_URL as string | undefined
 
@@ -312,7 +312,7 @@ function SocialAuth({ mode }: { mode: 'login' | 'register' }) {
     <div className="mt-6">
       <div className="mb-4 flex items-center gap-3">
         <div className="h-px flex-1 bg-[#333B47]" />
-        <span className="text-[12px] font-medium capitalize tracking-wide text-[#848e9c]">Or continue with</span>
+        <span className="text-[12px] font-medium tracking-wide text-[#848e9c]">or</span>
         <div className="h-px flex-1 bg-[#333B47]" />
       </div>
       <div className="space-y-3">
