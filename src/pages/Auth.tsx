@@ -229,14 +229,14 @@ export function RegisterPage() {
           placeholder="Confirm password"
         />
         <button type="submit" disabled={loading} className={AUTH_BTN} style={AUTH_BTN_STYLE}>
-          {loading ? 'Creating…' : 'Register Account'}
+          {loading ? 'Creating…' : 'Register'}
         </button>
       </form>
       <SocialAuth />
       <p className="mt-8 text-center text-sm text-[#848e9c]">
         Already registered?{' '}
         <Link to="/login" className={AUTH_LINK}>
-          Sign in
+          Log in
         </Link>
       </p>
       <Toast />
