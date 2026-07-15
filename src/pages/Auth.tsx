@@ -229,7 +229,7 @@ export function RegisterPage() {
           placeholder="Confirm password"
         />
         <button type="submit" disabled={loading} className={AUTH_BTN} style={AUTH_BTN_STYLE}>
-          {loading ? 'Creating…' : 'Create account'}
+          {loading ? 'Creating…' : 'Register Account'}
         </button>
       </form>
       <SocialAuth />
@@ -358,9 +358,9 @@ function AuthShell({
             'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(252,213,53,0.08), transparent 55%)',
         }}
       />
-      <div className="relative w-full max-w-[420px] rounded-none border-0 p-[10px] sm:rounded-[24px] sm:border sm:border-[#333B47] sm:p-10">
+      <div className="relative w-full max-w-[420px] rounded-none border-0 p-[10px] -mt-[20px] sm:mt-0 sm:rounded-[24px] sm:border sm:border-[#333B47] sm:p-10">
         <div className="mb-5 text-left">
-          <div className="flex justify-start">
+          <div className="mb-[10px] flex justify-start sm:mb-0">
             <BrandLogo variant="dark" className="h-11 sm:h-12" />
           </div>
           <h1 className="mt-3 text-left text-[26px] font-semibold tracking-tight text-[#EAECEF] sm:text-[28px]">
