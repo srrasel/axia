@@ -439,8 +439,8 @@ export function TradingChart() {
                 className={clsx(
                   'flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full px-2.5 text-[13px] font-semibold transition-colors',
                   active
-                    ? 'bg-[#fcd535] text-[#202630]'
-                    : 'text-text-secondary hover:bg-muted hover:text-text',
+                    ? 'border-4 border-[#29313d] bg-[#29313d] text-text'
+                    : 'border-4 border-transparent text-text-secondary hover:bg-muted hover:text-text',
                 )}
               >
                 {label}
