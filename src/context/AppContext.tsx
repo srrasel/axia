@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -226,6 +227,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<AppToast | null>(null)
   const [loading, setLoading] = useState(true)
   const [, setCurrencyTick] = useState(0)
+  const activeAccountIdRef = useRef(activeAccountId)
+  const bootstrapSeqRef = useRef(0)
+
+  activeAccountIdRef.current = activeAccountId
 
   const activeAccount = accounts.find((a) => a.id === activeAccountId) ?? accounts[0]
   const accountType = (activeAccount?.type ?? 'demo') as AccountType
@@ -235,7 +240,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     window.setTimeout(() => setToast(null), 3200)
   }
 
-  const applyBootstrap = (data: any) => {
+  const applyBootstrap = (data: any, requestedAccountId?: string) => {
     // Apply currency first so money formatting is correct on the same render pass
     if (data.currency) {
       setPlatformCurrency(data.currency)
@@ -244,7 +249,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     setUser(mapUser(data.user))
     setAccounts((data.accounts || []).map(mapAccount))
-    setActiveAccountId(data.activeAccountId)
+    // Prefer the account we asked for so a stale response cannot flip Demo/Live
+    const nextAccountId =
+      (requestedAccountId &&
+        (data.accounts || []).some((a: any) => a.id === requestedAccountId) &&
+        requestedAccountId) ||
+      data.activeAccountId ||
+      ''
+    if (nextAccountId) {
+      activeAccountIdRef.current = nextAccountId
+      setActiveAccountId(nextAccountId)
+    }
     setTrades((data.trades || []).map(mapTrade))
     setTransactions((data.transactions || []).map(mapTx))
     setNotifications(
@@ -273,11 +288,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCurrencyTick((n) => n + 1)
   }
 
-  const refreshAll = useCallback(async () => {
+  const refreshAll = useCallback(async (accountIdOverride?: string) => {
     if (!getToken()) return
-    const data = await api<any>(`/api/bootstrap?accountId=${encodeURIComponent(activeAccountId || '')}`)
-    applyBootstrap(data)
-  }, [activeAccountId])
+    const seq = ++bootstrapSeqRef.current
+    const accountId = accountIdOverride ?? activeAccountIdRef.current || ''
+    const data = await api<any>(`/api/bootstrap?accountId=${encodeURIComponent(accountId)}`)
+    // Ignore outdated responses so Demo/Live does not bounce while requests overlap
+    if (seq !== bootstrapSeqRef.current) return
+    // If user switched again while this request was in flight, drop it
+    if (accountId && activeAccountIdRef.current && accountId !== activeAccountIdRef.current) return
+    applyBootstrap(data, accountId || undefined)
+  }, [])
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode)
@@ -302,12 +323,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setUser(null)
       })
       .finally(() => setLoading(false))
-  }, [])
+  }, [refreshAll])
 
   useEffect(() => {
-    if (!user) return
-    void refreshAll().catch(() => undefined)
-  }, [activeAccountId])
+    if (!user?.id || !activeAccountId) return
+    void refreshAll(activeAccountId).catch(() => undefined)
+    // Only re-fetch when the selected account changes, not on every bootstrap user object
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeAccountId, user?.id, refreshAll])
 
   const refreshQuotes = useCallback(async () => {
     if (!getToken()) return
@@ -315,7 +338,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const market = await api<{ quotes: Quote[]; live: boolean }>('/api/quotes')
       setQuotes(market.quotes)
       setLiveData(market.live)
-      await refreshAll()
+      await refreshAll(activeAccountIdRef.current)
     } catch {
       /* ignore transient errors */
     }
@@ -345,13 +368,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [selectedSymbol, timeframe, user])
 
+  const switchAccount = useCallback((id: string) => {
+    if (!id || id === activeAccountIdRef.current) return
+    // Invalidate in-flight bootstraps so they cannot flip the selection back
+    bootstrapSeqRef.current += 1
+    activeAccountIdRef.current = id
+    setActiveAccountId(id)
+  }, [])
+
   const finishAuth = async (token: string, userData: any) => {
     setToken(token)
     const demo = (userData.accounts || []).find((a: any) => a.type === 'demo')
     const accountId = demo?.id || userData.accounts?.[0]?.id || ''
+    bootstrapSeqRef.current += 1
+    activeAccountIdRef.current = accountId
     setActiveAccountId(accountId)
     const boot = await api<any>(`/api/bootstrap?accountId=${encodeURIComponent(accountId)}`)
-    applyBootstrap(boot)
+    applyBootstrap(boot, accountId)
     setLoading(false)
   }
 
@@ -655,7 +688,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setDarkMode: setDarkModeState,
     setLanguage: setLanguageState,
     setChartIndicator,
-    switchAccount: setActiveAccountId,
+    switchAccount,
     placeTrade,
     closeTrade,
     cancelPending,

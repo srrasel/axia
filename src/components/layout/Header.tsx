@@ -43,6 +43,9 @@ export function Header() {
   const account = accounts.find((a) => a.id === activeAccountId)
   const isLiveAccount = accountType === 'live'
   const unreadCount = notifications.filter((n) => !n.read).length
+  const demoAccount = accounts.find((a) => a.type === 'demo')
+  const liveAccount = accounts.find((a) => a.type === 'live')
+  const mobileAccountOptions = [demoAccount, liveAccount].filter(Boolean) as typeof accounts
 
   useEffect(() => {
     const tick = () =>
@@ -87,38 +90,42 @@ export function Header() {
   }, [userOpen, langOpen, notifOpen])
 
   return (
-    <header className="panel relative z-40 flex h-14 shrink-0 items-center gap-1.5 overflow-visible border-b pl-[15px] pr-2 sm:h-16 sm:gap-3 sm:px-5">
-      <Link to="/platform" className="flex shrink-0 items-center pr-[5px]">
-        <BrandLogo className="h-9 sm:h-10" />
-      </Link>
+    <header className="panel relative z-40 flex h-14 shrink-0 items-center gap-2 overflow-visible border-b px-4 sm:h-16 sm:gap-3 sm:px-5">
+      <div className="flex min-w-0 items-center sm:contents">
+        <Link to="/platform" className="flex shrink-0 items-center pr-[10px] sm:pr-0">
+          <BrandLogo className="h-8 w-auto sm:h-10" />
+        </Link>
 
-      {/* Mobile Demo / Live switch — after logo */}
-      <div
-        className="flex shrink-0 items-center rounded-full border border-border bg-muted p-0.5 sm:hidden"
-        role="group"
-        aria-label="Switch demo or live account"
-      >
-        {accounts.map((a) => {
-          const active = a.id === activeAccountId
-          const live = a.type === 'live'
-          return (
-            <button
-              key={a.id}
-              type="button"
-              onClick={() => switchAccount(a.id)}
-              className={clsx(
-                'h-8 rounded-full px-2.5 text-xs font-semibold transition-colors',
-                active
-                  ? live
-                    ? 'bg-buy text-white'
-                    : 'bg-link text-white'
-                  : 'text-text-secondary',
-              )}
-            >
-              {live ? 'Live' : 'Demo'}
-            </button>
-          )
-        })}
+        {/* Mobile Demo / Live switch — after logo */}
+        <div
+          className="flex shrink-0 items-center rounded-lg border border-border bg-muted p-0.5 sm:hidden"
+          role="group"
+          aria-label="Switch demo or live account"
+        >
+          {mobileAccountOptions.map((a) => {
+            const active = a.id === activeAccountId
+            const live = a.type === 'live'
+            return (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => {
+                  if (!active) switchAccount(a.id)
+                }}
+                className={clsx(
+                  'h-7 min-w-[3.25rem] rounded-md px-2.5 text-[11px] font-semibold tracking-wide transition-all',
+                  active
+                    ? live
+                      ? 'bg-panel text-buy shadow-sm'
+                      : 'bg-panel text-link shadow-sm'
+                    : 'text-text-secondary hover:text-text',
+                )}
+              >
+                {live ? 'Live' : 'Demo'}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {/* Demo / Live account switch — desktop / tablet */}
@@ -160,8 +167,11 @@ export function Header() {
           <select
             aria-label="Switch demo or live account"
             className="absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none opacity-0"
-            value={activeAccountId}
-            onChange={(e) => switchAccount(e.target.value)}
+            value={accounts.some((a) => a.id === activeAccountId) ? activeAccountId : accounts[0]?.id || ''}
+            onChange={(e) => {
+              const next = e.target.value
+              if (next && next !== activeAccountId) switchAccount(next)
+            }}
           >
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>
@@ -191,12 +201,12 @@ export function Header() {
 
       <div className="min-w-0 flex-1 lg:hidden" aria-hidden />
 
-      <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+      <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
         <button
           type="button"
           onClick={() => navigate('/account/deposit')}
           aria-label="Deposit"
-          className="auth-btn flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-[8px] bg-[#fcd535] !text-[#202630] transition-colors hover:bg-[#ceaf30] sm:h-10 sm:w-auto sm:px-4"
+          className="auth-btn flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-[#fcd535] !text-[#202630] transition-colors hover:bg-[#ceaf30] sm:h-10 sm:w-auto sm:rounded-[8px] sm:px-4"
         >
           <Wallet size={18} strokeWidth={1.75} className="sm:hidden" />
           <span className="hidden text-sm font-semibold sm:inline">Deposit</span>
