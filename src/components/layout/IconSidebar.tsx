@@ -120,26 +120,28 @@ function isMoreSection(pathname: string) {
   return MORE_ACTIVE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))
 }
 
-export function IconSidebar() {
+export function IconSidebar({ mobileOnly = false }: { mobileOnly?: boolean }) {
   const { pathname } = useLocation()
 
   return (
     <>
       {/* Desktop / tablet */}
-      <aside
-        className="panel hidden w-[64px] shrink-0 flex-col items-center overflow-y-auto border-r py-[10px] md:flex"
-        aria-label="Main navigation"
-      >
-        <nav className="flex w-full flex-1 flex-col items-center px-[10px]">
-          {desktopItems.map(({ to, icon, label, end }) => (
-            <RailLink key={`${to}-${label}`} to={to} end={end} label={label} icon={icon} />
-          ))}
-        </nav>
+      {!mobileOnly ? (
+        <aside
+          className="panel hidden w-[64px] shrink-0 flex-col items-center overflow-y-auto border-r py-[10px] md:flex"
+          aria-label="Main navigation"
+        >
+          <nav className="flex w-full flex-1 flex-col items-center px-[10px]">
+            {desktopItems.map(({ to, icon, label, end }) => (
+              <RailLink key={`${to}-${label}`} to={to} end={end} label={label} icon={icon} />
+            ))}
+          </nav>
 
-        <div className="mt-[10px] w-full border-t border-border px-[10px] pt-[10px]">
-          <RailLink to="/account/details" label="Settings" icon={Settings} />
-        </div>
-      </aside>
+          <div className="mt-[10px] w-full border-t border-border px-[10px] pt-[10px]">
+            <RailLink to="/account/details" label="Settings" icon={Settings} />
+          </div>
+        </aside>
+      ) : null}
 
       {/* Mobile bottom bar */}
       <nav

@@ -21,8 +21,9 @@ export function AccountLayout() {
   return (
     <div className="flex h-full flex-col bg-muted">
       <Header />
-      <div className="flex min-h-0 flex-1 overflow-hidden">
+      <div className="relative flex min-h-0 flex-1 overflow-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0">
         <Outlet />
+        <IconSidebar mobileOnly />
       </div>
       <Toast />
     </div>

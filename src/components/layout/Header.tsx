@@ -9,11 +9,11 @@ import { UserAvatar } from '../UserAvatar'
 
 const userMenu = [
   { to: '/account/details', icon: User, label: 'Account details' },
-  { to: '/account/manage', icon: Layers, label: 'Manage accounts' },
+  { to: '/account/manage', icon: Layers, label: 'Manage accounts', hideOnMobile: true },
   { to: '/account/deposit', icon: CreditCard, label: 'Deposit' },
   { to: '/account/withdraw', icon: Wallet, label: 'Withdraw' },
-  { to: '/account/transactions', icon: History, label: 'Transactions' },
-  { to: '/account/verification', icon: ShieldCheck, label: 'Verification' },
+  { to: '/account/transactions', icon: History, label: 'Transactions', hideOnMobile: true },
+  { to: '/account/verification', icon: ShieldCheck, label: 'Verification', hideOnMobile: true },
 ]
 
 export function Header() {
@@ -92,7 +92,36 @@ export function Header() {
         <BrandLogo className="h-9 sm:h-10" />
       </Link>
 
-      {/* Demo / Live account switch — desktop / tablet only */}
+      {/* Mobile Demo / Live switch — after logo */}
+      <div
+        className="flex shrink-0 items-center rounded-full border border-border bg-muted p-0.5 sm:hidden"
+        role="group"
+        aria-label="Switch demo or live account"
+      >
+        {accounts.map((a) => {
+          const active = a.id === activeAccountId
+          const live = a.type === 'live'
+          return (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => switchAccount(a.id)}
+              className={clsx(
+                'h-8 rounded-full px-2.5 text-xs font-semibold transition-colors',
+                active
+                  ? live
+                    ? 'bg-buy text-white'
+                    : 'bg-link text-white'
+                  : 'text-text-secondary',
+              )}
+            >
+              {live ? 'Live' : 'Demo'}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Demo / Live account switch — desktop / tablet */}
       <div className="relative hidden min-w-0 shrink-0 sm:block">
         <div className="relative flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-[#29313d] py-0.5 pl-2 pr-0.5 sm:gap-2.5 sm:py-1 sm:pl-2.5 sm:pr-1">
           <span
@@ -166,9 +195,11 @@ export function Header() {
         <button
           type="button"
           onClick={() => navigate('/account/deposit')}
-          className="auth-btn h-9 shrink-0 cursor-pointer rounded-[8px] bg-[#fcd535] px-2.5 text-sm font-semibold !text-[#202630] transition-colors hover:bg-[#ceaf30] sm:h-10 sm:px-4"
+          aria-label="Deposit"
+          className="auth-btn flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-[8px] bg-[#fcd535] !text-[#202630] transition-colors hover:bg-[#ceaf30] sm:h-10 sm:w-auto sm:px-4"
         >
-          Deposit
+          <Wallet size={18} strokeWidth={1.75} className="sm:hidden" />
+          <span className="hidden text-sm font-semibold sm:inline">Deposit</span>
         </button>
 
         <span className="mr-1 hidden w-[4.75rem] text-right tabular-nums text-xs text-text-secondary sm:inline">
@@ -321,7 +352,7 @@ export function Header() {
             />
           </button>
           {userOpen ? (
-            <div className="panel fixed right-[5px] top-[3.5rem] z-[60] flex max-h-[calc(100dvh-4.5rem)] w-[calc(100vw-10px)] max-w-[18rem] flex-col overflow-hidden rounded-2xl border shadow-2xl sm:absolute sm:right-0 sm:top-14 sm:max-h-[min(32rem,calc(100dvh-5rem))] sm:w-72 sm:max-w-none">
+            <div className="panel fixed right-[5px] top-[3.5rem] z-[60] flex w-[calc(100vw-10px)] max-w-[18rem] flex-col overflow-hidden rounded-2xl border shadow-2xl sm:absolute sm:right-0 sm:top-14 sm:w-72 sm:max-w-none">
               <div className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3.5">
                 <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={44} plain />
                 <div className="min-w-0 flex-1">
@@ -335,8 +366,8 @@ export function Header() {
                   </div>
                 </div>
               </div>
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
-                <div className="border-b border-border px-3 py-3">
+              <div>
+                <div className="hidden border-b border-border px-3 py-3 sm:block">
                   <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-text-secondary">
                     Trading account
                   </div>
@@ -376,12 +407,15 @@ export function Header() {
                   </div>
                 </div>
                 <div className="py-1.5">
-                  {userMenu.map(({ to, icon: Icon, label }) => (
+                  {userMenu.map(({ to, icon: Icon, label, hideOnMobile }) => (
                     <Link
                       key={to}
                       to={to}
                       onClick={() => setUserOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-[#29313d] hover:text-brand-ink"
+                      className={clsx(
+                        'items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-[#29313d] hover:text-brand-ink',
+                        hideOnMobile ? 'hidden md:flex' : 'flex',
+                      )}
                     >
                       <span className="flex h-9 w-9 items-center justify-center text-brand-ink">
                         <Icon size={18} strokeWidth={1.75} />

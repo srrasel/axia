@@ -9,6 +9,7 @@ import { calcUsedMargin, formatMoney, getPlatformCurrency } from '../data/mock'
 import { PREMIUM_THRESHOLD } from '../types'
 import {
   AlertCircle,
+  ArrowLeft,
   Briefcase,
   Building2,
   Check,
@@ -19,7 +20,6 @@ import {
   EyeOff,
   FileWarning,
   Lock,
-  Menu,
   Pencil,
   Upload,
   Users,
@@ -28,24 +28,24 @@ import {
 } from 'lucide-react'
 
 function PageShell({ title, children }: { title: string; children: ReactNode }) {
-  const [navOpen, setNavOpen] = useState(false)
-
   return (
     <>
-      <AccountSidebar open={navOpen} onClose={() => setNavOpen(false)} />
+      {/* Desktop account sidebar only — mobile uses main footer nav */}
+      <div className="hidden md:contents">
+        <AccountSidebar />
+      </div>
       <div className="panel flex min-w-0 flex-1 flex-col overflow-hidden border-l-0">
         <div className="flex items-center gap-2 border-b border-border px-3 py-3 sm:gap-3 sm:px-5">
-          <button
-            type="button"
+          <Link
+            to="/more"
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-panel text-text-secondary hover:bg-muted md:hidden"
-            onClick={() => setNavOpen(true)}
-            aria-label="Open account menu"
+            aria-label="Back to More"
           >
-            <Menu size={18} />
-          </button>
+            <ArrowLeft size={18} />
+          </Link>
           <div className="min-w-0 truncate text-[20px] font-semibold leading-tight">{title}</div>
         </div>
-        <div className="flex-1 overflow-y-auto p-3 pb-[50px] sm:p-5 sm:pb-[50px]">{children}</div>
+        <div className="flex-1 overflow-y-auto p-3 pb-4 sm:p-5">{children}</div>
       </div>
     </>
   )
