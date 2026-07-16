@@ -2,13 +2,13 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowDownToLine,
+  ArrowRight,
   ArrowUpFromLine,
   BarChart3,
   Bell,
   Calendar,
   ClipboardList,
   Crosshair,
-  Gift,
   LayoutDashboard,
   MessageCircle,
   ShieldCheck,
@@ -54,44 +54,21 @@ const SECTION_LABELS: Record<SectionKey, string> = {
 
 /** Tools 4 · Rewards 1 · Education 3 · Funding 3 · Platform 1 · Support 3 */
 const CARDS: MoreCard[] = [
-  // Tools — 4
   { to: '/signals', label: 'Signals', icon: Store, section: 'tools', tone: 'text-[#fcd535]' },
   { to: '/analytics', label: 'Analytics', icon: BarChart3, section: 'tools', tone: 'text-link' },
   { to: '/reports', label: 'Reports', icon: LayoutDashboard, section: 'tools', tone: 'text-buy' },
   { to: '/calendar', label: 'Calendar', icon: Calendar, section: 'tools', tone: 'text-[#fcd535]' },
-  // Rewards — 1
   { to: '/account/invite', label: 'Refer a Friend', icon: UserPlus, section: 'rewards', tone: 'text-[#fcd535]' },
-  // Education — 3
   { to: '/ai', label: 'AI Assistant', icon: Sparkles, section: 'education', tone: 'text-link' },
   { to: '/premium', label: 'Premium', icon: Crosshair, section: 'education', tone: 'text-[#fcd535]' },
   { to: '/account/questionnaire', label: 'Questionnaire', icon: ClipboardList, section: 'education', tone: 'text-buy' },
-  // Funding — 3
   { to: '/account/deposit', label: 'Deposit', icon: ArrowDownToLine, section: 'funding', tone: 'text-buy' },
   { to: '/account/withdraw', label: 'Withdraw', icon: ArrowUpFromLine, section: 'funding', tone: 'text-sell' },
   { to: '/account/transactions', label: 'Transactions', icon: Wallet, section: 'funding', tone: 'text-[#fcd535]' },
-  // Platform — 1
   { to: '/account/mobile', label: 'Mobile App', icon: Smartphone, section: 'platform', tone: 'text-link' },
-  // Support — 3
   { to: '/notifications', label: 'Notifications', icon: Bell, section: 'support', tone: 'text-[#fcd535]' },
   { to: '/account/verification', label: 'Verification', icon: ShieldCheck, section: 'support', tone: 'text-buy' },
   { to: '/account/details', label: 'Help & Settings', icon: MessageCircle, section: 'support', tone: 'text-link' },
-]
-
-const BANNERS = [
-  {
-    to: '/account/deposit',
-    title: 'Boost your trading capital',
-    subtitle: 'Deposit to unlock premium tools and signals',
-    className: 'from-[#2a2410] via-[#3d3214] to-[#1a1d23]',
-    accent: 'bg-[#fcd535]',
-  },
-  {
-    to: '/account/invite',
-    title: 'Invite friends, earn rewards',
-    subtitle: 'Share your referral code and grow together',
-    className: 'from-[#12151a] via-[#1c222c] to-[#29313d]',
-    accent: 'bg-buy',
-  },
 ]
 
 function FeatureCard({ card }: { card: MoreCard }) {
@@ -99,11 +76,9 @@ function FeatureCard({ card }: { card: MoreCard }) {
   return (
     <Link
       to={card.to}
-      className="flex flex-col items-center gap-2 rounded-2xl bg-muted px-2 py-4 text-center transition-colors hover:bg-sidebar-active active:scale-[0.98]"
+      className="flex flex-col items-center gap-2.5 rounded-2xl border border-border/80 px-2 py-4 text-center transition-colors hover:border-border hover:bg-sidebar-active/60 active:scale-[0.98]"
     >
-      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-panel shadow-sm">
-        <Icon size={24} strokeWidth={1.75} className={card.tone} />
-      </span>
+      <Icon size={24} strokeWidth={1.75} className={card.tone} />
       <span className="text-[12px] font-semibold leading-tight text-text">{card.label}</span>
     </Link>
   )
@@ -124,33 +99,42 @@ export function MorePage() {
   return (
     <div className="flex h-full min-h-0 flex-col bg-panel">
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
-        <div className="flex gap-3 overflow-x-auto px-4 pb-1 pt-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-6">
-          {BANNERS.map((b) => (
-            <Link
-              key={b.to}
-              to={b.to}
-              className={clsx(
-                'relative flex min-h-[108px] w-[min(100%,320px)] shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br p-4 text-white shadow-sm',
-                b.className,
-              )}
-            >
-              <div className="relative z-10 max-w-[70%] pr-2">
-                <div className="text-[17px] font-bold leading-snug">{b.title}</div>
-                <p className="mt-1.5 text-[12px] leading-snug text-white/75">{b.subtitle}</p>
-              </div>
-              <div
-                className={clsx(
-                  'absolute -bottom-3 -right-2 flex h-20 w-20 items-center justify-center rounded-2xl opacity-90',
-                  b.accent,
-                )}
-              >
-                <Gift size={36} className="text-[#202630]" strokeWidth={1.5} />
-              </div>
-            </Link>
-          ))}
+        {/* Promo cards — single surface, no nested colored blocks */}
+        <div className="space-y-3 px-4 pt-4 sm:px-6">
+          <Link
+            to="/account/deposit"
+            className="flex items-center gap-3 rounded-2xl border border-border px-4 py-3.5 transition-colors hover:bg-sidebar-active/50"
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#fcd535]/35 text-[#fcd535]">
+              <ArrowDownToLine size={20} strokeWidth={1.75} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-semibold text-text">Fund your account</span>
+              <span className="mt-0.5 block text-[12px] leading-snug text-text-secondary">
+                Deposit to unlock premium tools and signals
+              </span>
+            </span>
+            <ArrowRight size={18} className="shrink-0 text-text-secondary" />
+          </Link>
+
+          <Link
+            to="/account/invite"
+            className="flex items-center gap-3 rounded-2xl border border-border px-4 py-3.5 transition-colors hover:bg-sidebar-active/50"
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#fcd535]/35 text-[#fcd535]">
+              <UserPlus size={20} strokeWidth={1.75} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-semibold text-text">Referral program</span>
+              <span className="mt-0.5 block text-[12px] leading-snug text-text-secondary">
+                Invite friends and earn when they join
+              </span>
+            </span>
+            <ArrowRight size={18} className="shrink-0 text-text-secondary" />
+          </Link>
         </div>
 
-        <div className="sticky top-0 z-10 bg-panel/95 px-4 py-3 backdrop-blur-sm sm:px-6">
+        <div className="sticky top-0 z-10 bg-panel px-4 py-3 sm:px-6">
           <div className="flex gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {FILTERS.map((f) => {
               const active = filter === f.key
@@ -163,7 +147,7 @@ export function MorePage() {
                     'h-9 shrink-0 rounded-full px-3.5 text-sm font-semibold transition-colors',
                     active
                       ? 'bg-[#fcd535] text-[#202630]'
-                      : 'bg-muted text-text-secondary hover:bg-sidebar-active hover:text-text',
+                      : 'border border-border text-text-secondary hover:bg-sidebar-active hover:text-text',
                   )}
                 >
                   {f.label}
