@@ -8,7 +8,7 @@ export function PlatformLayout() {
       <Header />
       <div className="relative flex min-h-0 flex-1 overflow-x-clip overflow-y-hidden">
         <IconSidebar />
-        <main className="min-w-0 flex-1 overflow-hidden pb-[calc(5px+3.25rem+3.5rem)] md:pb-16 lg:pb-0">
+        <main className="min-w-0 flex-1 overflow-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0">
           <Outlet />
         </main>
       </div>

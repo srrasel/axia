@@ -16,7 +16,7 @@ export function TradesTable() {
   const pendingCount = accountTrades.filter((t) => t.status === 'pending').length
 
   return (
-    <div className="panel flex h-32 shrink-0 flex-col border-t sm:h-36 md:h-40 lg:h-44">
+    <div className="panel hidden h-32 shrink-0 flex-col border-t sm:h-36 md:flex md:h-40 lg:h-44">
       <div className="flex items-center gap-3 overflow-x-auto border-b border-border px-3 sm:gap-4 sm:px-4">
         {(
           [

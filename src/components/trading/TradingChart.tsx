@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import {
   CandlestickSeries,
   ColorType,
@@ -9,11 +10,45 @@ import {
   type ISeriesApi,
   type UTCTimestamp,
 } from 'lightweight-charts'
-import { Camera, Maximize2, MousePointer2, Settings2, TrendingUp, Type } from 'lucide-react'
+import {
+  Camera,
+  CandlestickChart,
+  ChevronDown,
+  Maximize2,
+  MoreVertical,
+  MousePointer2,
+  Settings2,
+  Sparkles,
+  TrendingUp,
+  Type,
+} from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { formatPrice } from '../../data/mock'
+import clsx from 'clsx'
 
-const TIMEFRAMES = ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W', '1Mo']
+const DESKTOP_TIMEFRAMES = ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W', '1Mo']
+
+/** Mobile interval bar — trading-app style pills, mapped to supported TFs */
+const MOBILE_TIMEFRAMES: Array<{ key: string; label: string }> = [
+  { key: '5M', label: '5M' },
+  { key: '15M', label: '15M' },
+  { key: '1H', label: '1H' },
+  { key: '1D', label: '1D' },
+  { key: '1W', label: '1W' },
+  { key: '1Mo', label: '1M' },
+]
+
+const TF_LABELS: Record<string, string> = {
+  '1M': '1 Min',
+  '5M': '5 Min',
+  '15M': '15 Min',
+  '30M': '30 Min',
+  '1H': '1 Hour',
+  '4H': '4 Hour',
+  '1D': '1 Day',
+  '1W': '1 Week',
+  '1Mo': '1 Month',
+}
 
 const TWO_DEC_SYMBOLS = new Set([
   'BTCUSD',
@@ -42,7 +77,6 @@ function chartPriceFormat(symbol: string) {
   if (symbol.includes('JPY')) {
     return { type: 'price' as const, precision: 3, minMove: 0.001 }
   }
-  // Forex majors / minors — full pip precision on the right axis
   return { type: 'price' as const, precision: 5, minMove: 0.00001 }
 }
 
@@ -52,6 +86,12 @@ function sma(values: number[], period: number) {
     const slice = values.slice(i + 1 - period, i + 1)
     return slice.reduce((a, b) => a + b, 0) / period
   })
+}
+
+function symbolInitials(symbol: string) {
+  const clean = symbol.replace(/[^A-Za-z0-9]/g, '')
+  if (clean.length <= 2) return clean.toUpperCase()
+  return clean.slice(0, 2).toUpperCase()
 }
 
 export function TradingChart() {
@@ -65,6 +105,7 @@ export function TradingChart() {
     setChartIndicator,
     darkMode,
     activeAccountId,
+    quotes,
   } = useApp()
   const containerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
@@ -72,6 +113,11 @@ export function TradingChart() {
   const maRef = useRef<ISeriesApi<'Line'> | null>(null)
   const priceLinesRef = useRef<IPriceLine[]>([])
   const toolRef = useRef<'pointer' | 'trend' | 'text'>('pointer')
+
+  const quote = quotes.find((q) => q.symbol === selectedSymbol)
+  const changeAbs = quote?.change ?? 0
+  const changePct = quote?.percentChange ?? 0
+  const positive = changePct >= 0
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -243,7 +289,7 @@ export function TradingChart() {
 
   const screenshot = () => {
     if (!chartRef.current) return
-    const canvas = (containerRef.current?.querySelector('canvas') as HTMLCanvasElement | null)
+    const canvas = containerRef.current?.querySelector('canvas') as HTMLCanvasElement | null
     if (!canvas) return
     const link = document.createElement('a')
     link.download = `${selectedSymbol}-${timeframe}.png`
@@ -260,10 +306,52 @@ export function TradingChart() {
 
   return (
     <div className="panel flex min-w-0 flex-1 flex-col">
-      <div className="flex items-center gap-1 overflow-x-auto border-b border-border px-2 py-1.5 sm:gap-2 sm:px-3 sm:py-2">
+      {/* Mobile asset header */}
+      <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-3 py-3 md:hidden">
+        <Link to="/markets" className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fcd535]/20 text-[11px] font-bold text-[#fcd535]">
+              {symbolInitials(selectedSymbol)}
+            </span>
+            <span className="truncate text-lg font-bold text-text">{selectedSymbol}</span>
+            <ChevronDown size={16} className="shrink-0 text-text-secondary" />
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[12px]">
+            <span className={clsx('font-medium tabular-nums', positive ? 'positive' : 'negative')}>
+              {positive ? '+' : ''}
+              {changeAbs.toFixed(changeAbs !== 0 && Math.abs(changeAbs) < 1 ? 5 : 2)}
+            </span>
+            <span className={clsx('font-medium tabular-nums', positive ? 'positive' : 'negative')}>
+              {positive ? '+' : ''}
+              {changePct.toFixed(2)}%
+            </span>
+            <span className="text-text-secondary">· {TF_LABELS[timeframe] ?? timeframe}</span>
+          </div>
+        </Link>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <Link
+            to="/signals"
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#fcd535]/15 text-[#fcd535]"
+            aria-label="Signals"
+          >
+            <Sparkles size={18} strokeWidth={1.75} />
+          </Link>
+          <button
+            type="button"
+            onClick={() => setChartIndicator(chartIndicator === 'None' ? 'Moving Average' : 'None')}
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-text-secondary hover:bg-muted"
+            aria-label="More chart options"
+          >
+            <MoreVertical size={18} strokeWidth={1.75} />
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop toolbar */}
+      <div className="hidden items-center gap-1 overflow-x-auto border-b border-border px-2 py-1.5 sm:gap-2 sm:px-3 sm:py-2 md:flex">
         <div className="mr-1 shrink-0 text-sm font-bold sm:mr-2">{selectedSymbol}</div>
         <div className="flex shrink-0 gap-1">
-          {TIMEFRAMES.map((tf) => (
+          {DESKTOP_TIMEFRAMES.map((tf) => (
             <button
               key={tf}
               type="button"
@@ -301,7 +389,7 @@ export function TradingChart() {
       </div>
 
       <div className="relative min-h-0 flex-1">
-        <div className="absolute left-2 top-2 z-10 flex flex-col gap-1 rounded border border-border bg-panel p-1 shadow-sm">
+        <div className="absolute left-2 top-2 z-10 hidden flex-col gap-1 rounded border border-border bg-panel p-1 shadow-sm md:flex">
           <Tool
             icon={MousePointer2}
             active={toolRef.current === 'pointer'}
@@ -325,6 +413,50 @@ export function TradingChart() {
           />
         </div>
         <div ref={containerRef} className="h-full w-full" />
+      </div>
+
+      {/* Mobile time interval bar */}
+      <div className="flex shrink-0 items-center gap-1 border-t border-border px-2 py-2 md:hidden">
+        <button
+          type="button"
+          onClick={() =>
+            setChartIndicator(chartIndicator === 'None' ? 'Moving Average' : 'None')
+          }
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-text-secondary hover:bg-muted hover:text-text"
+          aria-label="Chart settings"
+        >
+          <CandlestickChart size={18} strokeWidth={1.75} />
+        </button>
+
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {MOBILE_TIMEFRAMES.map(({ key, label }) => {
+            const active = timeframe === key
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setTimeframe(key)}
+                className={clsx(
+                  'flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full px-2.5 text-[13px] font-semibold transition-colors',
+                  active
+                    ? 'bg-[#fcd535] text-[#202630]'
+                    : 'text-text-secondary hover:bg-muted hover:text-text',
+                )}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
+
+        <button
+          type="button"
+          onClick={fullscreen}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-text-secondary hover:bg-muted hover:text-text"
+          aria-label="Fullscreen"
+        >
+          <Maximize2 size={18} strokeWidth={1.75} />
+        </button>
       </div>
     </div>
   )

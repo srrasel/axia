@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { List, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Watchlist } from '../components/trading/Watchlist'
 import { TradingChart } from '../components/trading/TradingChart'
 import { OrderPanel } from '../components/trading/OrderPanel'
@@ -11,19 +11,22 @@ import { Link } from 'react-router-dom'
 
 export function TradingPage() {
   const [tab, setTab] = useState<'chart' | 'info' | 'signals'>('chart')
-  const [sheet, setSheet] = useState<'markets' | 'trade' | null>(null)
+  const [sheet, setSheet] = useState(false)
   const [tradeSide, setTradeSide] = useState<'buy' | 'sell'>('buy')
-  const { selectedSymbol, quotes, isPremium } = useApp()
+  const { selectedSymbol, quotes, isPremium, trades, activeAccountId } = useApp()
   const quote = quotes.find((q) => q.symbol === selectedSymbol)
+  const openCount = trades.filter(
+    (t) => t.status === 'open' && t.accountId === activeAccountId && t.symbol === selectedSymbol,
+  ).length
 
   const openTrade = (side: 'buy' | 'sell') => {
     setTradeSide(side)
-    setSheet('trade')
+    setSheet(true)
   }
 
   return (
-    <div className="relative flex h-full flex-col">
-      <div className="panel flex items-center gap-1 overflow-x-auto border-b px-2 sm:gap-4 sm:px-4">
+    <div className="relative flex h-full flex-col pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-[5.25rem] lg:pb-0">
+      <div className="panel hidden items-center gap-1 overflow-x-auto border-b px-2 sm:gap-4 sm:px-4 md:flex">
         {(
           [
             ['chart', 'Trading Chart'],
@@ -63,53 +66,51 @@ export function TradingPage() {
           </div>
           <TradesTable />
 
-          {/* Mobile / tablet trade action bar — sits above bottom nav on phones */}
-          <div className="panel fixed inset-x-0 bottom-[calc(5px+3.25rem)] z-30 flex gap-2 border-t p-2 md:bottom-0 lg:hidden">
-            <button
-              type="button"
-              onClick={() => setSheet('markets')}
-              className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-lg border border-border text-sm font-medium hover:bg-muted"
-            >
-              <List size={16} />
-              Markets
-            </button>
+          {/* Mobile / tablet trade action bar */}
+          <div className="panel fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 flex items-stretch gap-2 border-t p-3 md:bottom-0 lg:hidden">
             <button
               type="button"
               onClick={() => openTrade('sell')}
-              className="flex h-11 min-w-0 flex-[1.4] cursor-pointer flex-col items-center justify-center rounded-lg bg-sell px-1 text-white"
+              className="flex h-[58px] min-w-0 flex-1 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl bg-sell px-3 text-white"
             >
-              <span className="text-[10px] font-medium leading-none opacity-90">Sell</span>
-              <span className="truncate text-xs font-semibold tabular-nums">
+              <span className="text-[11px] font-bold uppercase tracking-wide leading-none opacity-95">
+                Sell
+              </span>
+              <span className="truncate text-base font-bold tabular-nums leading-none">
                 {quote ? formatPrice(quote.bid, selectedSymbol) : '—'}
               </span>
             </button>
+            {openCount > 0 ? (
+              <Link
+                to="/portfolio"
+                className="flex h-[58px] w-9 shrink-0 items-center justify-center self-center rounded-lg bg-muted text-sm font-bold tabular-nums text-text"
+                aria-label={`${openCount} open positions`}
+              >
+                {openCount}
+              </Link>
+            ) : null}
             <button
               type="button"
               onClick={() => openTrade('buy')}
-              className="flex h-11 min-w-0 flex-[1.4] cursor-pointer flex-col items-center justify-center rounded-lg bg-buy px-1 text-white"
+              className="flex h-[58px] min-w-0 flex-1 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl bg-buy px-3 text-white"
             >
-              <span className="text-[10px] font-medium leading-none opacity-90">Buy</span>
-              <span className="truncate text-xs font-semibold tabular-nums">
+              <span className="text-[11px] font-bold uppercase tracking-wide leading-none opacity-95">
+                Buy
+              </span>
+              <span className="truncate text-base font-bold tabular-nums leading-none">
                 {quote ? formatPrice(quote.ask, selectedSymbol) : '—'}
               </span>
             </button>
           </div>
 
           {sheet ? (
-            <MobileSheet
-              title={sheet === 'markets' ? 'Markets' : `Trade · ${selectedSymbol}`}
-              onClose={() => setSheet(null)}
-            >
-              {sheet === 'markets' ? (
-                <Watchlist className="h-full min-h-0 w-full border-0" onSelect={() => setSheet(null)} />
-              ) : (
-                <OrderPanel
-                  key={tradeSide}
-                  className="h-full min-h-0 w-full border-0"
-                  initialSide={tradeSide}
-                  onPlaced={() => setSheet(null)}
-                />
-              )}
+            <MobileSheet title={`Trade · ${selectedSymbol}`} onClose={() => setSheet(false)}>
+              <OrderPanel
+                key={tradeSide}
+                className="h-full min-h-0 w-full border-0"
+                initialSide={tradeSide}
+                onPlaced={() => setSheet(false)}
+              />
             </MobileSheet>
           ) : null}
         </>

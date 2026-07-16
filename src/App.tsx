@@ -4,6 +4,8 @@ import { AccountLayout, PlatformLayout } from './components/layout/Layouts'
 import { LoginPage, RegisterPage, ForgotPasswordPage } from './pages/Auth'
 import { TradingPage } from './pages/Trading'
 import { PortfolioPage } from './pages/Portfolio'
+import { MarketsPage } from './pages/Markets'
+import { MorePage } from './pages/More'
 import {
   AiAssistantPage,
   AnalyticsPage,
@@ -44,6 +46,8 @@ export default function App() {
           <Route element={<PlatformLayout />}>
             <Route path="/" element={<Navigate to="/platform" replace />} />
             <Route path="/platform" element={<TradingPage />} />
+            <Route path="/markets" element={<MarketsPage />} />
+            <Route path="/more" element={<MorePage />} />
             <Route path="/portfolio" element={<PortfolioPage />} />
             <Route path="/premium" element={<PremiumPage />} />
             <Route path="/signals" element={<SignalsPage />} />

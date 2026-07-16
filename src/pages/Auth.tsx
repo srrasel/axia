@@ -112,7 +112,7 @@ export function LoginPage() {
           </Link>
         </div>
         <button type="submit" disabled={loading} className={AUTH_BTN} style={AUTH_BTN_STYLE}>
-          {loading ? 'Logging in…' : 'Log In'}
+          Log In
         </button>
       </form>
       <SocialAuth />

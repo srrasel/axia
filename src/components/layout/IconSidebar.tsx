@@ -1,22 +1,26 @@
 import { useState, type FocusEvent, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import {
   BarChart3,
   Bell,
   Briefcase,
   Calendar,
+  CandlestickChart,
   Crosshair,
   LayoutDashboard,
+  LayoutGrid,
   LineChart,
+  List,
   Settings,
   Store,
   Trophy,
 } from 'lucide-react'
 import clsx from 'clsx'
 
-const items = [
+const desktopItems = [
   { to: '/platform', icon: LineChart, label: 'Trading', end: true },
+  { to: '/markets', icon: List, label: 'Markets' },
   { to: '/signals', icon: Store, label: 'Signals' },
   { to: '/premium', icon: Crosshair, label: 'Premium' },
   { to: '/portfolio', icon: Briefcase, label: 'Portfolio' },
@@ -25,6 +29,26 @@ const items = [
   { to: '/calendar', icon: Calendar, label: 'Calendar' },
   { to: '/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
+]
+
+const mobileItems = [
+  { to: '/platform', icon: CandlestickChart, label: 'Trade', end: true },
+  { to: '/markets', icon: LineChart, label: 'Market' },
+  { to: '/portfolio', icon: Briefcase, label: 'Portfolio' },
+  { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
+  { to: '/more', icon: LayoutGrid, label: 'More' },
+]
+
+const MORE_ACTIVE_PREFIXES = [
+  '/more',
+  '/signals',
+  '/premium',
+  '/reports',
+  '/calendar',
+  '/analytics',
+  '/notifications',
+  '/ai',
+  '/account',
 ]
 
 const ICON_PX = 24
@@ -92,7 +116,13 @@ function RailLink({
   )
 }
 
+function isMoreSection(pathname: string) {
+  return MORE_ACTIVE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+}
+
 export function IconSidebar() {
+  const { pathname } = useLocation()
+
   return (
     <>
       {/* Desktop / tablet */}
@@ -101,8 +131,8 @@ export function IconSidebar() {
         aria-label="Main navigation"
       >
         <nav className="flex w-full flex-1 flex-col items-center px-[10px]">
-          {items.map(({ to, icon, label, end }) => (
-            <RailLink key={to} to={to} end={end} label={label} icon={icon} />
+          {desktopItems.map(({ to, icon, label, end }) => (
+            <RailLink key={`${to}-${label}`} to={to} end={end} label={label} icon={icon} />
           ))}
         </nav>
 
@@ -113,25 +143,37 @@ export function IconSidebar() {
 
       {/* Mobile bottom bar */}
       <nav
-        className="panel fixed inset-x-0 bottom-[5px] z-40 flex items-stretch justify-around border-t px-0 pb-1.5 pt-1 md:hidden"
+        className="panel fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t px-0 pb-[max(0.375rem,env(safe-area-inset-bottom))] pt-1 md:hidden"
         aria-label="Mobile navigation"
       >
-        {items.slice(0, 5).map(({ to, icon: Icon, label, end }) => (
+        {mobileItems.map(({ to, icon: Icon, label, end }) => (
           <NavLink
             key={to}
             to={to}
             end={end}
-            className={({ isActive }) =>
-              clsx(
-                'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 text-text-secondary',
-                isActive && 'text-white',
+            className={({ isActive }) => {
+              const active = to === '/more' ? isMoreSection(pathname) : isActive
+              return clsx(
+                'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1 text-text-secondary transition-colors',
+                active && 'text-[#fcd535]',
               )
-            }
+            }}
           >
-            <Icon size={ICON_PX} strokeWidth={1.75} className="h-6 w-6" />
-            <span className="max-w-full truncate px-0.5 pb-0.5 text-[11px] font-medium leading-tight">
-              {label}
-            </span>
+            {({ isActive }) => {
+              const active = to === '/more' ? isMoreSection(pathname) : isActive
+              return (
+                <>
+                  <Icon
+                    size={ICON_PX}
+                    strokeWidth={active ? 2 : 1.75}
+                    className="h-6 w-6"
+                  />
+                  <span className="max-w-full truncate px-0.5 text-[10px] font-medium leading-tight">
+                    {label}
+                  </span>
+                </>
+              )
+            }}
           </NavLink>
         ))}
       </nav>
