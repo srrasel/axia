@@ -291,7 +291,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const refreshAll = useCallback(async (accountIdOverride?: string) => {
     if (!getToken()) return
     const seq = ++bootstrapSeqRef.current
-    const accountId = accountIdOverride ?? activeAccountIdRef.current || ''
+    const accountId = accountIdOverride ?? (activeAccountIdRef.current || '')
     const data = await api<any>(`/api/bootstrap?accountId=${encodeURIComponent(accountId)}`)
     // Ignore outdated responses so Demo/Live does not bounce while requests overlap
     if (seq !== bootstrapSeqRef.current) return
