@@ -357,7 +357,7 @@ export function TradingChart() {
               type="button"
               onClick={() => setTimeframe(tf)}
               className={`rounded px-2 py-1 text-xs font-medium ${
-                timeframe === tf ? 'chip-brand-active' : 'text-text-secondary hover:bg-muted'
+                timeframe === tf ? 'bg-[#29313d] text-text' : 'text-text-secondary hover:bg-muted'
               }`}
             >
               {tf}
@@ -437,10 +437,10 @@ export function TradingChart() {
                 type="button"
                 onClick={() => setTimeframe(key)}
                 className={clsx(
-                  'flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full px-2.5 text-[13px] font-semibold transition-colors',
+                  'flex h-8 min-w-8 shrink-0 items-center justify-center px-2.5 text-[13px] font-semibold transition-colors',
                   active
-                    ? 'border-4 border-[#29313d] bg-[#29313d] text-text'
-                    : 'border-4 border-transparent text-text-secondary hover:bg-muted hover:text-text',
+                    ? 'rounded-[4px] border-4 border-[#29313d] bg-[#29313d] text-text'
+                    : 'rounded-full border-4 border-transparent text-text-secondary hover:bg-muted hover:text-text',
                 )}
               >
                 {label}
