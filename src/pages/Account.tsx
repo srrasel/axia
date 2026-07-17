@@ -1108,8 +1108,8 @@ export function DepositPage() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="text-xs font-medium uppercase tracking-wide text-text-secondary">Deposit amount</div>
-              <div className="mt-1 text-sm text-text-secondary">
-                Total deposited {formatMoney(user?.totalDeposited ?? 0)}
+              <div className="mt-1 text-sm capitalize text-text-secondary">
+                Total Deposited {formatMoney(user?.totalDeposited ?? 0)}
               </div>
             </div>
             <div className="text-xs text-text-secondary sm:text-right">
@@ -1138,7 +1138,7 @@ export function DepositPage() {
                 type="button"
                 onClick={() => setAmount(v)}
                 className={clsx(
-                  'rounded-[4px] border bg-transparent px-3.5 py-1.5 text-xs font-semibold transition-colors',
+                  'rounded-lg border bg-transparent px-3.5 py-1.5 text-xs font-semibold transition-colors',
                   amount === v
                     ? 'border-[#fff] text-[#fff]'
                     : 'border-border text-text-secondary hover:border-[#F0B90B]/50 hover:text-brand-ink',
@@ -1152,7 +1152,7 @@ export function DepositPage() {
         </div>
 
         <div>
-          <div className="mb-3 text-sm font-semibold">Payment method</div>
+          <div className="mb-3 text-sm font-semibold capitalize">Payment Method</div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {tabs.map((t) => {
               const Icon = t.icon
@@ -1305,7 +1305,7 @@ export function DepositPage() {
         {method === 'bank' && info?.countries?.length ? (
           <div className="space-y-4">
             <div>
-              <div className="mb-3 text-sm font-semibold">Select country</div>
+              <div className="mb-3 text-[20px] font-semibold capitalize">Select Country</div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {info.countries.map((c) => {
                   const active = bankCountry === c.countryCode
@@ -1315,8 +1315,8 @@ export function DepositPage() {
                       type="button"
                       onClick={() => setBankCountry(c.countryCode)}
                       className={clsx(
-                        'rounded-lg border bg-transparent px-2.5 py-1.5 text-left transition-all',
-                        active ? 'border-[#fff] text-[#fff]' : 'border-border hover:border-[#F0B90B]/50',
+                        'rounded-lg border bg-transparent px-2.5 py-3 text-left transition-all',
+                        active ? 'border-[#fff] text-[#fff]' : 'border-border hover:border-[#fff]',
                       )}
                     >
                       <div className="text-[13px] font-semibold leading-tight">{c.label}</div>
