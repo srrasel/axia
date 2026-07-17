@@ -87,7 +87,9 @@ interface AppState {
   switchAccount: (id: string) => void
   placeTrade: (input: PlaceTradeInput) => Promise<string | null>
   closeTrade: (id: string) => Promise<void>
+  closeTrades: (ids: string[]) => Promise<void>
   cancelPending: (id: string) => Promise<void>
+  cancelPendings: (ids: string[]) => Promise<void>
   updateTradeLevels: (id: string, stopLoss?: number, takeProfit?: number) => Promise<void>
   deposit: (
     amount: number,
@@ -540,16 +542,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const closeTrade = async (id: string) => {
-    const data = await api<{ pnl: number }>(`/api/trades/${id}/close`, { method: 'POST' })
+  const closeTrades = async (ids: string[]) => {
+    if (ids.length === 0) return
+    const results = await Promise.all(
+      ids.map((id) => api<{ pnl: number }>(`/api/trades/${id}/close`, { method: 'POST' })),
+    )
     await refreshAll()
-    showToast(`Closed · PnL ${data.pnl.toFixed(2)}`)
+    const totalPnl = results.reduce((s, r) => s + r.pnl, 0)
+    showToast(
+      ids.length === 1
+        ? `Closed · PnL ${totalPnl.toFixed(2)}`
+        : `Closed ${ids.length} · PnL ${totalPnl.toFixed(2)}`,
+    )
+  }
+
+  const closeTrade = async (id: string) => {
+    await closeTrades([id])
+  }
+
+  const cancelPendings = async (ids: string[]) => {
+    if (ids.length === 0) return
+    await Promise.all(ids.map((id) => api(`/api/trades/${id}`, { method: 'DELETE' })))
+    await refreshAll()
+    showToast(ids.length === 1 ? 'Pending order cancelled' : `Cancelled ${ids.length} orders`)
   }
 
   const cancelPending = async (id: string) => {
-    await api(`/api/trades/${id}`, { method: 'DELETE' })
-    await refreshAll()
-    showToast('Pending order cancelled')
+    await cancelPendings([id])
   }
 
   const updateTradeLevels = async (id: string, stopLoss?: number, takeProfit?: number) => {
@@ -694,7 +713,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     switchAccount,
     placeTrade,
     closeTrade,
+    closeTrades,
     cancelPending,
+    cancelPendings,
     updateTradeLevels,
     deposit,
     withdraw,

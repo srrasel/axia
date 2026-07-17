@@ -81,7 +81,8 @@ export function MobileTrades({
   onOpenJournal: () => void
   onOpenCalendar: () => void
 }) {
-  const { trades, activeAccountId, closeTrade, cancelPending, setSelectedSymbol } = useApp()
+  const { trades, activeAccountId, closeTrade, closeTrades, cancelPending, cancelPendings, setSelectedSymbol } =
+    useApp()
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('open')
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -93,10 +94,10 @@ export function MobileTrades({
   }
 
   const closeGroup = async (group: SymbolGroup) => {
-    for (const t of group.trades) {
-      if (t.status === 'open') await closeTrade(t.id)
-      else if (t.status === 'pending') await cancelPending(t.id)
-    }
+    const openIds = group.trades.filter((t) => t.status === 'open').map((t) => t.id)
+    const pendingIds = group.trades.filter((t) => t.status === 'pending').map((t) => t.id)
+    if (openIds.length) await closeTrades(openIds)
+    else if (pendingIds.length) await cancelPendings(pendingIds)
   }
 
   const accountTrades = useMemo(
