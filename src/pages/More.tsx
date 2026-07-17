@@ -144,7 +144,7 @@ export function MorePage() {
         </div>
 
         <div className="sticky top-0 z-10 bg-panel px-4 pt-3 pb-[5px] sm:px-6">
-          <div className="flex gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex gap-2 overflow-x-auto pb-[11px] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {FILTERS.map((f) => {
               const active = filter === f.key
               return (
