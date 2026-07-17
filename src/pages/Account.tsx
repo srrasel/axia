@@ -1126,7 +1126,7 @@ export function DepositPage() {
               min={1}
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="h-14 w-full rounded-xl border border-border bg-muted/40 pl-10 pr-4 text-2xl font-semibold outline-none transition-colors hover:border-[#fff] focus:border-[#fff]"
+              className="h-14 w-full rounded-xl border border-border bg-muted/40 pl-10 pr-4 text-2xl font-semibold outline-none transition-[border-color] hover:!border-white focus:!border-white active:!border-white"
               required
             />
           </div>
@@ -1198,7 +1198,7 @@ export function DepositPage() {
               <input
                 value={card.name}
                 onChange={(e) => setCard((c) => ({ ...c, name: e.target.value }))}
-                className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:border-[#fff] focus:border-[#F0B90B]"
+                className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:!border-white focus:!border-white"
                 placeholder="Full name"
                 autoComplete="cc-name"
               />
@@ -1210,7 +1210,7 @@ export function DepositPage() {
                 <input
                   value={card.number}
                   onChange={(e) => setCard((c) => ({ ...c, number: formatCardNumber(e.target.value) }))}
-                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 pr-12 font-mono outline-none transition-colors hover:border-[#fff] focus:border-[#F0B90B]"
+                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 pr-12 font-mono outline-none transition-colors hover:!border-white focus:!border-white"
                   placeholder="ACCT-000003"
                   inputMode="numeric"
                   autoComplete="cc-number"
@@ -1225,7 +1225,7 @@ export function DepositPage() {
                 <input
                   value={card.expiry}
                   onChange={(e) => setCard((c) => ({ ...c, expiry: formatExpiry(e.target.value) }))}
-                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none transition-colors hover:border-[#fff] focus:border-[#F0B90B]"
+                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none transition-colors hover:!border-white focus:!border-white"
                   placeholder="MM/YY"
                   inputMode="numeric"
                   autoComplete="cc-exp"
@@ -1236,7 +1236,7 @@ export function DepositPage() {
                 <input
                   value={card.cvc}
                   onChange={(e) => setCard((c) => ({ ...c, cvc: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
-                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none transition-colors hover:border-[#fff] focus:border-[#F0B90B]"
+                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none transition-colors hover:!border-white focus:!border-white"
                   placeholder="123"
                   inputMode="numeric"
                   autoComplete="cc-csc"
@@ -1407,7 +1407,7 @@ export function DepositPage() {
                   <input
                     value={bankReference}
                     onChange={(e) => setBankReference(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:border-[#fff] focus:border-[#fff]"
+                    className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-[border-color] hover:!border-white focus:!border-white active:!border-white"
                     placeholder="Transfer ID / reference (optional)"
                   />
                 </label>
