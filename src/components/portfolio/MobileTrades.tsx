@@ -297,7 +297,7 @@ export function MobileTrades({
                           <button
                             type="button"
                             onClick={() => void closeGroup(g)}
-                            className="flex h-12 w-full items-center justify-center rounded-xl bg-[#28303c] text-sm font-semibold text-text-secondary transition-colors hover:bg-[#323b4a] hover:text-text"
+                            className="flex h-12 w-full items-center justify-center rounded-xl bg-[#fcd535] text-sm font-semibold text-[#000] transition-colors hover:bg-[#ceaf30]"
                           >
                             {tab === 'pending' ? 'Cancel All Orders' : 'Close All Trades'}:{' '}
                             <span className={clsx('ml-1', g.pnl >= 0 ? 'positive' : 'negative')}>
@@ -321,7 +321,7 @@ export function MobileTrades({
                           return (
                             <div
                               key={t.id}
-                              className="flex items-center gap-3 border-b border-border/40 py-3 last:border-b-0"
+                              className="flex items-center gap-3 border-b border-[#404752] py-3 last:border-b-0"
                             >
                               <span
                                 className={clsx(
