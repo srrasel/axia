@@ -157,17 +157,22 @@ export function MobileAccountSwitcher() {
                   <span
                     className={clsx(
                       'rounded-full border px-2.5 py-0.5 text-xs font-semibold',
-                      isLive ? 'border-buy text-buy' : 'border-[#fcd535] text-[#fcd535]',
+                      isLive ? 'border-buy bg-buy/10 text-buy' : 'border-border text-text-secondary',
                     )}
                   >
-                    {isLive ? 'Live' : 'Demo'}
+                    Live
                   </span>
-                  <span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-semibold text-text-secondary">
-                    {isLive ? 'Live' : account?.platform || 'Standard'}
+                  <span
+                    className={clsx(
+                      'rounded-full border px-2.5 py-0.5 text-xs font-semibold',
+                      !isLive ? 'border-[#fcd535] bg-[#fcd535]/10 text-[#fcd535]' : 'border-border text-text-secondary',
+                    )}
+                  >
+                    Demo
                   </span>
                 </div>
 
-                <h2 className="mt-3 text-2xl font-bold text-text">{account?.platform || 'Standard'}</h2>
+                <h2 className="mt-3 text-2xl font-bold text-text">{isLive ? 'Live' : 'Demo'}</h2>
 
                 <button
                   type="button"

@@ -76,12 +76,17 @@ function FeatureCard({ card }: { card: MoreCard }) {
   return (
     <Link
       to={card.to}
-      className="flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/80 px-2 py-3 text-center transition-colors hover:border-border hover:bg-sidebar-active/60 active:scale-[0.98]"
+      className="flex h-full min-h-[5.5rem] w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-transparent px-1.5 py-2.5 text-center transition-colors hover:border-border hover:bg-sidebar-active/60 active:scale-[0.98]"
     >
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center">
-        <Icon size={24} strokeWidth={1.75} className={card.tone} />
+      <span
+        className={clsx(
+          'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#29313d]/80',
+          card.tone,
+        )}
+      >
+        <Icon size={16} strokeWidth={1.85} />
       </span>
-      <span className="line-clamp-2 min-h-[2rem] text-[12px] font-semibold leading-tight text-text">
+      <span className="line-clamp-2 text-[11px] font-semibold leading-tight text-text">
         {card.label}
       </span>
     </Link>
@@ -165,7 +170,7 @@ export function MorePage() {
           {visibleSections.map((section) => (
             <section key={section.key}>
               <h2 className="mb-3 text-base font-bold text-text">{section.label}</h2>
-              <div className="grid grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-3 items-stretch gap-2">
                 {section.cards.map((card) => (
                   <FeatureCard key={card.to} card={card} />
                 ))}

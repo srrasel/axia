@@ -171,7 +171,68 @@ export function Header() {
       <div className="min-w-0 flex-1 lg:hidden" aria-hidden />
 
       <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
-        <div className="relative" ref={notifRef}>
+        <button
+          type="button"
+          onClick={() => navigate('/account/deposit')}
+          aria-label="Deposit"
+          className="order-2 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:order-1 sm:auth-btn sm:h-10 sm:w-auto sm:rounded-[8px] sm:bg-[#fcd535] sm:px-4 sm:!text-[#202630] sm:hover:bg-[#ceaf30]"
+        >
+          <Wallet size={18} strokeWidth={1.75} className="sm:hidden" />
+          <span className="hidden text-sm font-semibold sm:inline">Deposit</span>
+        </button>
+
+        <span className="order-3 mr-1 hidden w-[4.75rem] text-right tabular-nums text-xs text-text-secondary sm:order-2 sm:inline">
+          {time}
+        </span>
+
+        <button
+          type="button"
+          aria-label="Toggle theme"
+          className="order-3 hidden h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:order-3 sm:flex sm:h-10 sm:w-10"
+          onClick={() => setDarkMode(!darkMode)}
+        >
+          {darkMode ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
+        </button>
+
+        <div className="relative order-3 hidden sm:order-4 sm:block" ref={langRef}>
+          <button
+            type="button"
+            aria-label="Language"
+            className={clsx(
+              'flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:h-10 sm:w-10',
+              langOpen && 'bg-[#28303c] text-brand-ink',
+            )}
+            onClick={() => {
+              setLangOpen((v) => !v)
+              setUserOpen(false)
+              setNotifOpen(false)
+            }}
+          >
+            <Globe size={18} strokeWidth={1.75} />
+          </button>
+          {langOpen ? (
+            <div className="panel absolute right-0 top-12 z-[60] min-w-[8.5rem] overflow-hidden rounded-xl border shadow-xl">
+              {(['en', 'ar'] as const).map((lang) => (
+                <button
+                  key={lang}
+                  type="button"
+                  className={clsx(
+                    'block w-full px-3.5 py-2.5 text-left text-sm transition-colors hover:bg-[#28303c]',
+                    language === lang && 'font-semibold text-brand-ink',
+                  )}
+                  onClick={() => {
+                    setLanguage(lang)
+                    setLangOpen(false)
+                  }}
+                >
+                  {lang === 'en' ? 'English' : 'العربية'}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="relative order-1 sm:order-5" ref={notifRef}>
           <button
             type="button"
             aria-label="Notifications"
@@ -246,68 +307,7 @@ export function Header() {
           ) : null}
         </div>
 
-        <button
-          type="button"
-          onClick={() => navigate('/account/deposit')}
-          aria-label="Deposit"
-          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:auth-btn sm:h-10 sm:w-auto sm:rounded-[8px] sm:bg-[#fcd535] sm:px-4 sm:!text-[#202630] sm:hover:bg-[#ceaf30]"
-        >
-          <Wallet size={18} strokeWidth={1.75} className="sm:hidden" />
-          <span className="hidden text-sm font-semibold sm:inline">Deposit</span>
-        </button>
-
-        <span className="mr-1 hidden w-[4.75rem] text-right tabular-nums text-xs text-text-secondary sm:inline">
-          {time}
-        </span>
-
-        <button
-          type="button"
-          aria-label="Toggle theme"
-          className="hidden h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:flex sm:h-10 sm:w-10"
-          onClick={() => setDarkMode(!darkMode)}
-        >
-          {darkMode ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
-        </button>
-
-        <div className="relative hidden sm:block" ref={langRef}>
-          <button
-            type="button"
-            aria-label="Language"
-            className={clsx(
-              'flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:h-10 sm:w-10',
-              langOpen && 'bg-[#28303c] text-brand-ink',
-            )}
-            onClick={() => {
-              setLangOpen((v) => !v)
-              setUserOpen(false)
-              setNotifOpen(false)
-            }}
-          >
-            <Globe size={18} strokeWidth={1.75} />
-          </button>
-          {langOpen ? (
-            <div className="panel absolute right-0 top-12 z-[60] min-w-[8.5rem] overflow-hidden rounded-xl border shadow-xl">
-              {(['en', 'ar'] as const).map((lang) => (
-                <button
-                  key={lang}
-                  type="button"
-                  className={clsx(
-                    'block w-full px-3.5 py-2.5 text-left text-sm transition-colors hover:bg-[#28303c]',
-                    language === lang && 'font-semibold text-brand-ink',
-                  )}
-                  onClick={() => {
-                    setLanguage(lang)
-                    setLangOpen(false)
-                  }}
-                >
-                  {lang === 'en' ? 'English' : 'العربية'}
-                </button>
-              ))}
-            </div>
-          ) : null}
-        </div>
-
-        <div className="relative ml-0.5" ref={userMenuRef}>
+        <div className="relative order-3 ml-0.5 sm:order-6" ref={userMenuRef}>
           <button
             type="button"
             aria-label="User menu"
