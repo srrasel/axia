@@ -88,14 +88,12 @@ export function Header() {
   }, [userOpen, langOpen, notifOpen])
 
   return (
-    <header className="panel relative z-40 flex h-14 shrink-0 items-center gap-2 overflow-visible border-b px-4 sm:h-16 sm:gap-3 sm:px-5">
-      <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden sm:contents sm:flex-none">
-        <Link to="/platform" className="flex shrink-0 items-center pr-[6px] sm:pr-0">
-          <BrandLogo className="h-7 w-auto sm:h-10" />
-        </Link>
+    <header className="panel relative z-40 flex h-14 shrink-0 items-center gap-1.5 overflow-hidden border-b px-3 sm:h-16 sm:gap-3 sm:overflow-visible sm:px-5">
+      <Link to="/platform" className="flex shrink-0 items-center sm:pr-0">
+        <BrandLogo className="h-7 w-auto sm:h-10" />
+      </Link>
 
-        <MobileAccountSwitcher />
-      </div>
+      <MobileAccountSwitcher />
 
       {/* Demo / Live account switch — desktop / tablet */}
       <div className="relative hidden min-w-0 shrink-0 sm:block">
@@ -170,14 +168,14 @@ export function Header() {
 
       <div className="min-w-0 flex-1 lg:hidden" aria-hidden />
 
-      <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+      <div className="flex shrink-0 items-center gap-0.5 sm:gap-1.5">
         <button
           type="button"
           onClick={() => navigate('/account/deposit')}
           aria-label="Deposit"
-          className="order-2 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:order-1 sm:auth-btn sm:h-10 sm:w-auto sm:rounded-[8px] sm:bg-[#fcd535] sm:px-4 sm:!text-[#202630] sm:hover:bg-[#ceaf30]"
+          className="order-2 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:order-1 sm:auth-btn sm:h-10 sm:w-auto sm:rounded-[8px] sm:bg-[#fcd535] sm:px-4 sm:!text-[#202630] sm:hover:bg-[#ceaf30]"
         >
-          <Wallet size={18} strokeWidth={1.75} className="sm:hidden" />
+          <Wallet size={17} strokeWidth={1.75} className="sm:hidden" />
           <span className="hidden text-sm font-semibold sm:inline">Deposit</span>
         </button>
 
@@ -238,7 +236,7 @@ export function Header() {
             aria-label="Notifications"
             aria-expanded={notifOpen}
             className={clsx(
-              'relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:h-10 sm:w-10',
+              'relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:h-10 sm:w-10',
               notifOpen && 'bg-[#28303c] text-brand-ink',
             )}
             onClick={() => {
@@ -247,7 +245,7 @@ export function Header() {
               setLangOpen(false)
             }}
           >
-            <Bell size={18} strokeWidth={1.75} />
+            <Bell size={17} strokeWidth={1.75} />
             {unreadCount > 0 ? (
               <span className="absolute right-[2px] top-[2px] flex h-4 min-w-4 items-center justify-center rounded-full bg-sell px-1 text-[10px] font-bold leading-none text-white">
                 {unreadCount > 9 ? '9+' : unreadCount}
@@ -313,7 +311,7 @@ export function Header() {
             aria-label="User menu"
             aria-expanded={userOpen}
             className={clsx(
-              'flex cursor-pointer items-center rounded-full bg-transparent p-1.5 transition-colors hover:bg-[#28303c]',
+              'flex cursor-pointer items-center rounded-full bg-transparent p-0.5 transition-colors hover:bg-[#28303c] sm:p-1.5',
               userOpen && 'bg-[#28303c]',
             )}
             onClick={() => {
@@ -325,7 +323,7 @@ export function Header() {
             <UserAvatar
               photoUrl={user?.photoUrl}
               name={user?.name}
-              size={40}
+              size={32}
               plain
               className="border border-[#28303c]"
             />

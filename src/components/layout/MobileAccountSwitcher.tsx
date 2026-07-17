@@ -62,7 +62,7 @@ export function MobileAccountSwitcher() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex w-[180px] max-w-full min-w-0 shrink items-center gap-1 rounded-full bg-[#29313d] py-1 pl-1 pr-1.5 sm:hidden"
+        className="flex h-[30px] w-[180px] shrink-0 items-center gap-1 overflow-hidden rounded-full bg-[#29313d] py-1 pl-1 pr-1.5 sm:hidden"
         aria-label="Open account details"
       >
         <span
@@ -73,12 +73,12 @@ export function MobileAccountSwitcher() {
         >
           {isLive ? 'L' : 'D'}
         </span>
-        <span className="min-w-0 truncate text-[12px] font-semibold tabular-nums text-text">
+        <span className="min-w-0 flex-1 truncate text-left text-[12px] font-semibold tabular-nums text-text">
           {formatMoney(metrics.equity)}
         </span>
         <span
           className={clsx(
-            'shrink-0 text-[10px] font-semibold tabular-nums',
+            'max-w-[3.75rem] shrink-0 truncate text-right text-[10px] font-semibold tabular-nums',
             pnl >= 0 ? 'positive' : 'negative',
           )}
         >
