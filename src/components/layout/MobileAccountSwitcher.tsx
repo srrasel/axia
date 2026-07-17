@@ -108,7 +108,7 @@ export function MobileAccountSwitcher() {
                   <div className="flex min-h-0 flex-1 flex-col px-4 pt-3 pb-[5px]">
                     <h3 className="text-[20px] font-semibold text-text">Switch account</h3>
                     <p className="mt-1 text-[12px] text-text-secondary">Choose Demo or Live account</p>
-                    <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pb-3">
+                    <div className="mt-4 min-h-0 flex-1 space-y-3.5 overflow-y-auto pb-3">
                       {accounts.map((a) => {
                         const live = a.type === 'live'
                         const selected = a.id === (pendingId ?? activeAccountId)
@@ -118,33 +118,35 @@ export function MobileAccountSwitcher() {
                             type="button"
                             onClick={() => setPendingId(a.id)}
                             className={clsx(
-                              'w-full rounded-2xl border px-4 py-4 text-left transition-colors',
+                              'w-full rounded-2xl border px-5 py-5 text-left transition-colors',
                               selected
-                                ? 'border-[#3b82f6] bg-[#1a2332] shadow-[0_0_0_1px_rgba(59,130,246,0.35)]'
+                                ? live
+                                  ? 'border-[#22a06b] bg-[#1a2332] shadow-[0_0_0_1px_rgba(34,160,107,0.35)]'
+                                  : 'border-[#f79009] bg-[#1a2332] shadow-[0_0_0_1px_rgba(247,144,9,0.35)]'
                                 : 'border-transparent bg-[#1a2332] hover:bg-[#1e2838]',
                             )}
                           >
-                            <span className="flex flex-wrap items-center gap-2">
+                            <span className="flex flex-wrap items-center gap-2.5">
                               <span
                                 className={clsx(
-                                  'text-[17px] font-bold leading-none',
-                                  live ? 'text-buy' : 'text-[#f79009]',
+                                  'text-[18px] font-bold leading-none',
+                                  live ? 'text-[#22a06b]' : 'text-[#f79009]',
                                 )}
                               >
                                 {live ? 'Real' : 'Demo'}
                               </span>
                               <span
                                 className={clsx(
-                                  'rounded-full border px-2.5 py-0.5 text-[11px] font-semibold',
+                                  'rounded-full border px-2.5 py-0.5 text-[12px] font-semibold',
                                   live
-                                    ? 'border-buy/50 text-buy'
+                                    ? 'border-[#22a06b]/50 text-[#22a06b]'
                                     : 'border-[#f79009]/50 text-[#f79009]',
                                 )}
                               >
                                 {live ? 'Live Trading' : 'Practice Mode'}
                               </span>
                             </span>
-                            <span className="mt-2.5 block text-[13px] leading-snug text-[#c8cdd5]">
+                            <span className="mt-3 block text-[14px] leading-snug text-[#c8cdd5]">
                               {live
                                 ? 'Trade with real money and gain full access.'
                                 : 'Practice trading with virtual funds and test your trading strategies.'}
@@ -156,7 +158,7 @@ export function MobileAccountSwitcher() {
                     <button
                       type="button"
                       onClick={confirmAccount}
-                      className="mt-2 mb-1 flex h-12 w-full shrink-0 items-center justify-center rounded-xl bg-[#3b82f6] text-[15px] font-semibold text-white transition-colors hover:bg-[#2563eb]"
+                      className="mt-3 mb-3 flex h-12 w-full shrink-0 items-center justify-center rounded-xl bg-[#fcd535] text-[15px] font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]"
                     >
                       Continue
                     </button>
