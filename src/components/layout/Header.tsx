@@ -173,9 +173,9 @@ export function Header() {
           type="button"
           onClick={() => navigate('/account/deposit')}
           aria-label="Deposit"
-          className="order-2 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:order-1 sm:auth-btn sm:h-10 sm:w-auto sm:rounded-[8px] sm:bg-[#fcd535] sm:px-4 sm:!text-[#202630] sm:hover:bg-[#ceaf30]"
+          className="order-2 flex h-[38px] w-[38px] shrink-0 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:order-1 sm:auth-btn sm:h-10 sm:w-auto sm:rounded-[8px] sm:bg-[#fcd535] sm:px-4 sm:!text-[#202630] sm:hover:bg-[#ceaf30]"
         >
-          <Wallet size={17} strokeWidth={1.75} className="sm:hidden" />
+          <Wallet size={23} strokeWidth={1.75} className="sm:hidden" />
           <span className="hidden text-sm font-semibold sm:inline">Deposit</span>
         </button>
 
@@ -236,7 +236,7 @@ export function Header() {
             aria-label="Notifications"
             aria-expanded={notifOpen}
             className={clsx(
-              'relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:h-10 sm:w-10',
+              'relative flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:h-10 sm:w-10',
               notifOpen && 'bg-[#28303c] text-brand-ink',
             )}
             onClick={() => {
@@ -245,7 +245,8 @@ export function Header() {
               setLangOpen(false)
             }}
           >
-            <Bell size={17} strokeWidth={1.75} />
+            <Bell size={23} strokeWidth={1.75} className="sm:hidden" />
+            <Bell size={17} strokeWidth={1.75} className="hidden sm:block" />
             {unreadCount > 0 ? (
               <span className="absolute right-[2px] top-[2px] flex h-4 min-w-4 items-center justify-center rounded-full bg-sell px-1 text-[10px] font-bold leading-none text-white">
                 {unreadCount > 9 ? '9+' : unreadCount}
@@ -320,13 +321,24 @@ export function Header() {
               setNotifOpen(false)
             }}
           >
-            <UserAvatar
-              photoUrl={user?.photoUrl}
-              name={user?.name}
-              size={32}
-              plain
-              className="border border-[#28303c]"
-            />
+            <span className="sm:hidden">
+              <UserAvatar
+                photoUrl={user?.photoUrl}
+                name={user?.name}
+                size={38}
+                plain
+                className="border border-[#28303c]"
+              />
+            </span>
+            <span className="hidden sm:inline-flex">
+              <UserAvatar
+                photoUrl={user?.photoUrl}
+                name={user?.name}
+                size={32}
+                plain
+                className="border border-[#28303c]"
+              />
+            </span>
           </button>
           {userOpen ? (
             <div className="panel fixed right-[5px] top-[3.5rem] z-[60] flex w-[calc(100vw-10px)] max-w-[18rem] flex-col overflow-hidden rounded-2xl border shadow-2xl sm:absolute sm:right-0 sm:top-14 sm:w-72 sm:max-w-none">
