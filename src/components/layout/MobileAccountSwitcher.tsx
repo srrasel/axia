@@ -148,7 +148,7 @@ export function MobileAccountSwitcher() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 pt-3">
+                  <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-[10px] pb-4 pt-3">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span
                         className={clsx(
@@ -207,17 +207,17 @@ export function MobileAccountSwitcher() {
                           setOpen(false)
                           navigate('/account/manage')
                         }}
-                        className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#fcd535] text-[13px] font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]"
+                        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#fcd535] text-[14px] font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]"
                       >
-                        <Settings2 size={16} strokeWidth={1.75} />
+                        <Settings2 size={18} strokeWidth={1.75} />
                         Manage
                       </button>
                       <button
                         type="button"
                         onClick={() => setPicker(true)}
-                        className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border bg-panel text-[13px] font-semibold text-text transition-colors hover:bg-muted"
+                        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-panel text-[14px] font-semibold text-text transition-colors hover:bg-muted"
                       >
-                        <ArrowLeftRight size={16} strokeWidth={1.75} />
+                        <ArrowLeftRight size={18} strokeWidth={1.75} />
                         Switch Account
                       </button>
                     </div>
