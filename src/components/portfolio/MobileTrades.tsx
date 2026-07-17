@@ -177,7 +177,7 @@ export function MobileTrades({
           </div>
         </div>
 
-        <div className="mt-4 flex gap-2 overflow-x-auto pb-[5px] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-[10px] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {tabs.map((t) => {
             const active = tab === t.key
             return (
@@ -291,37 +291,15 @@ export function MobileTrades({
                   </button>
 
                   {isOpen ? (
-                    <div className="border-t border-border/50 px-3 pb-3 pt-3">
-                      {tab === 'closed' ? null : (
-                        <div className="space-y-2">
-                          <button
-                            type="button"
-                            onClick={() => void closeGroup(g)}
-                            className="flex h-12 w-full items-center justify-center rounded-xl bg-[#29313d] text-sm font-semibold text-text-secondary transition-colors hover:text-text"
-                          >
-                            {tab === 'pending' ? 'Cancel All Orders' : 'Close All Trades'}:{' '}
-                            <span className={clsx('ml-1', g.pnl >= 0 ? 'positive' : 'negative')}>
-                              {formatMoney(g.pnl)}
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => showChart(g.symbol)}
-                            className="flex h-12 w-full items-center justify-center rounded-xl border border-border bg-panel text-sm font-semibold text-text transition-colors hover:bg-muted"
-                          >
-                            Show Chart
-                          </button>
-                        </div>
-                      )}
-
-                      <div className="mt-1">
+                    <div className="border-t border-border/50 px-3 pb-3 pt-1">
+                      <div>
                         {g.trades.map((t) => {
                           const pnl = tradePnl(t)
                           const isBuy = t.side === 'buy'
                           return (
                             <div
                               key={t.id}
-                              className="flex items-center gap-3 border-b border-border/40 py-3 last:border-b-0"
+                              className="flex items-center gap-3 border-b border-border py-3.5 last:border-b-0"
                             >
                               <span
                                 className={clsx(
@@ -368,6 +346,28 @@ export function MobileTrades({
                           )
                         })}
                       </div>
+
+                      {tab === 'closed' ? null : (
+                        <div className="mt-3 space-y-2">
+                          <button
+                            type="button"
+                            onClick={() => showChart(g.symbol)}
+                            className="flex h-12 w-full items-center justify-center rounded-xl border border-border bg-panel text-sm font-semibold text-text transition-colors hover:bg-muted"
+                          >
+                            Show Chart
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void closeGroup(g)}
+                            className="flex h-12 w-full items-center justify-center rounded-xl bg-[#29313d] text-sm font-semibold text-text transition-colors hover:bg-[#323b4a]"
+                          >
+                            {tab === 'pending' ? 'Cancel All Orders' : 'Close All Trades'}:{' '}
+                            <span className={clsx('ml-1', g.pnl >= 0 ? 'positive' : 'negative')}>
+                              {formatMoney(g.pnl)}
+                            </span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ) : null}
                 </div>
