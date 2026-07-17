@@ -59,33 +59,35 @@ export function MobileAccountSwitcher() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex h-[30px] w-[180px] shrink-0 items-center gap-1 overflow-hidden rounded-full bg-[#29313d] py-1 pl-1 pr-1.5 sm:hidden"
-        aria-label="Open account details"
-      >
-        <span
-          className={clsx(
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold',
-            isLive ? 'bg-buy/20 text-buy' : 'bg-[#fcd535]/20 text-[#fcd535]',
-          )}
+      <div className="min-w-0 flex-1 sm:hidden">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex h-8 w-full items-center gap-1.5 overflow-hidden rounded-full bg-[#29313d] py-1 pl-1 pr-2"
+          aria-label="Open account details"
         >
-          {isLive ? 'L' : 'D'}
-        </span>
-        <span className="min-w-0 flex-1 truncate text-left text-[12px] font-semibold tabular-nums text-text">
-          {formatMoney(metrics.equity)}
-        </span>
-        <span
-          className={clsx(
-            'max-w-[3.75rem] shrink-0 truncate text-right text-[10px] font-semibold tabular-nums',
-            pnl >= 0 ? 'positive' : 'negative',
-          )}
-        >
-          {formatMoney(pnl)}
-        </span>
-        <ChevronDown size={12} className="shrink-0 text-text-secondary" />
-      </button>
+          <span
+            className={clsx(
+              'flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold',
+              isLive ? 'bg-buy/20 text-buy' : 'bg-[#fcd535]/20 text-[#fcd535]',
+            )}
+          >
+            {isLive ? 'L' : 'D'}
+          </span>
+          <span className="min-w-0 flex-1 truncate text-left text-[12px] font-semibold leading-none tabular-nums text-text">
+            {formatMoney(metrics.equity)}
+          </span>
+          <span
+            className={clsx(
+              'shrink-0 text-[10px] font-semibold leading-none tabular-nums',
+              pnl >= 0 ? 'positive' : 'negative',
+            )}
+          >
+            {formatMoney(pnl)}
+          </span>
+          <ChevronDown size={12} className="shrink-0 text-text-secondary" />
+        </button>
+      </div>
 
       {open ? (
         <div className="fixed inset-0 z-[70] sm:hidden">
