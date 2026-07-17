@@ -5,7 +5,6 @@ import { ArrowLeftRight, ChevronDown, Copy, Settings2 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../context/AppContext'
 import { formatMoney } from '../../data/mock'
-import type { TradingAccount } from '../../types'
 
 function AccountRow({ label, value, className = '' }: { label: string; value: string; className?: string }) {
   return (
@@ -21,6 +20,7 @@ export function MobileAccountSwitcher() {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [picker, setPicker] = useState(false)
+  const [pendingId, setPendingId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
   const account = accounts.find((a) => a.id === activeAccountId)
@@ -38,7 +38,10 @@ export function MobileAccountSwitcher() {
   }, [open])
 
   useEffect(() => {
-    if (!open) setPicker(false)
+    if (!open) {
+      setPicker(false)
+      setPendingId(null)
+    }
   }, [open])
 
   const copyId = async () => {
@@ -52,10 +55,17 @@ export function MobileAccountSwitcher() {
     }
   }
 
-  const pickAccount = (a: TradingAccount) => {
-    if (a.id !== activeAccountId) switchAccount(a.id)
+  const openPicker = () => {
+    setPendingId(activeAccountId)
+    setPicker(true)
+  }
+
+  const confirmAccount = () => {
+    const next = pendingId || activeAccountId
+    if (next && next !== activeAccountId) switchAccount(next)
     setOpen(false)
     setPicker(false)
+    setPendingId(null)
   }
 
   return (
@@ -95,57 +105,61 @@ export function MobileAccountSwitcher() {
                 <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border" aria-hidden />
 
                 {picker ? (
-                  <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-3 pb-[5px]">
-                    <h3 className="text-[15px] font-semibold text-text">Switch account</h3>
+                  <div className="flex min-h-0 flex-1 flex-col px-4 pt-3 pb-[5px]">
+                    <h3 className="text-[20px] font-semibold text-text">Switch account</h3>
                     <p className="mt-1 text-[12px] text-text-secondary">Choose Demo or Live account</p>
-                    <div className="mt-4 space-y-3 pb-[5px]">
+                    <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pb-3">
                       {accounts.map((a) => {
                         const live = a.type === 'live'
-                        const active = a.id === activeAccountId
+                        const selected = a.id === (pendingId ?? activeAccountId)
                         return (
                           <button
                             key={a.id}
                             type="button"
-                            onClick={() => pickAccount(a)}
+                            onClick={() => setPendingId(a.id)}
                             className={clsx(
-                              'flex w-full items-center gap-4 rounded-2xl border px-4 py-[18px] text-left transition-colors',
-                              active
-                                ? live
-                                  ? 'border-buy/70 bg-buy/10 shadow-[0_0_0_1px_rgba(34,160,107,0.12)]'
-                                  : 'border-[#f79009]/70 bg-[#f79009]/10 shadow-[0_0_0_1px_rgba(247,144,9,0.12)]'
-                                : 'border-border/80 bg-[#1e242d] hover:border-border hover:bg-[#232a34]',
+                              'w-full rounded-2xl border px-4 py-4 text-left transition-colors',
+                              selected
+                                ? 'border-[#3b82f6] bg-[#1a2332] shadow-[0_0_0_1px_rgba(59,130,246,0.35)]'
+                                : 'border-transparent bg-[#1a2332] hover:bg-[#1e2838]',
                             )}
                           >
-                            <span
-                              className={clsx(
-                                'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[15px] font-bold tracking-wide',
-                                live ? 'bg-buy/20 text-buy' : 'bg-[#f79009]/20 text-[#f79009]',
-                              )}
-                            >
-                              {live ? 'L' : 'D'}
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block text-[16px] font-semibold leading-snug tracking-tight text-text">
-                                {live ? 'Live account' : 'Demo account'}
-                              </span>
-                              <span className="mt-1 block truncate text-[13px] leading-snug text-text-secondary">
-                                {live ? 'Real trade' : 'Practice trade'}
-                              </span>
-                            </span>
-                            {active ? (
+                            <span className="flex flex-wrap items-center gap-2">
                               <span
                                 className={clsx(
-                                  'shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide',
-                                  live ? 'bg-buy/15 text-buy' : 'bg-[#f79009]/15 text-[#f79009]',
+                                  'text-[17px] font-bold leading-none',
+                                  live ? 'text-buy' : 'text-[#f79009]',
                                 )}
                               >
-                                Active
+                                {live ? 'Real' : 'Demo'}
                               </span>
-                            ) : null}
+                              <span
+                                className={clsx(
+                                  'rounded-full border px-2.5 py-0.5 text-[11px] font-semibold',
+                                  live
+                                    ? 'border-buy/50 text-buy'
+                                    : 'border-[#f79009]/50 text-[#f79009]',
+                                )}
+                              >
+                                {live ? 'Live Trading' : 'Practice Mode'}
+                              </span>
+                            </span>
+                            <span className="mt-2.5 block text-[13px] leading-snug text-[#c8cdd5]">
+                              {live
+                                ? 'Trade with real money and gain full access.'
+                                : 'Practice trading with virtual funds and test your trading strategies.'}
+                            </span>
                           </button>
                         )
                       })}
                     </div>
+                    <button
+                      type="button"
+                      onClick={confirmAccount}
+                      className="mt-2 mb-1 flex h-12 w-full shrink-0 items-center justify-center rounded-xl bg-[#3b82f6] text-[15px] font-semibold text-white transition-colors hover:bg-[#2563eb]"
+                    >
+                      Continue
+                    </button>
                   </div>
                 ) : (
                   <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-[30px] pb-4 pt-3">
@@ -214,7 +228,7 @@ export function MobileAccountSwitcher() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setPicker(true)}
+                        onClick={openPicker}
                         className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-panel text-[14px] font-semibold text-text transition-colors hover:bg-muted"
                       >
                         <ArrowLeftRight size={18} strokeWidth={1.75} />
