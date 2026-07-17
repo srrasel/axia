@@ -1053,7 +1053,7 @@ export function DepositPage() {
     {
       id: 'bank' as const,
       title: 'Bank',
-      desc: 'Wire transfer',
+      desc: 'Wire Transfer',
       icon: Building2,
     },
   ]
@@ -1126,7 +1126,7 @@ export function DepositPage() {
               min={1}
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="h-14 w-full rounded-xl border border-border bg-muted/40 pl-10 pr-4 text-2xl font-semibold outline-none transition-colors focus:border-[#F0B90B]"
+              className="h-14 w-full rounded-xl border border-border bg-muted/40 pl-10 pr-4 text-2xl font-semibold outline-none transition-colors hover:border-[#fff] focus:border-[#F0B90B]"
               required
             />
           </div>
@@ -1138,7 +1138,7 @@ export function DepositPage() {
                 type="button"
                 onClick={() => setAmount(v)}
                 className={clsx(
-                  'rounded-lg border bg-transparent px-3.5 py-1.5 text-xs font-semibold transition-colors',
+                  'rounded-lg border bg-transparent px-5 py-2.5 text-xs font-semibold transition-colors',
                   amount === v
                     ? 'border-[#fff] text-[#fff]'
                     : 'border-border text-text-secondary hover:border-[#F0B90B]/50 hover:text-brand-ink',
@@ -1152,7 +1152,7 @@ export function DepositPage() {
         </div>
 
         <div>
-          <div className="mb-3 text-sm font-semibold capitalize">Payment Method</div>
+          <div className="mb-3 text-[18px] font-semibold capitalize">Payment Method</div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {tabs.map((t) => {
               const Icon = t.icon
@@ -1172,7 +1172,7 @@ export function DepositPage() {
                   <Icon size={18} className={clsx('shrink-0', active ? 'text-[#fff]' : 'text-text-secondary')} />
                   <div>
                     <div className={clsx('text-sm font-semibold sm:mt-2', active && 'text-[#fff]')}>{t.title}</div>
-                    <div className="mt-0.5 text-[11px] text-text-secondary">{t.desc}</div>
+                    <div className="mt-0.5 text-[11px] capitalize text-text-secondary">{t.desc}</div>
                   </div>
                 </button>
               )
@@ -1184,7 +1184,7 @@ export function DepositPage() {
           <div className="space-y-4 rounded-2xl border border-border bg-panel p-5">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <div className="text-sm font-semibold">Card details</div>
+                <div className="text-[18px] font-semibold capitalize">Card Details</div>
                 <p className="mt-0.5 text-xs text-text-secondary">Pay securely with Visa or Mastercard</p>
               </div>
               <div className="flex items-center gap-1.5 text-[11px] font-medium text-text-secondary">
@@ -1254,7 +1254,7 @@ export function DepositPage() {
         {method === 'nowpayments' ? (
           <div className="space-y-4 rounded-2xl border border-border bg-panel p-5">
             <div>
-              <div className="text-sm font-semibold">Select cryptocurrency</div>
+              <div className="text-[18px] font-semibold capitalize">Select Cryptocurrency</div>
               <p className="mt-0.5 text-xs text-text-secondary">Pay with NOWPayments — balance credits after confirmation</p>
             </div>
 
@@ -1305,7 +1305,7 @@ export function DepositPage() {
         {method === 'bank' && info?.countries?.length ? (
           <div className="space-y-4">
             <div>
-              <div className="mb-3 text-[20px] font-semibold capitalize">Select Country</div>
+              <div className="mb-3 text-[18px] font-semibold capitalize">Select Country</div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {info.countries.map((c) => {
                   const active = bankCountry === c.countryCode
@@ -1321,12 +1321,12 @@ export function DepositPage() {
                     >
                       <div className="text-[13px] font-semibold leading-tight">{c.label}</div>
                       {c.contactOnly ? (
-                        <div className={clsx('mt-0.5 text-[10px] leading-tight', active ? 'text-[#fff]' : 'text-text-secondary')}>
+                        <div className={clsx('mt-0.5 text-[10px] capitalize leading-tight', active ? 'text-[#fff]' : 'text-text-secondary')}>
                           Contact Finance
                         </div>
                       ) : (
-                        <div className={clsx('mt-0.5 text-[10px] leading-tight', active ? 'text-[#fff]' : 'text-text-secondary')}>
-                          Local transfer
+                        <div className={clsx('mt-0.5 text-[10px] capitalize leading-tight', active ? 'text-[#fff]' : 'text-text-secondary')}>
+                          Local Transfer
                         </div>
                       )}
                     </button>
@@ -1338,7 +1338,7 @@ export function DepositPage() {
             {isIntlBank ? (
               <div className="space-y-4 rounded-2xl border border-border bg-panel p-5">
                 <div>
-                  <div className="text-sm font-semibold">International transfer</div>
+                  <div className="text-sm font-semibold capitalize">International Transfer</div>
                   <p className="mt-1 text-xs text-text-secondary">
                     Bank accounts change frequently. Please contact the Finance Department for current wire instructions.
                   </p>
@@ -1355,7 +1355,7 @@ export function DepositPage() {
               <div className="space-y-4 rounded-2xl border border-border bg-panel p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <div className="text-sm font-semibold">Bank transfer details — {selectedBankCountry.label}</div>
+                    <div className="text-sm font-semibold capitalize">Bank Transfer Details — {selectedBankCountry.label}</div>
                     <p className="mt-0.5 text-xs text-text-secondary">
                       Transfer funds using the details below, then submit for admin approval
                     </p>
@@ -1425,7 +1425,7 @@ export function DepositPage() {
         <button
           type="submit"
           disabled={busy || amount <= 0 || (method === 'bank' && isIntlBank)}
-          className="auth-btn h-12 w-full rounded-xl bg-[#fcd535] text-[15px] font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30] disabled:opacity-50"
+          className="auth-btn h-12 w-full rounded-xl bg-[#fcd535] text-[15px] font-semibold capitalize text-[#202630] transition-colors hover:bg-[#ceaf30] disabled:opacity-50"
           style={{ color: '#202630' }}
         >
           {busy
@@ -1436,7 +1436,7 @@ export function DepositPage() {
               ? `Pay ${currency.symbol}${amount.toFixed(2)} with card`
               : method === 'nowpayments'
                 ? `Continue with ${cryptoCoin}`
-                : 'Submit bank deposit'}
+                : 'Submit Bank Deposit'}
         </button>
       </form>
     </PageShell>
