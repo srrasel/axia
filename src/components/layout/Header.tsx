@@ -325,7 +325,7 @@ export function Header() {
               <UserAvatar
                 photoUrl={user?.photoUrl}
                 name={user?.name}
-                size={38}
+                size={32}
                 plain
                 className="border border-[#28303c]"
               />
