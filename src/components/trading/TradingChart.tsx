@@ -38,18 +38,6 @@ const MOBILE_TIMEFRAMES: Array<{ key: string; label: string }> = [
   { key: '1Mo', label: '1M' },
 ]
 
-const TF_LABELS: Record<string, string> = {
-  '1M': '1 Min',
-  '5M': '5 Min',
-  '15M': '15 Min',
-  '30M': '30 Min',
-  '1H': '1 Hour',
-  '4H': '4 Hour',
-  '1D': '1 Day',
-  '1W': '1 Week',
-  '1Mo': '1 Month',
-}
-
 const TWO_DEC_SYMBOLS = new Set([
   'BTCUSD',
   'ETHUSD',
@@ -325,7 +313,7 @@ export function TradingChart() {
               {positive ? '+' : ''}
               {changePct.toFixed(2)}%
             </span>
-            <span className="text-text-secondary">· {TF_LABELS[timeframe] ?? timeframe}</span>
+            <span className="text-text-secondary">· 1 Month</span>
           </div>
         </Link>
         <div className="flex shrink-0 items-center gap-1.5">

@@ -14,6 +14,7 @@ import {
   CrmPricesPage,
   CrmTransactionsPage,
 } from './crm'
+import { BankAccountsPage } from './bank-accounts'
 
 function Login() {
   const { login, verify2fa, user, loading } = useAuth()
@@ -840,6 +841,7 @@ export default function App() {
           <Route path="/trades" element={<TradesPage />} />
           <Route path="/transactions" element={<TransactionsPage />} />
           <Route path="/kyc" element={<KycPage />} />
+          <Route path="/bank-accounts" element={<BankAccountsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Routes>

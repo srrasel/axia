@@ -4,14 +4,15 @@ import { useApp } from '../context/AppContext'
 import { calcPnl, formatMoney, formatPrice } from '../data/mock'
 import { PremiumPage } from './Account'
 import { TradingCalendar } from '../components/portfolio/TradingCalendar'
+import { MobileMoreBackShell } from '../components/layout/MobileMoreBackShell'
 
 export function SignalsPage() {
   const { isPremium } = useApp()
   if (!isPremium) return <PremiumPage />
   return (
-    <div className="h-full overflow-auto bg-panel p-6">
-      <h1 className="text-xl font-semibold">Market Signals</h1>
-      <p className="mt-1 text-sm text-text-secondary">AI-assisted setups refreshed with live quotes.</p>
+    <MobileMoreBackShell title="Signals">
+      <h1 className="hidden text-xl font-semibold md:block">Market Signals</h1>
+      <p className="mt-0 text-sm text-text-secondary md:mt-1">AI-assisted setups refreshed with live quotes.</p>
       <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {[
           ['EURUSD', 'Buy', 78],
@@ -33,15 +34,22 @@ export function SignalsPage() {
           </div>
         ))}
       </div>
-    </div>
+    </MobileMoreBackShell>
   )
 }
 
 export function NotificationsPage() {
   const { notifications, markNotificationsRead } = useApp()
   return (
-    <div className="h-full overflow-auto bg-panel p-6">
-      <div className="mb-4 flex items-center justify-between">
+    <MobileMoreBackShell
+      title="Notifications"
+      right={
+        <button type="button" onClick={markNotificationsRead} className="text-sm font-medium text-link">
+          Mark read
+        </button>
+      }
+    >
+      <div className="mb-4 hidden items-center justify-between md:flex">
         <h1 className="text-xl font-semibold">Notifications</h1>
         <button type="button" onClick={markNotificationsRead} className="text-sm text-link">
           Mark all read
@@ -61,15 +69,15 @@ export function NotificationsPage() {
           </div>
         ))}
       </div>
-    </div>
+    </MobileMoreBackShell>
   )
 }
 
 export function CalendarPage() {
   return (
-    <div className="h-full overflow-auto bg-panel p-4 sm:p-6">
+    <MobileMoreBackShell title="Calendar" className="p-4 sm:p-6">
       <TradingCalendar />
-    </div>
+    </MobileMoreBackShell>
   )
 }
 
@@ -81,9 +89,9 @@ export function AnalyticsPage() {
   const winRate = closed.length ? (wins / closed.length) * 100 : 0
 
   return (
-    <div className="h-full overflow-auto bg-panel p-6">
-      <h1 className="text-xl font-semibold">Analytics</h1>
-      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <MobileMoreBackShell title="Analytics">
+      <h1 className="hidden text-xl font-semibold md:block">Analytics</h1>
+      <div className="mt-0 grid gap-3 sm:grid-cols-2 md:mt-5 lg:grid-cols-4">
         <Stat label="Open trades" value={String(open.length)} />
         <Stat label="Closed trades" value={String(closed.length)} />
         <Stat label="Win rate" value={`${winRate.toFixed(1)}%`} />
@@ -105,7 +113,7 @@ export function AnalyticsPage() {
             ))}
         </div>
       </div>
-    </div>
+    </MobileMoreBackShell>
   )
 }
 
@@ -155,9 +163,9 @@ export function ReportsPage() {
   const deposits = transactions.filter((t) => t.type === 'deposit').reduce((s, t) => s + t.amount, 0)
 
   return (
-    <div className="h-full overflow-auto bg-panel p-6">
-      <h1 className="text-xl font-semibold">Reports</h1>
-      <div className="mt-5 grid gap-3 md:grid-cols-3">
+    <MobileMoreBackShell title="Reports">
+      <h1 className="hidden text-xl font-semibold md:block">Reports</h1>
+      <div className="mt-0 grid gap-3 md:mt-5 md:grid-cols-3">
         <Stat label="Balance" value={formatMoney(metrics.balance)} />
         <Stat label="Realized PnL" value={formatMoney(realized)} />
         <Stat label="Total deposits" value={formatMoney(deposits)} />
@@ -182,7 +190,7 @@ export function ReportsPage() {
       >
         Export trades CSV
       </button>
-    </div>
+    </MobileMoreBackShell>
   )
 }
 
@@ -193,10 +201,12 @@ export function AiAssistantPage() {
   const quote = quotes.find((x) => x.symbol === selectedSymbol)
 
   return (
-    <div className="mx-auto flex h-full max-w-2xl flex-col bg-panel p-6">
-      <h1 className="text-xl font-semibold">AI Assistant</h1>
-      <p className="mt-1 text-sm text-text-secondary">Ask about your account or the selected market.</p>
-      <div className="mt-4 flex-1 overflow-auto rounded-lg border border-border p-4 text-sm">
+    <MobileMoreBackShell title="AI Assistant" className="mx-auto flex max-w-2xl flex-col p-4 sm:p-6">
+      <h1 className="hidden text-xl font-semibold md:block">AI Assistant</h1>
+      <p className="mt-0 text-sm text-text-secondary md:mt-1">
+        Ask about your account or the selected market.
+      </p>
+      <div className="mt-4 min-h-[12rem] flex-1 overflow-auto rounded-lg border border-border p-4 text-sm">
         {answer || 'Ask a question to get started.'}
       </div>
       <form
@@ -230,7 +240,7 @@ export function AiAssistantPage() {
           Ask
         </button>
       </form>
-    </div>
+    </MobileMoreBackShell>
   )
 }
 

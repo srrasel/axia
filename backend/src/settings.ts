@@ -76,6 +76,14 @@ export const SETTING_DEFS: SettingMeta[] = [
     defaultValue: 'support@nitajfx.online',
   },
   {
+    key: 'finance_email',
+    label: 'Finance department email',
+    description: 'Email shown for bank transfer and international deposit assistance',
+    type: 'text',
+    group: 'General',
+    defaultValue: 'finance@nitajfx.online',
+  },
+  {
     key: 'maintenance_mode',
     label: 'Maintenance mode',
     description: 'Block new trades when enabled (true/false)',

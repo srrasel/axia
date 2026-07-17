@@ -14,6 +14,7 @@ import {
   TrendingUp,
   Receipt,
   Gauge,
+  Building2,
   type LucideIcon,
 } from 'lucide-react'
 import clsx from 'clsx'
@@ -49,6 +50,7 @@ const navGroups: { title: string; items: { to: string; icon: LucideIcon; label: 
       { to: '/accounts', icon: Landmark, label: 'Accounts' },
       { to: '/trades', icon: CandlestickChart, label: 'Trades' },
       { to: '/transactions', icon: ArrowLeftRight, label: 'Money ops' },
+      { to: '/bank-accounts', icon: Building2, label: 'Bank accounts' },
       { to: '/kyc', icon: BadgeCheck, label: 'KYC' },
       { to: '/settings', icon: Settings, label: 'Settings' },
     ],

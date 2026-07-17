@@ -32,7 +32,22 @@ export function requiresAdminApproval(method: PaymentMethod) {
   return method === 'bank' || method === 'crypto'
 }
 
-export async function getBankDetails() {
+export async function getBankDetails(countryCode?: string) {
+  const { getBankAccountByCode } = await import('./bankAccounts.js')
+  if (countryCode) {
+    const byCountry = await getBankAccountByCode(countryCode)
+    if (byCountry && !byCountry.contactOnly) {
+      return {
+        bankName: byCountry.bankName,
+        accountName: byCountry.accountName,
+        iban: byCountry.iban,
+        swift: byCountry.swift,
+        referenceHint: byCountry.referenceHint,
+        countryCode: byCountry.countryCode,
+        label: byCountry.label,
+      }
+    }
+  }
   const s = await loadSettings()
   return {
     bankName: s.bank_name || 'NitajFX Partner Bank',
@@ -40,6 +55,8 @@ export async function getBankDetails() {
     iban: s.bank_iban || 'AE070331234567890123456',
     swift: s.bank_swift || 'EBILAEAD',
     referenceHint: s.bank_reference_hint || 'Use your email as payment reference',
+    countryCode: countryCode || 'AE',
+    label: 'UAE',
   }
 }
 

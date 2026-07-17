@@ -269,3 +269,20 @@ model ContactLog {
   @@index([clientId])
   @@index([staffId])
 }
+
+/** Per-country bank transfer details (managed from admin panel) */
+model BankAccount {
+  id            String   @id @default(cuid())
+  countryCode   String   @unique
+  label         String
+  bankName      String   @default("")
+  accountName   String   @default("")
+  iban          String   @default("")
+  swift         String   @default("")
+  referenceHint String?
+  contactOnly   Boolean  @default(false)
+  active        Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

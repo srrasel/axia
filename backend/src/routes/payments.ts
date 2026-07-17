@@ -18,15 +18,18 @@ import {
   type PaymentMethod,
 } from '../payments.js'
 import { currencySymbol, getCurrencyCode, getSettingNumber } from '../settings.js'
+import { BANK_COUNTRY_CODES, getFinanceContact, listActiveBankAccounts } from '../bankAccounts.js'
 
 export const paymentsRouter = Router()
 
 paymentsRouter.get('/methods', authRequired, async (_req, res) => {
-  const bank = await getBankDetails()
+  const bankCountries = await listActiveBankAccounts()
+  const finance = await getFinanceContact()
   const crypto = await getCryptoWallets()
   const stripeOk = await stripeConfigured()
   const nowOk = await nowPaymentsConfigured()
   return res.json({
+    financeEmail: finance.financeEmail,
     methods: [
       {
         id: 'stripe',
@@ -55,10 +58,11 @@ paymentsRouter.get('/methods', authRequired, async (_req, res) => {
       {
         id: 'bank',
         label: 'Bank Transfer',
-        description: 'Wire transfer — requires admin approval after funds arrive',
+        description: 'Select your country for local bank details or contact Finance for international transfers',
         requiresApproval: true,
-        configured: true,
-        bank,
+        configured: bankCountries.length > 0,
+        countries: bankCountries,
+        financeEmail: finance.financeEmail,
       },
     ],
   })
@@ -70,6 +74,7 @@ paymentsRouter.post('/deposit', authRequired, async (req, res) => {
     amount: z.number().positive(),
     method: z.enum(PAYMENT_METHODS),
     // optional extras
+    countryCode: z.enum(BANK_COUNTRY_CODES as [string, ...string[]]).optional(),
     bankReference: z.string().optional(),
     cryptoNetwork: z.enum(['usdt_trc20', 'usdt_erc20', 'btc', 'eth']).optional(),
     cryptoTxHash: z.string().optional(),
@@ -103,8 +108,24 @@ paymentsRouter.post('/deposit', authRequired, async (req, res) => {
 
   const meta: Record<string, unknown> = { method }
   if (method === 'bank') {
+    if (!parsed.data.countryCode) {
+      return res.status(400).json({ error: 'Select a country for bank transfer' })
+    }
+    const bank = await getBankDetails(parsed.data.countryCode)
+    const { getBankAccountByCode } = await import('../bankAccounts.js')
+    const country = await getBankAccountByCode(parsed.data.countryCode)
+    if (!country) {
+      return res.status(400).json({ error: 'Selected country is not available' })
+    }
+    if (country.contactOnly) {
+      return res.status(400).json({
+        error: 'International transfers require Finance assistance — please contact the Finance Department',
+      })
+    }
+    meta.countryCode = parsed.data.countryCode
+    meta.countryLabel = country.label
     meta.bankReference = parsed.data.bankReference || ''
-    meta.bank = await getBankDetails()
+    meta.bank = bank
   }
   if (method === 'crypto') {
     meta.cryptoNetwork = parsed.data.cryptoNetwork || 'usdt_trc20'

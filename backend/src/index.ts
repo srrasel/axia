@@ -8,6 +8,7 @@ import { crmRouter } from './routes/crm.js'
 import { paymentsRouter } from './routes/payments.js'
 import { runMarketTick } from './tick.js'
 import { ensureDefaultSettings } from './settings.js'
+import { ensureBankAccounts } from './bankAccounts.js'
 
 async function main() {
   const app = express()
@@ -43,6 +44,7 @@ async function main() {
   })
 
   await ensureDefaultSettings()
+  await ensureBankAccounts()
 
   app.listen(port, '0.0.0.0', () => {
     console.log(`NitajFX API listening on 0.0.0.0:${port}`)

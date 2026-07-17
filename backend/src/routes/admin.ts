@@ -2,7 +2,7 @@ import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { prisma } from '../prisma.js'
-import { authRequired, isManager, publicUser, staffRequired } from '../auth.js'
+import { authRequired, isManager, managerRequired, publicUser, staffRequired } from '../auth.js'
 import { initialsFromName, referralCode } from '../trading.js'
 import { settleTradeClose } from '../settle.js'
 import { recordEarning } from '../earnings.js'
@@ -21,6 +21,7 @@ import {
 import { testNowPaymentsConnection } from '../payments.js'
 import { convertPlatformCurrency, fxMatrix } from '../fx.js'
 import { fetchQuotes } from '../market.js'
+import { listAllBankAccounts, updateBankAccount } from '../bankAccounts.js'
 
 export const adminRouter = Router()
 adminRouter.use(authRequired, staffRequired)
@@ -786,6 +787,32 @@ adminRouter.put('/settings', async (req, res) => {
 
   const values = await loadSettings(true)
   return res.json({ ok: true, values: maskSecretSettings(values), conversion })
+})
+
+adminRouter.get('/bank-accounts', async (_req, res) => {
+  const accounts = await listAllBankAccounts()
+  return res.json({ accounts })
+})
+
+adminRouter.put('/bank-accounts/:countryCode', managerRequired, async (req, res) => {
+  const schema = z.object({
+    bankName: z.string().optional(),
+    accountName: z.string().optional(),
+    iban: z.string().optional(),
+    swift: z.string().optional(),
+    referenceHint: z.string().optional(),
+    active: z.boolean().optional(),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
+
+  try {
+    const countryCode = String(req.params.countryCode)
+    const account = await updateBankAccount(countryCode, parsed.data)
+    return res.json({ ok: true, account })
+  } catch (e) {
+    return res.status(404).json({ error: e instanceof Error ? e.message : 'Not found' })
+  }
 })
 
 adminRouter.get('/accounts', async (_req, res) => {

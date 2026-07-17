@@ -241,6 +241,9 @@ async function seedStaff() {
       data: { assignedToId: manager.id, lastSeenAt: new Date() },
     })
   }
+
+  const { ensureBankAccounts } = await import('../src/bankAccounts.js')
+  await ensureBankAccounts()
 }
 
 main()

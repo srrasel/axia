@@ -54,19 +54,19 @@ const SECTION_LABELS: Record<SectionKey, string> = {
 
 /** Tools 4 · Rewards 1 · Education 3 · Funding 3 · Platform 1 · Support 3 */
 const CARDS: MoreCard[] = [
-  { to: '/signals', label: 'Signals', icon: Store, section: 'tools', tone: 'text-[#fcd535]' },
-  { to: '/analytics', label: 'Analytics', icon: BarChart3, section: 'tools', tone: 'text-link' },
-  { to: '/reports', label: 'Reports', icon: LayoutDashboard, section: 'tools', tone: 'text-buy' },
-  { to: '/calendar', label: 'Calendar', icon: Calendar, section: 'tools', tone: 'text-[#fcd535]' },
-  { to: '/account/invite', label: 'Refer a Friend', icon: UserPlus, section: 'rewards', tone: 'text-[#fcd535]' },
+  { to: '/signals', label: 'Signals', icon: Store, section: 'tools', tone: 'text-link' },
+  { to: '/analytics', label: 'Analytics', icon: BarChart3, section: 'tools', tone: 'text-buy' },
+  { to: '/reports', label: 'Reports', icon: LayoutDashboard, section: 'tools', tone: 'text-link' },
+  { to: '/calendar', label: 'Calendar', icon: Calendar, section: 'tools', tone: 'text-buy' },
+  { to: '/account/invite', label: 'Refer a Friend', icon: UserPlus, section: 'rewards', tone: 'text-link' },
   { to: '/ai', label: 'AI Assistant', icon: Sparkles, section: 'education', tone: 'text-link' },
-  { to: '/premium', label: 'Premium', icon: Crosshair, section: 'education', tone: 'text-[#fcd535]' },
+  { to: '/premium', label: 'Premium', icon: Crosshair, section: 'education', tone: 'text-buy' },
   { to: '/account/questionnaire', label: 'Questionnaire', icon: ClipboardList, section: 'education', tone: 'text-buy' },
   { to: '/account/deposit', label: 'Deposit', icon: ArrowDownToLine, section: 'funding', tone: 'text-buy' },
   { to: '/account/withdraw', label: 'Withdraw', icon: ArrowUpFromLine, section: 'funding', tone: 'text-sell' },
-  { to: '/account/transactions', label: 'Transactions', icon: Wallet, section: 'funding', tone: 'text-[#fcd535]' },
+  { to: '/account/transactions', label: 'Transactions', icon: Wallet, section: 'funding', tone: 'text-link' },
   { to: '/account/mobile', label: 'Mobile App', icon: Smartphone, section: 'platform', tone: 'text-link' },
-  { to: '/notifications', label: 'Notifications', icon: Bell, section: 'support', tone: 'text-[#fcd535]' },
+  { to: '/notifications', label: 'Notifications', icon: Bell, section: 'support', tone: 'text-link' },
   { to: '/account/verification', label: 'Verification', icon: ShieldCheck, section: 'support', tone: 'text-buy' },
   { to: '/account/details', label: 'Help & Settings', icon: MessageCircle, section: 'support', tone: 'text-link' },
 ]
@@ -76,10 +76,14 @@ function FeatureCard({ card }: { card: MoreCard }) {
   return (
     <Link
       to={card.to}
-      className="flex flex-col items-center gap-2.5 rounded-2xl border border-border/80 px-2 py-4 text-center transition-colors hover:border-border hover:bg-sidebar-active/60 active:scale-[0.98]"
+      className="flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/80 px-2 py-3 text-center transition-colors hover:border-border hover:bg-sidebar-active/60 active:scale-[0.98]"
     >
-      <Icon size={24} strokeWidth={1.75} className={card.tone} />
-      <span className="text-[12px] font-semibold leading-tight text-text">{card.label}</span>
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center">
+        <Icon size={24} strokeWidth={1.75} className={card.tone} />
+      </span>
+      <span className="line-clamp-2 min-h-[2rem] text-[12px] font-semibold leading-tight text-text">
+        {card.label}
+      </span>
     </Link>
   )
 }
@@ -105,7 +109,7 @@ export function MorePage() {
             to="/account/deposit"
             className="flex items-center gap-3 rounded-2xl border border-border px-4 py-3.5 transition-colors hover:bg-sidebar-active/50"
           >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#fcd535]/35 text-[#fcd535]">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-buy/35 text-buy">
               <ArrowDownToLine size={20} strokeWidth={1.75} />
             </span>
             <span className="min-w-0 flex-1">
@@ -121,7 +125,7 @@ export function MorePage() {
             to="/account/invite"
             className="flex items-center gap-3 rounded-2xl border border-border px-4 py-3.5 transition-colors hover:bg-sidebar-active/50"
           >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#fcd535]/35 text-[#fcd535]">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-link/35 text-link">
               <UserPlus size={20} strokeWidth={1.75} />
             </span>
             <span className="min-w-0 flex-1">
@@ -134,7 +138,7 @@ export function MorePage() {
           </Link>
         </div>
 
-        <div className="sticky top-0 z-10 bg-panel px-4 py-3 sm:px-6">
+        <div className="sticky top-0 z-10 bg-panel px-4 pt-3 pb-[5px] sm:px-6">
           <div className="flex gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {FILTERS.map((f) => {
               const active = filter === f.key
@@ -146,7 +150,7 @@ export function MorePage() {
                   className={clsx(
                     'h-9 shrink-0 rounded-full px-3.5 text-sm font-semibold transition-colors',
                     active
-                      ? 'bg-[#fcd535] text-[#202630]'
+                      ? 'bg-white text-[#202630]'
                       : 'border border-border text-text-secondary hover:bg-sidebar-active hover:text-text',
                   )}
                 >
@@ -158,19 +162,16 @@ export function MorePage() {
         </div>
 
         <div className="space-y-6 px-4 pb-6 sm:px-6">
-          {visibleSections.map((section) => {
-            const cols = section.cards.length <= 2 ? 'grid-cols-2' : 'grid-cols-3'
-            return (
-              <section key={section.key}>
-                <h2 className="mb-3 text-base font-bold text-text">{section.label}</h2>
-                <div className={clsx('grid gap-2.5', cols)}>
-                  {section.cards.map((card) => (
-                    <FeatureCard key={card.to} card={card} />
-                  ))}
-                </div>
-              </section>
-            )
-          })}
+          {visibleSections.map((section) => (
+            <section key={section.key}>
+              <h2 className="mb-3 text-base font-bold text-text">{section.label}</h2>
+              <div className="grid grid-cols-3 gap-2.5">
+                {section.cards.map((card) => (
+                  <FeatureCard key={card.to} card={card} />
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       </div>
     </div>

@@ -94,6 +94,7 @@ interface AppState {
     payment: string,
     extras?: {
       method?: string
+      countryCode?: string
       bankReference?: string
       cryptoNetwork?: string
       cryptoTxHash?: string
@@ -565,6 +566,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     payment: string,
     extras?: {
       method?: string
+      countryCode?: string
       bankReference?: string
       cryptoNetwork?: string
       cryptoTxHash?: string
@@ -588,6 +590,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             accountId: activeAccountId,
             amount,
             method,
+            countryCode: extras?.countryCode,
             bankReference: extras?.bankReference,
             cryptoNetwork: extras?.cryptoNetwork,
             cryptoTxHash: extras?.cryptoTxHash,

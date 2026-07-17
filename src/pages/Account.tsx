@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 're
 import { Link, useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import { AccountSidebar } from '../components/layout/AccountSidebar'
+import { MobileMoreBackShell } from '../components/layout/MobileMoreBackShell'
 import { UserAvatar } from '../components/UserAvatar'
 import { useApp } from '../context/AppContext'
 import { api } from '../api/client'
@@ -13,6 +14,7 @@ import {
   Briefcase,
   Building2,
   Check,
+  ChevronDown,
   Copy,
   CreditCard,
   Diamond,
@@ -20,6 +22,7 @@ import {
   EyeOff,
   FileWarning,
   Lock,
+  Mail,
   Pencil,
   Upload,
   Users,
@@ -571,25 +574,58 @@ export function TransactionsPage() {
 
   return (
     <PageShell title="Transaction History">
-      <div className="mb-4 flex flex-wrap gap-2">
-        <select className="h-9 rounded border border-border px-2 text-sm" value={period} onChange={(e) => setPeriod(e.target.value)}>
-          <option value="all">All Periods</option>
-          <option value="7d">Last 7 days</option>
-        </select>
-        <select className="h-9 rounded border border-border px-2 text-sm" value={type} onChange={(e) => setType(e.target.value)}>
-          <option value="all">All Types</option>
-          <option value="deposit">Deposit</option>
-          <option value="withdraw">Withdraw</option>
-          <option value="trade_pnl">Trade PnL</option>
-        </select>
-        <select className="h-9 rounded border border-border px-2 text-sm" value={account} onChange={(e) => setAccount(e.target.value)}>
-          <option value="all">All Accounts</option>
-          {accounts.map((a) => (
-            <option key={a.id} value={a.id}>
-              #{a.id}
-            </option>
-          ))}
-        </select>
+      <div className="mb-4 grid grid-cols-2 gap-2 md:flex md:flex-wrap">
+        <div className="relative min-w-0">
+          <select
+            className="h-10 w-full appearance-none rounded-md border border-border bg-panel py-2 pl-3 pr-7 text-sm outline-none md:h-9 md:w-auto md:min-w-[8.5rem]"
+            value={period}
+            onChange={(e) => setPeriod(e.target.value)}
+          >
+            <option value="all">All Periods</option>
+            <option value="7d">Last 7 days</option>
+          </select>
+          <ChevronDown
+            size={14}
+            className="pointer-events-none absolute right-[2px] top-1/2 -translate-y-1/2 text-text-secondary"
+            aria-hidden
+          />
+        </div>
+        <div className="relative min-w-0">
+          <select
+            className="h-10 w-full appearance-none rounded-md border border-border bg-panel py-2 pl-3 pr-7 text-sm outline-none md:h-9 md:w-auto md:min-w-[8.5rem]"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          >
+            <option value="all">All Types</option>
+            <option value="deposit">Deposit</option>
+            <option value="withdraw">Withdraw</option>
+            <option value="trade_pnl">Trade PnL</option>
+          </select>
+          <ChevronDown
+            size={14}
+            className="pointer-events-none absolute right-[2px] top-1/2 -translate-y-1/2 text-text-secondary"
+            aria-hidden
+          />
+        </div>
+        <div className="relative col-span-2 min-w-0 md:col-span-1">
+          <select
+            className="h-10 w-full appearance-none rounded-md border border-border bg-panel py-2 pl-3 pr-7 text-sm outline-none md:h-9 md:w-auto md:min-w-[9.5rem]"
+            value={account}
+            onChange={(e) => setAccount(e.target.value)}
+          >
+            <option value="all">All Accounts</option>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>
+                #{a.id}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={14}
+            className="pointer-events-none absolute right-[2px] top-1/2 -translate-y-1/2 text-text-secondary"
+            aria-hidden
+          />
+        </div>
       </div>
       {filtered.length === 0 ? (
         <Empty
@@ -861,14 +897,19 @@ export function DepositPage() {
   const [card, setCard] = useState({ name: '', number: '', expiry: '', cvc: '' })
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [bankCountry, setBankCountry] = useState<string>('SA')
   const [info, setInfo] = useState<{
-    bank?: {
+    countries?: Array<{
+      countryCode: string
+      label: string
       bankName: string
       accountName: string
       iban: string
       swift: string
       referenceHint: string
-    }
+      contactOnly: boolean
+    }>
+    financeEmail?: string
     wallets?: {
       usdtTrc20: string
       usdtErc20: string
@@ -880,18 +921,45 @@ export function DepositPage() {
 
   const currency = getPlatformCurrency()
 
+  const nationalityToCountry = (nationality?: string) => {
+    const map: Record<string, string> = {
+      'Saudi Arabia': 'SA',
+      UAE: 'AE',
+      'United Arab Emirates': 'AE',
+      Qatar: 'QA',
+      Bahrain: 'BH',
+      Oman: 'OM',
+      Jordan: 'JO',
+      Kuwait: 'KW',
+    }
+    return map[nationality || ''] || 'SA'
+  }
+
+  const selectedBankCountry = info?.countries?.find((c) => c.countryCode === bankCountry)
+  const financeEmail = info?.financeEmail || 'finance@nitajfx.online'
+  const isIntlBank = selectedBankCountry?.contactOnly === true
+
+  const contactFinanceHref = `mailto:${financeEmail}?subject=${encodeURIComponent('Deposit assistance')}&body=${encodeURIComponent(
+    `Hello Finance,\n\nI need help with a bank deposit.\n\nAccount: ${user?.email || ''}\nCountry: ${selectedBankCountry?.label || bankCountry}\nAmount: ${currency.symbol}${amount}\n\nThank you.`,
+  )}`
+
   useEffect(() => {
     void api<{
+      financeEmail?: string
       methods: Array<{
         id: string
         configured?: boolean
-        bank?: {
+        countries?: Array<{
+          countryCode: string
+          label: string
           bankName: string
           accountName: string
           iban: string
           swift: string
           referenceHint: string
-        }
+          contactOnly: boolean
+        }>
+        financeEmail?: string
         wallets?: {
           usdtTrc20: string
           usdtErc20: string
@@ -901,14 +969,26 @@ export function DepositPage() {
       }>
     }>('/api/payments/methods')
       .then((data) => {
-        const bank = data.methods?.find((m) => m.id === 'bank')?.bank
+        const bankMethod = data.methods?.find((m) => m.id === 'bank')
+        const countries = bankMethod?.countries || []
         const wallets = data.methods?.find((m) => m.id === 'crypto')?.wallets
         const configured: Record<string, boolean> = {}
         for (const m of data.methods || []) configured[m.id] = Boolean(m.configured)
-        setInfo({ bank, wallets, configured })
+        setInfo({
+          countries,
+          financeEmail: data.financeEmail || bankMethod?.financeEmail,
+          wallets,
+          configured,
+        })
+        const preferred = nationalityToCountry(user?.nationality)
+        if (countries.some((c) => c.countryCode === preferred)) {
+          setBankCountry(preferred)
+        } else if (countries[0]) {
+          setBankCountry(countries[0].countryCode)
+        }
       })
       .catch(() => null)
-  }, [])
+  }, [user?.nationality])
 
   const copyText = async (label: string, value: string) => {
     try {
@@ -1009,6 +1089,7 @@ export function DepositPage() {
           }
           const err = await deposit(amount, method, {
             method,
+            countryCode: method === 'bank' ? bankCountry : undefined,
             bankReference,
             cryptoNetwork:
               cryptoCoin === 'BTC' ? 'btc' : cryptoCoin === 'ETH' ? 'eth' : 'usdt_trc20',
@@ -1056,7 +1137,7 @@ export function DepositPage() {
                 className={clsx(
                   'rounded-full border bg-transparent px-3.5 py-1.5 text-xs font-semibold transition-colors',
                   amount === v
-                    ? 'border-[#F0B90B] text-[#F0B90B]'
+                    ? 'border-[#fff] text-[#fff]'
                     : 'border-border text-text-secondary hover:border-[#F0B90B]/50 hover:text-brand-ink',
                 )}
               >
@@ -1081,13 +1162,13 @@ export function DepositPage() {
                   className={clsx(
                     'flex items-center gap-3 rounded-2xl border bg-transparent p-3 text-left transition-all sm:block',
                     active
-                      ? 'border-[#F0B90B]'
+                      ? 'border-[#fff]'
                       : 'border-border hover:border-[#F0B90B]/50',
                   )}
                 >
-                  <Icon size={18} className={clsx('shrink-0', active ? 'text-[#F0B90B]' : 'text-text-secondary')} />
+                  <Icon size={18} className={clsx('shrink-0', active ? 'text-[#fff]' : 'text-text-secondary')} />
                   <div>
-                    <div className="text-sm font-semibold sm:mt-2">{t.title}</div>
+                    <div className={clsx('text-sm font-semibold sm:mt-2', active && 'text-[#fff]')}>{t.title}</div>
                     <div className="mt-0.5 text-[11px] text-text-secondary">{t.desc}</div>
                   </div>
                 </button>
@@ -1183,13 +1264,13 @@ export function DepositPage() {
                   className={clsx(
                     'rounded-xl border bg-transparent px-3 py-3 text-left transition-all',
                     cryptoCoin === c.id
-                      ? 'border-[#F0B90B]'
+                      ? 'border-[#fff] text-[#fff]'
                       : 'border-border hover:border-[#F0B90B]/50',
                   )}
                 >
                   <div className="text-sm font-semibold">{c.id}</div>
-                  <div className="mt-0.5 text-[11px] text-text-secondary">{c.name}</div>
-                  <div className="mt-1 text-[10px] text-text-secondary">{c.network}</div>
+                  <div className={clsx('mt-0.5 text-[11px]', cryptoCoin === c.id ? 'text-[#fff]' : 'text-text-secondary')}>{c.name}</div>
+                  <div className={clsx('mt-1 text-[10px]', cryptoCoin === c.id ? 'text-[#fff]' : 'text-text-secondary')}>{c.network}</div>
                 </button>
               ))}
             </div>
@@ -1218,57 +1299,121 @@ export function DepositPage() {
           </div>
         ) : null}
 
-        {method === 'bank' && info?.bank ? (
-          <div className="space-y-4 rounded-2xl border border-border bg-panel p-5">
+        {method === 'bank' && info?.countries?.length ? (
+          <div className="space-y-4">
             <div>
-              <div className="text-sm font-semibold">Bank transfer details</div>
-              <p className="mt-0.5 text-xs text-text-secondary">Transfer funds, then submit for admin approval</p>
+              <div className="mb-3 text-sm font-semibold">Select country</div>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {info.countries.map((c) => {
+                  const active = bankCountry === c.countryCode
+                  return (
+                    <button
+                      key={c.countryCode}
+                      type="button"
+                      onClick={() => setBankCountry(c.countryCode)}
+                      className={clsx(
+                        'rounded-xl border bg-transparent px-3 py-3 text-left transition-all',
+                        active ? 'border-[#fff] text-[#fff]' : 'border-border hover:border-[#F0B90B]/50',
+                      )}
+                    >
+                      <div className="text-sm font-semibold">{c.label}</div>
+                      {c.contactOnly ? (
+                        <div className={clsx('mt-1 text-[11px]', active ? 'text-[#fff]' : 'text-text-secondary')}>
+                          Contact Finance
+                        </div>
+                      ) : (
+                        <div className={clsx('mt-1 text-[11px]', active ? 'text-[#fff]' : 'text-text-secondary')}>
+                          Local transfer
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
 
-            <div className="space-y-2">
-              {(
-                [
-                  ['Bank name', info.bank.bankName],
-                  ['Account name', info.bank.accountName],
-                  ['IBAN / Account', info.bank.iban],
-                  ['SWIFT / BIC', info.bank.swift],
-                ] as const
-              ).map(([label, value]) => (
-                <div
-                  key={label}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/30 px-3 py-2.5"
-                >
-                  <div className="min-w-0">
-                    <div className="text-[11px] text-text-secondary">{label}</div>
-                    <div className="break-all text-sm font-medium">{value}</div>
-                  </div>
-                  <button
-                    type="button"
-                    className="shrink-0 rounded-lg border border-border p-2 text-text-secondary hover:text-[#F0B90B]"
-                    onClick={() => void copyText(label, value)}
-                    aria-label={`Copy ${label}`}
-                  >
-                    {copied === label ? <Check size={14} className="text-buy" /> : <Copy size={14} />}
-                  </button>
+            {isIntlBank ? (
+              <div className="space-y-4 rounded-2xl border border-border bg-panel p-5">
+                <div>
+                  <div className="text-sm font-semibold">International transfer</div>
+                  <p className="mt-1 text-xs text-text-secondary">
+                    Bank accounts change frequently. Please contact the Finance Department for current wire instructions.
+                  </p>
                 </div>
-              ))}
-            </div>
+                <a
+                  href={contactFinanceHref}
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#fcd535] text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]"
+                >
+                  <Mail size={16} />
+                  Contact Finance
+                </a>
+              </div>
+            ) : selectedBankCountry ? (
+              <div className="space-y-4 rounded-2xl border border-border bg-panel p-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <div className="text-sm font-semibold">Bank transfer details — {selectedBankCountry.label}</div>
+                    <p className="mt-0.5 text-xs text-text-secondary">
+                      Transfer funds using the details below, then submit for admin approval
+                    </p>
+                  </div>
+                  <a
+                    href={contactFinanceHref}
+                    className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-border px-4 text-sm font-medium text-text-secondary transition-colors hover:border-[#fff] hover:text-[#fff]"
+                  >
+                    <Mail size={15} />
+                    Contact Finance
+                  </a>
+                </div>
 
-            <p className="text-xs text-text-secondary">{info.bank.referenceHint}</p>
+                <div className="space-y-2">
+                  {(
+                    [
+                      ['Bank name', selectedBankCountry.bankName],
+                      ['Account name', selectedBankCountry.accountName],
+                      ['IBAN / Account', selectedBankCountry.iban],
+                      ['SWIFT / BIC', selectedBankCountry.swift],
+                    ] as const
+                  ).map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/30 px-3 py-2.5"
+                    >
+                      <div className="min-w-0">
+                        <div className="text-[11px] text-text-secondary">{label}</div>
+                        <div className="break-all text-sm font-medium">{value || '—'}</div>
+                      </div>
+                      {value ? (
+                        <button
+                          type="button"
+                          className="shrink-0 rounded-lg border border-border p-2 text-text-secondary hover:text-[#F0B90B]"
+                          onClick={() => void copyText(label, value)}
+                          aria-label={`Copy ${label}`}
+                        >
+                          {copied === label ? <Check size={14} className="text-buy" /> : <Copy size={14} />}
+                        </button>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
 
-            <label className="block text-sm">
-              <span className="mb-1.5 block text-xs font-medium text-text-secondary">Your payment reference</span>
-              <input
-                value={bankReference}
-                onChange={(e) => setBankReference(e.target.value)}
-                className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B]"
-                placeholder="Transfer ID / reference (optional)"
-              />
-            </label>
+                <p className="text-xs text-text-secondary">{selectedBankCountry.referenceHint}</p>
 
-            <p className="rounded-xl border border-sell/30 bg-sell/5 px-3 py-2.5 text-[11px] text-sell">
-              Bank deposits stay pending until an admin confirms the funds.
-            </p>
+                <label className="block text-sm">
+                  <span className="mb-1.5 block text-xs font-medium text-text-secondary">Your payment reference</span>
+                  <input
+                    value={bankReference}
+                    onChange={(e) => setBankReference(e.target.value)}
+                    className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B]"
+                    placeholder="Transfer ID / reference (optional)"
+                  />
+                </label>
+
+                <p className="rounded-xl border border-sell/30 bg-sell/5 px-3 py-2.5 text-[11px] text-sell">
+                  Bank deposits stay pending until an admin confirms the funds.
+                </p>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -1276,13 +1421,15 @@ export function DepositPage() {
 
         <button
           type="submit"
-          disabled={busy || amount <= 0}
+          disabled={busy || amount <= 0 || (method === 'bank' && isIntlBank)}
           className="auth-btn h-12 w-full rounded-xl bg-[#fcd535] text-[15px] font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30] disabled:opacity-50"
           style={{ color: '#202630' }}
         >
           {busy
             ? 'Processing…'
-            : method === 'stripe'
+            : method === 'bank' && isIntlBank
+              ? 'Contact Finance to deposit'
+              : method === 'stripe'
               ? `Pay ${currency.symbol}${amount.toFixed(2)} with card`
               : method === 'nowpayments'
                 ? `Continue with ${cryptoCoin}`
@@ -1471,10 +1618,11 @@ export function PremiumPage() {
   const { isPremium, user } = useApp()
   if (isPremium) {
     return (
-      <div className="flex h-full items-center justify-center bg-panel">
+      <MobileMoreBackShell title="Premium" className="flex items-center justify-center p-6">
         <div className="max-w-md text-center">
           <Diamond size={36} className="mx-auto mb-3 text-accent" />
-          <h1 className="text-xl font-semibold">Premium active</h1>
+          <h1 className="hidden text-xl font-semibold md:block">Premium active</h1>
+          <p className="text-xl font-semibold md:hidden">Premium active</p>
           <p className="mt-2 text-sm text-text-secondary">
             You have deposited {formatMoney(user?.totalDeposited ?? 0)}. Enjoy signals and premium tools.
           </p>
@@ -1482,16 +1630,17 @@ export function PremiumPage() {
             View Signals
           </Link>
         </div>
-      </div>
+      </MobileMoreBackShell>
     )
   }
   return (
-    <div className="flex h-full items-center justify-center bg-panel">
+    <MobileMoreBackShell title="Premium" className="flex items-center justify-center p-6">
       <div className="text-center">
         <div className="relative mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted text-text-secondary">
           <Diamond size={32} />
         </div>
-        <h1 className="text-xl font-semibold">Join Premium</h1>
+        <h1 className="hidden text-xl font-semibold md:block">Join Premium</h1>
+        <p className="text-xl font-semibold md:hidden">Join Premium</p>
         <p className="mt-2 text-sm text-text-secondary">
           A total deposit of at least {formatMoney(PREMIUM_THRESHOLD)} is required to access the content.
         </p>
@@ -1505,7 +1654,7 @@ export function PremiumPage() {
           Deposit
         </Link>
       </div>
-    </div>
+    </MobileMoreBackShell>
   )
 }
 

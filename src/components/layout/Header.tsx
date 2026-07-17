@@ -6,6 +6,7 @@ import { useApp } from '../../context/AppContext'
 import { formatMoney } from '../../data/mock'
 import { BrandLogo } from '../BrandLogo'
 import { UserAvatar } from '../UserAvatar'
+import { MobileAccountSwitcher } from './MobileAccountSwitcher'
 
 const userMenu = [
   { to: '/account/details', icon: User, label: 'Account details' },
@@ -43,9 +44,6 @@ export function Header() {
   const account = accounts.find((a) => a.id === activeAccountId)
   const isLiveAccount = accountType === 'live'
   const unreadCount = notifications.filter((n) => !n.read).length
-  const demoAccount = accounts.find((a) => a.type === 'demo')
-  const liveAccount = accounts.find((a) => a.type === 'live')
-  const mobileAccountOptions = [demoAccount, liveAccount].filter(Boolean) as typeof accounts
 
   useEffect(() => {
     const tick = () =>
@@ -96,36 +94,7 @@ export function Header() {
           <BrandLogo className="h-8 w-auto sm:h-10" />
         </Link>
 
-        {/* Mobile Demo / Live switch — after logo */}
-        <div
-          className="flex shrink-0 items-center rounded-lg border border-border bg-muted p-0.5 sm:hidden"
-          role="group"
-          aria-label="Switch demo or live account"
-        >
-          {mobileAccountOptions.map((a) => {
-            const active = a.id === activeAccountId
-            const live = a.type === 'live'
-            return (
-              <button
-                key={a.id}
-                type="button"
-                onClick={() => {
-                  if (!active) switchAccount(a.id)
-                }}
-                className={clsx(
-                  'h-7 min-w-[3.25rem] rounded-md px-2.5 text-[11px] font-semibold tracking-wide transition-all',
-                  active
-                    ? live
-                      ? 'bg-panel text-buy shadow-sm'
-                      : 'bg-panel text-link shadow-sm'
-                    : 'text-text-secondary hover:text-text',
-                )}
-              >
-                {live ? 'Live' : 'Demo'}
-              </button>
-            )
-          })}
-        </div>
+        <MobileAccountSwitcher />
       </div>
 
       {/* Demo / Live account switch — desktop / tablet */}
@@ -202,67 +171,6 @@ export function Header() {
       <div className="min-w-0 flex-1 lg:hidden" aria-hidden />
 
       <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
-        <button
-          type="button"
-          onClick={() => navigate('/account/deposit')}
-          aria-label="Deposit"
-          className="auth-btn flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-[#fcd535] !text-[#202630] transition-colors hover:bg-[#ceaf30] sm:h-10 sm:w-auto sm:rounded-[8px] sm:px-4"
-        >
-          <Wallet size={18} strokeWidth={1.75} className="sm:hidden" />
-          <span className="hidden text-sm font-semibold sm:inline">Deposit</span>
-        </button>
-
-        <span className="mr-1 hidden w-[4.75rem] text-right tabular-nums text-xs text-text-secondary sm:inline">
-          {time}
-        </span>
-
-        <button
-          type="button"
-          aria-label="Toggle theme"
-          className="hidden h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:flex sm:h-10 sm:w-10"
-          onClick={() => setDarkMode(!darkMode)}
-        >
-          {darkMode ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
-        </button>
-
-        <div className="relative hidden sm:block" ref={langRef}>
-          <button
-            type="button"
-            aria-label="Language"
-            className={clsx(
-              'flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:h-10 sm:w-10',
-              langOpen && 'bg-[#28303c] text-brand-ink',
-            )}
-            onClick={() => {
-              setLangOpen((v) => !v)
-              setUserOpen(false)
-              setNotifOpen(false)
-            }}
-          >
-            <Globe size={18} strokeWidth={1.75} />
-          </button>
-          {langOpen ? (
-            <div className="panel absolute right-0 top-12 z-[60] min-w-[8.5rem] overflow-hidden rounded-xl border shadow-xl">
-              {(['en', 'ar'] as const).map((lang) => (
-                <button
-                  key={lang}
-                  type="button"
-                  className={clsx(
-                    'block w-full px-3.5 py-2.5 text-left text-sm transition-colors hover:bg-[#28303c]',
-                    language === lang && 'font-semibold text-brand-ink',
-                  )}
-                  onClick={() => {
-                    setLanguage(lang)
-                    setLangOpen(false)
-                  }}
-                >
-                  {lang === 'en' ? 'English' : 'العربية'}
-                </button>
-              ))}
-            </div>
-          ) : null}
-        </div>
-
         <div className="relative" ref={notifRef}>
           <button
             type="button"
@@ -334,6 +242,67 @@ export function Header() {
                   View all notifications
                 </button>
               </div>
+            </div>
+          ) : null}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => navigate('/account/deposit')}
+          aria-label="Deposit"
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:auth-btn sm:h-10 sm:w-auto sm:rounded-[8px] sm:bg-[#fcd535] sm:px-4 sm:!text-[#202630] sm:hover:bg-[#ceaf30]"
+        >
+          <Wallet size={18} strokeWidth={1.75} className="sm:hidden" />
+          <span className="hidden text-sm font-semibold sm:inline">Deposit</span>
+        </button>
+
+        <span className="mr-1 hidden w-[4.75rem] text-right tabular-nums text-xs text-text-secondary sm:inline">
+          {time}
+        </span>
+
+        <button
+          type="button"
+          aria-label="Toggle theme"
+          className="hidden h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:flex sm:h-10 sm:w-10"
+          onClick={() => setDarkMode(!darkMode)}
+        >
+          {darkMode ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
+        </button>
+
+        <div className="relative hidden sm:block" ref={langRef}>
+          <button
+            type="button"
+            aria-label="Language"
+            className={clsx(
+              'flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-[#28303c] hover:text-brand-ink sm:h-10 sm:w-10',
+              langOpen && 'bg-[#28303c] text-brand-ink',
+            )}
+            onClick={() => {
+              setLangOpen((v) => !v)
+              setUserOpen(false)
+              setNotifOpen(false)
+            }}
+          >
+            <Globe size={18} strokeWidth={1.75} />
+          </button>
+          {langOpen ? (
+            <div className="panel absolute right-0 top-12 z-[60] min-w-[8.5rem] overflow-hidden rounded-xl border shadow-xl">
+              {(['en', 'ar'] as const).map((lang) => (
+                <button
+                  key={lang}
+                  type="button"
+                  className={clsx(
+                    'block w-full px-3.5 py-2.5 text-left text-sm transition-colors hover:bg-[#28303c]',
+                    language === lang && 'font-semibold text-brand-ink',
+                  )}
+                  onClick={() => {
+                    setLanguage(lang)
+                    setLangOpen(false)
+                  }}
+                >
+                  {lang === 'en' ? 'English' : 'العربية'}
+                </button>
+              ))}
             </div>
           ) : null}
         </div>

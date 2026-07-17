@@ -1,0 +1,238 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeftRight, ChevronDown, Copy, Settings2 } from 'lucide-react'
+import clsx from 'clsx'
+import { useApp } from '../../context/AppContext'
+import { formatMoney } from '../../data/mock'
+import type { TradingAccount } from '../../types'
+
+function AccountRow({ label, value, className = '' }: { label: string; value: string; className?: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-3">
+      <span className="text-sm text-text-secondary">{label}</span>
+      <span className={clsx('text-sm font-semibold tabular-nums text-text', className)}>{value}</span>
+    </div>
+  )
+}
+
+export function MobileAccountSwitcher() {
+  const { metrics, activeAccountId, accounts, switchAccount } = useApp()
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+  const [picker, setPicker] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const account = accounts.find((a) => a.id === activeAccountId)
+  const isLive = account?.type === 'live'
+  const pnl = metrics.totalPnl
+  const accountLabel = account?.number || account?.id || '—'
+
+  useEffect(() => {
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (!open) setPicker(false)
+  }, [open])
+
+  const copyId = async () => {
+    if (!accountLabel) return
+    try {
+      await navigator.clipboard.writeText(String(accountLabel))
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const pickAccount = (a: TradingAccount) => {
+    if (a.id !== activeAccountId) switchAccount(a.id)
+    setOpen(false)
+    setPicker(false)
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex max-w-[min(100%,13.5rem)] shrink-0 items-center gap-2 rounded-full bg-[#29313d] py-1.5 pl-1.5 pr-2.5 sm:hidden"
+        aria-label="Open account details"
+      >
+        <span
+          className={clsx(
+            'flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-bold',
+            isLive ? 'bg-buy/20 text-buy' : 'bg-[#fcd535]/20 text-[#fcd535]',
+          )}
+        >
+          {isLive ? 'L' : 'D'}
+        </span>
+        <span className="min-w-0 truncate text-sm font-semibold tabular-nums text-text">
+          {formatMoney(metrics.equity)}
+        </span>
+        <span
+          className={clsx(
+            'shrink-0 text-xs font-semibold tabular-nums',
+            pnl >= 0 ? 'positive' : 'negative',
+          )}
+        >
+          {formatMoney(pnl)}
+        </span>
+        <ChevronDown size={14} className="shrink-0 text-text-secondary" />
+      </button>
+
+      {open ? (
+        <div className="fixed inset-0 z-[70] sm:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/50"
+            aria-label="Close account sheet"
+            onClick={() => setOpen(false)}
+          />
+          <div className="absolute inset-x-0 bottom-0 flex max-h-[min(92dvh,100%)] flex-col overflow-hidden rounded-t-2xl border-t border-border bg-panel shadow-2xl pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+            <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border" aria-hidden />
+
+            {picker ? (
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 pt-3">
+                <h3 className="text-lg font-semibold text-text">Switch account</h3>
+                <p className="mt-1 text-sm text-text-secondary">Choose Demo or Live account</p>
+                <div className="mt-4 space-y-2">
+                  {accounts.map((a) => {
+                    const live = a.type === 'live'
+                    const active = a.id === activeAccountId
+                    return (
+                      <button
+                        key={a.id}
+                        type="button"
+                        onClick={() => pickAccount(a)}
+                        className={clsx(
+                          'flex w-full items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-colors',
+                          active
+                            ? live
+                              ? 'border-buy bg-buy/10'
+                              : 'border-[#fcd535] bg-[#fcd535]/10'
+                            : 'border-border hover:bg-muted',
+                        )}
+                      >
+                        <span
+                          className={clsx(
+                            'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold',
+                            live ? 'bg-buy/20 text-buy' : 'bg-[#fcd535]/20 text-[#fcd535]',
+                          )}
+                        >
+                          {live ? 'L' : 'D'}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-text">
+                            {live ? 'Live' : 'Demo'}
+                          </span>
+                          <span className="block truncate text-xs text-text-secondary">
+                            #{a.number || a.id}
+                          </span>
+                        </span>
+                        {active ? (
+                          <span className="text-xs font-semibold text-text-secondary">Active</span>
+                        ) : null}
+                      </button>
+                    )
+                  })}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPicker(false)}
+                  className="mt-4 h-11 rounded-xl border border-border text-sm font-semibold text-text hover:bg-muted"
+                >
+                  Back
+                </button>
+              </div>
+            ) : (
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 pt-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={clsx(
+                      'rounded-full border px-2.5 py-0.5 text-xs font-semibold',
+                      isLive ? 'border-buy text-buy' : 'border-[#fcd535] text-[#fcd535]',
+                    )}
+                  >
+                    {isLive ? 'Live' : 'Demo'}
+                  </span>
+                  <span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-semibold text-text-secondary">
+                    {isLive ? 'Live' : account?.platform || 'Standard'}
+                  </span>
+                </div>
+
+                <h2 className="mt-3 text-2xl font-bold text-text">{account?.platform || 'Standard'}</h2>
+
+                <button
+                  type="button"
+                  onClick={() => void copyId()}
+                  className="mt-1 flex items-center gap-1.5 text-sm text-text-secondary"
+                >
+                  <span className="tabular-nums">#{accountLabel}</span>
+                  <Copy size={14} />
+                  {copied ? <span className="text-xs text-buy">Copied</span> : null}
+                </button>
+
+                <div className="mt-2 divide-y divide-border/60">
+                  <AccountRow label="Equity" value={formatMoney(metrics.equity)} />
+                  <AccountRow
+                    label="Unrealized P/L"
+                    value={formatMoney(metrics.totalPnl)}
+                    className={pnl >= 0 ? 'positive' : 'negative'}
+                  />
+                  <AccountRow label="Balance" value={formatMoney(metrics.balance)} />
+                  <AccountRow label="Margin" value={formatMoney(metrics.usedFunds)} />
+                  <AccountRow label="Free Margin" value={formatMoney(metrics.freeMargin)} />
+                  <AccountRow
+                    label="Margin Level"
+                    value={metrics.usedFunds > 0 ? `${metrics.marginLevel.toFixed(2)}%` : '—'}
+                  />
+                  <AccountRow label="Credit" value={formatMoney(account?.credit ?? 0)} />
+                  <AccountRow label="Leverage" value={account?.leverage || '—'} />
+                </div>
+
+                <div className="mt-5 space-y-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false)
+                      navigate('/account/manage')
+                    }}
+                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#fcd535] text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]"
+                  >
+                    <Settings2 size={18} strokeWidth={1.75} />
+                    Manage
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPicker(true)}
+                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-panel text-sm font-semibold text-text transition-colors hover:bg-muted"
+                  >
+                    <ArrowLeftRight size={18} strokeWidth={1.75} />
+                    Switch Account
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false)
+                      navigate('/account/manage')
+                    }}
+                    className="w-full py-2 text-center text-sm font-semibold text-link"
+                  >
+                    Create New Account
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
+    </>
+  )
+}

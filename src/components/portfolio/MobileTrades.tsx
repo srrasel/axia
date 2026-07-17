@@ -1,13 +1,17 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   ArrowLeftRight,
   ChevronDown,
+  MoveDownRight,
+  MoveUpRight,
   MoreVertical,
   SlidersHorizontal,
+  X,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../context/AppContext'
-import { calcPnl, formatMoney, formatPrice } from '../../data/mock'
+import { calcPnl, contractSize, formatMoney } from '../../data/mock'
 import type { Trade } from '../../types'
 
 type Tab = 'open' | 'pending' | 'closed'
@@ -34,6 +38,15 @@ function symbolInitials(symbol: string) {
 
 function tradePnl(t: Trade) {
   return t.status === 'closed' ? (t.realizedPnl ?? 0) : calcPnl(t)
+}
+
+function volumeLabel(t: Trade) {
+  if (t.category === 'forex') {
+    const base = t.symbol.slice(0, 3)
+    const units = t.volume * contractSize(t.category, t.symbol)
+    return `${units.toLocaleString('en-US')} ${base}`
+  }
+  return `${t.volume} Lot`
 }
 
 type SymbolGroup = {
@@ -69,10 +82,23 @@ export function MobileTrades({
   onOpenJournal: () => void
   onOpenCalendar: () => void
 }) {
-  const { trades, activeAccountId, closeTrade, cancelPending } = useApp()
+  const { trades, activeAccountId, closeTrade, cancelPending, setSelectedSymbol } = useApp()
+  const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('open')
   const [expanded, setExpanded] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+
+  const showChart = (symbol: string) => {
+    setSelectedSymbol(symbol)
+    navigate('/platform')
+  }
+
+  const closeGroup = async (group: SymbolGroup) => {
+    for (const t of group.trades) {
+      if (t.status === 'open') await closeTrade(t.id)
+      else if (t.status === 'pending') await cancelPending(t.id)
+    }
+  }
 
   const accountTrades = useMemo(
     () => trades.filter((t) => t.accountId === activeAccountId),
@@ -151,7 +177,7 @@ export function MobileTrades({
           </div>
         </div>
 
-        <div className="mt-4 flex gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-[5px] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {tabs.map((t) => {
             const active = tab === t.key
             return (
@@ -165,7 +191,7 @@ export function MobileTrades({
                 className={clsx(
                   'flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold transition-colors',
                   active
-                    ? 'bg-[#fcd535] text-[#202630]'
+                    ? 'bg-white text-[#202630]'
                     : 'bg-muted text-text-secondary hover:bg-sidebar-active hover:text-text',
                 )}
               >
@@ -174,7 +200,7 @@ export function MobileTrades({
                   <span
                     className={clsx(
                       'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-bold tabular-nums',
-                      active ? 'bg-[#202630] text-[#fcd535]' : 'bg-[#fcd535] text-[#202630]',
+                      active ? 'bg-[#fcd535] text-[#202630]' : 'bg-[#fcd535] text-[#202630]',
                     )}
                   >
                     {t.count}
@@ -265,67 +291,83 @@ export function MobileTrades({
                   </button>
 
                   {isOpen ? (
-                    <div className="space-y-2 border-t border-border/50 px-3 pb-3 pt-2">
-                      {g.trades.map((t) => {
-                        const pnl = tradePnl(t)
-                        return (
-                          <div
-                            key={t.id}
-                            className="rounded-xl border border-border/60 bg-panel px-3 py-3"
+                    <div className="border-t border-border/50 px-3 pb-3 pt-3">
+                      {tab === 'closed' ? null : (
+                        <div className="space-y-2">
+                          <button
+                            type="button"
+                            onClick={() => void closeGroup(g)}
+                            className="flex h-12 w-full items-center justify-center rounded-xl bg-[#29313d] text-sm font-semibold text-text-secondary transition-colors hover:text-text"
                           >
-                            <div className="flex items-start justify-between gap-2">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <span
-                                    className={clsx(
-                                      'rounded px-2 py-0.5 text-[11px] font-semibold capitalize',
-                                      t.side === 'buy' ? 'bg-buy/10 text-buy' : 'bg-sell/10 text-sell',
-                                    )}
-                                  >
-                                    {t.side}
-                                  </span>
-                                  <span className="text-[12px] text-text-secondary">#{t.id}</span>
-                                </div>
-                                <div className="mt-1.5 text-[12px] text-text-secondary">
-                                  {t.volume} Lot · Open {formatPrice(t.openPrice, t.symbol)}
-                                </div>
-                                <div className="mt-0.5 text-[12px] text-text-secondary">
-                                  {t.status === 'closed'
-                                    ? `Close ${formatPrice(t.closePrice ?? t.currentPrice, t.symbol)}`
-                                    : t.status === 'pending' && t.triggerPrice != null
-                                      ? `Trigger ${formatPrice(t.triggerPrice, t.symbol)}`
-                                      : `Now ${formatPrice(t.currentPrice, t.symbol)}`}
+                            {tab === 'pending' ? 'Cancel All Orders' : 'Close All Trades'}:{' '}
+                            <span className={clsx('ml-1', g.pnl >= 0 ? 'positive' : 'negative')}>
+                              {formatMoney(g.pnl)}
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => showChart(g.symbol)}
+                            className="flex h-12 w-full items-center justify-center rounded-xl border border-border bg-panel text-sm font-semibold text-text transition-colors hover:bg-muted"
+                          >
+                            Show Chart
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="mt-1">
+                        {g.trades.map((t) => {
+                          const pnl = tradePnl(t)
+                          const isBuy = t.side === 'buy'
+                          return (
+                            <div
+                              key={t.id}
+                              className="flex items-center gap-3 border-b border-border/40 py-3 last:border-b-0"
+                            >
+                              <span
+                                className={clsx(
+                                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[10px] font-bold',
+                                  avatarTone(t.symbol),
+                                )}
+                              >
+                                {symbolInitials(t.symbol)}
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <div className="truncate text-sm font-semibold text-text">{t.symbol}</div>
+                                <div className="mt-0.5 flex items-center gap-1 text-[12px] text-text-secondary">
+                                  {isBuy ? (
+                                    <MoveUpRight size={13} className="shrink-0 text-buy" />
+                                  ) : (
+                                    <MoveDownRight size={13} className="shrink-0 text-sell" />
+                                  )}
+                                  <span className="truncate tabular-nums">{volumeLabel(t)}</span>
                                 </div>
                               </div>
                               <div
                                 className={clsx(
-                                  'text-sm font-semibold tabular-nums',
+                                  'shrink-0 text-sm font-semibold tabular-nums',
                                   pnl >= 0 ? 'positive' : 'negative',
                                 )}
                               >
                                 {formatMoney(pnl)}
                               </div>
+                              {t.status === 'open' || t.status === 'pending' ? (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    t.status === 'open'
+                                      ? void closeTrade(t.id)
+                                      : void cancelPending(t.id)
+                                  }
+                                  aria-label={t.status === 'open' ? 'Close trade' : 'Cancel order'}
+                                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#29313d] text-text-secondary transition-colors hover:text-sell"
+                                >
+                                  <X size={16} />
+                                </button>
+                              ) : null}
                             </div>
-                            {t.status === 'open' ? (
-                              <button
-                                type="button"
-                                onClick={() => void closeTrade(t.id)}
-                                className="mt-2.5 h-9 w-full rounded-lg border border-border text-sm font-semibold hover:bg-muted"
-                              >
-                                Close position
-                              </button>
-                            ) : t.status === 'pending' ? (
-                              <button
-                                type="button"
-                                onClick={() => void cancelPending(t.id)}
-                                className="mt-2.5 h-9 w-full rounded-lg border border-border text-sm font-semibold hover:bg-muted"
-                              >
-                                Cancel order
-                              </button>
-                            ) : null}
-                          </div>
-                        )
-                      })}
+                          )
+                        })}
+                      </div>
                     </div>
                   ) : null}
                 </div>
