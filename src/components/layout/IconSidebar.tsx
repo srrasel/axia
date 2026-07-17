@@ -179,7 +179,7 @@ export function IconSidebar({ mobileOnly = false }: { mobileOnly?: boolean }) {
                     />
                     {showOpenDot ? (
                       <span
-                        className="absolute -right-px -top-px h-[15px] w-[15px] rounded-full bg-[#e5484d]"
+                        className="absolute -right-px -top-px h-[10px] w-[10px] rounded-full bg-[#e5484d]"
                         aria-hidden
                       />
                     ) : null}
