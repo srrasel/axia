@@ -1,16 +1,36 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { Toast } from '../components/layout/Header'
 import { BrandLogo } from '../components/BrandLogo'
 
 const AUTH_BTN =
-  'auth-btn h-12 w-full cursor-pointer rounded-lg bg-[#fcd535] text-[15px] font-semibold tracking-wide !text-[#202630] transition-colors duration-200 hover:bg-[#ceaf30] disabled:cursor-not-allowed disabled:opacity-60'
+  'auth-btn inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#fcd535] text-[15px] font-semibold tracking-wide !text-[#202630] transition-colors duration-200 hover:bg-[#ceaf30] disabled:cursor-not-allowed disabled:opacity-60'
 const AUTH_BTN_STYLE = { color: '#202630' } as const
 const AUTH_LINK = 'font-semibold text-[#fcd535] transition-colors hover:text-[#ceaf30]'
 const AUTH_INPUT =
   'auth-input h-12 w-full rounded-lg border border-[#2b3139] bg-transparent px-3.5 text-[15px] text-[#EAECEF] outline-none transition-all duration-200 placeholder:text-[#848e9c] hover:border-[#F0B90B] focus:border-[#F0B90B] focus:shadow-[0_0_0_3px_rgba(240,185,11,0.12)]'
+
+function AuthSubmitButton({
+  loading,
+  children,
+  disabled,
+}: {
+  loading: boolean
+  children: ReactNode
+  disabled?: boolean
+}) {
+  return (
+    <button type="submit" disabled={disabled || loading} className={AUTH_BTN} style={AUTH_BTN_STYLE}>
+      {loading ? (
+        <Loader2 size={22} strokeWidth={2.25} className="animate-spin" aria-label="Loading" />
+      ) : (
+        children
+      )}
+    </button>
+  )
+}
 
 export function LoginPage() {
   const { login, verifyLogin2fa, isAuthenticated } = useApp()
@@ -66,14 +86,9 @@ export function LoginPage() {
             autoFocus
             placeholder="Enter 6-digit code"
           />
-          <button
-            type="submit"
-            disabled={loading || code.replace(/\s/g, '').length < 6}
-            className={AUTH_BTN}
-            style={AUTH_BTN_STYLE}
-          >
-            {loading ? 'Verifying…' : 'Verify & sign in'}
-          </button>
+          <AuthSubmitButton loading={loading} disabled={code.replace(/\s/g, '').length < 6}>
+            Verify & sign in
+          </AuthSubmitButton>
           <button
             type="button"
             className="h-10 w-full text-sm text-[#848e9c] transition-colors hover:text-[#EAECEF]"
@@ -111,9 +126,7 @@ export function LoginPage() {
             Forgot password?
           </Link>
         </div>
-        <button type="submit" disabled={loading} className={AUTH_BTN} style={AUTH_BTN_STYLE}>
-          Log In
-        </button>
+        <AuthSubmitButton loading={loading}>Log In</AuthSubmitButton>
       </form>
       <SocialAuth />
       <p className="mt-6 text-center text-sm text-[#848e9c]">
@@ -163,9 +176,9 @@ export function ForgotPasswordPage() {
       ) : (
         <form onSubmit={onSubmit} className="space-y-5">
           <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="Email" />
-          <button type="submit" disabled={loading || !email.trim()} className={AUTH_BTN} style={AUTH_BTN_STYLE}>
-            {loading ? 'Sending…' : 'Reset'}
-          </button>
+          <AuthSubmitButton loading={loading} disabled={!email.trim()}>
+            Reset
+          </AuthSubmitButton>
           <p className="text-center text-sm text-[#848e9c]">
             Remembered it?{' '}
             <Link to="/login" className={AUTH_LINK}>
@@ -229,9 +242,7 @@ export function RegisterPage() {
           onChange={setConfirmPassword}
           placeholder="Confirm password"
         />
-        <button type="submit" disabled={loading} className={AUTH_BTN} style={AUTH_BTN_STYLE}>
-          {loading ? 'Creating…' : 'Register'}
-        </button>
+        <AuthSubmitButton loading={loading}>Register</AuthSubmitButton>
       </form>
       <SocialAuth />
       <p className="mt-6 text-center text-sm text-[#848e9c]">

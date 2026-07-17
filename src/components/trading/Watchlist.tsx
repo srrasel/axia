@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, type MouseEvent } from 'react'
 import { useApp } from '../../context/AppContext'
 import { ARABIAN_SYMBOLS, NITAJFX_FAVORITES } from '../../api/twelveData'
 import { formatPrice } from '../../data/mock'
+import { SymbolLogo } from '../SymbolLogo'
 import clsx from 'clsx'
 
 const FAV_KEY = 'seekapa_favorites'
@@ -142,16 +143,7 @@ export function Watchlist({
                 selectedSymbol === item.symbol && 'bg-sidebar-active',
               )}
             >
-              <div
-                role="presentation"
-                className="flex h-7 w-7 shrink-0 items-center justify-center"
-                onClick={(e) => toggleFavorite(item.symbol, e)}
-              >
-                <Star
-                  size={14}
-                  className={clsx(isFav ? 'fill-accent text-accent' : 'text-text-secondary')}
-                />
-              </div>
+              <SymbolLogo symbol={item.symbol} size={32} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-semibold">{item.symbol}</span>
@@ -172,6 +164,16 @@ export function Watchlist({
                   {item.percentChange >= 0 ? '+' : ''}
                   {item.percentChange.toFixed(2)}%
                 </div>
+              </div>
+              <div
+                role="presentation"
+                className="flex h-7 w-7 shrink-0 items-center justify-center"
+                onClick={(e) => toggleFavorite(item.symbol, e)}
+              >
+                <Star
+                  size={14}
+                  className={clsx(isFav ? 'fill-accent text-accent' : 'text-text-secondary')}
+                />
               </div>
             </button>
           )

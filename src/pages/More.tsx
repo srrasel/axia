@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   ArrowDownToLine,
   ArrowRight,
@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import clsx from 'clsx'
+import { parseMoreTab, readStoredMoreTab, storeMoreTab, type MoreFilterKey } from '../lib/moreTab'
 
 type SectionKey = 'tools' | 'rewards' | 'education' | 'funding' | 'platform' | 'support'
 
@@ -31,7 +32,7 @@ type MoreCard = {
   tone: string
 }
 
-const FILTERS: Array<{ key: 'popular' | SectionKey; label: string }> = [
+const FILTERS: Array<{ key: MoreFilterKey; label: string }> = [
   { key: 'popular', label: 'Popular' },
   { key: 'tools', label: 'Tools' },
   { key: 'rewards', label: 'Rewards' },
@@ -68,7 +69,7 @@ const CARDS: MoreCard[] = [
   { to: '/account/mobile', label: 'Mobile App', icon: Smartphone, section: 'platform', tone: 'text-link' },
   { to: '/notifications', label: 'Notifications', icon: Bell, section: 'support', tone: 'text-link' },
   { to: '/account/verification', label: 'Verification', icon: ShieldCheck, section: 'support', tone: 'text-buy' },
-  { to: '/account/details', label: 'Help & Settings', icon: MessageCircle, section: 'support', tone: 'text-link' },
+  { to: '/account/details', label: 'Help', icon: MessageCircle, section: 'support', tone: 'text-link' },
 ]
 
 function FeatureCard({ card }: { card: MoreCard }) {
@@ -94,7 +95,30 @@ function FeatureCard({ card }: { card: MoreCard }) {
 }
 
 export function MorePage() {
-  const [filter, setFilter] = useState<'popular' | SectionKey>('popular')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const filter = parseMoreTab(searchParams.get('tab'))
+
+  // Restore last tab when opening /more without ?tab= (e.g. footer nav)
+  useEffect(() => {
+    if (searchParams.get('tab')) return
+    const stored = readStoredMoreTab()
+    if (stored !== 'popular') {
+      setSearchParams({ tab: stored }, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
+
+  useEffect(() => {
+    storeMoreTab(filter)
+  }, [filter])
+
+  const setFilter = (key: MoreFilterKey) => {
+    storeMoreTab(key)
+    if (key === 'popular') {
+      setSearchParams({}, { replace: true })
+    } else {
+      setSearchParams({ tab: key }, { replace: true })
+    }
+  }
 
   const visibleSections = useMemo(() => {
     const keys = filter === 'popular' ? SECTION_ORDER : SECTION_ORDER.filter((k) => k === filter)
@@ -108,7 +132,6 @@ export function MorePage() {
   return (
     <div className="flex h-full min-h-0 flex-col bg-panel">
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
-        {/* Promo cards — single surface, no nested colored blocks */}
         <div className="space-y-3 px-4 pt-4 sm:px-6">
           <Link
             to="/account/deposit"
@@ -121,22 +144,6 @@ export function MorePage() {
               <span className="block text-[15px] font-semibold text-text">Fund your account</span>
               <span className="mt-0.5 block text-[12px] leading-snug text-text-secondary">
                 Deposit to unlock premium tools and signals
-              </span>
-            </span>
-            <ArrowRight size={18} className="shrink-0 text-text-secondary" />
-          </Link>
-
-          <Link
-            to="/account/invite"
-            className="flex items-center gap-3 rounded-2xl border border-border px-4 py-3.5 transition-colors hover:bg-sidebar-active/50"
-          >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-link/35 text-link">
-              <UserPlus size={20} strokeWidth={1.75} />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-semibold text-text">Referral program</span>
-              <span className="mt-0.5 block text-[12px] leading-snug text-text-secondary">
-                Invite friends and earn when they join
               </span>
             </span>
             <ArrowRight size={18} className="shrink-0 text-text-secondary" />
@@ -169,7 +176,7 @@ export function MorePage() {
         <div className="space-y-6 px-4 pb-6 sm:px-6">
           {visibleSections.map((section) => (
             <section key={section.key}>
-              <h2 className="mb-3 text-base font-bold text-text">{section.label}</h2>
+              <h2 className="mb-3 text-[20px] font-bold text-text">{section.label}</h2>
               <div className="grid grid-cols-3 items-stretch gap-2">
                 {section.cards.map((card) => (
                   <FeatureCard key={card.to} card={card} />

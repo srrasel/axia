@@ -17,6 +17,7 @@ import {
   Trophy,
 } from 'lucide-react'
 import clsx from 'clsx'
+import { useApp } from '../../context/AppContext'
 
 const desktopItems = [
   { to: '/member', icon: LineChart, label: 'Trading', end: true },
@@ -32,8 +33,8 @@ const desktopItems = [
 ]
 
 const mobileItems = [
+  { to: '/markets', icon: LineChart, label: 'Markets' },
   { to: '/member', icon: CandlestickChart, label: 'Trade', end: true },
-  { to: '/markets', icon: LineChart, label: 'Market' },
   { to: '/portfolio', icon: Briefcase, label: 'Portfolio' },
   { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
   { to: '/more', icon: LayoutGrid, label: 'More' },
@@ -122,6 +123,10 @@ function isMoreSection(pathname: string) {
 
 export function IconSidebar({ mobileOnly = false }: { mobileOnly?: boolean }) {
   const { pathname } = useLocation()
+  const { trades, activeAccountId } = useApp()
+  const hasOpenPositions = trades.some(
+    (t) => t.status === 'open' && t.accountId === activeAccountId,
+  )
 
   return (
     <>
@@ -156,21 +161,35 @@ export function IconSidebar({ mobileOnly = false }: { mobileOnly?: boolean }) {
             className={({ isActive }) => {
               const active = to === '/more' ? isMoreSection(pathname) : isActive
               return clsx(
-                'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1 text-text-secondary transition-colors',
-                active && 'text-[#fcd535]',
+                'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1 transition-colors',
+                active ? 'text-[#fcd535]' : 'text-text-secondary',
               )
             }}
           >
             {({ isActive }) => {
               const active = to === '/more' ? isMoreSection(pathname) : isActive
+              const showOpenDot = to === '/portfolio' && hasOpenPositions
               return (
                 <>
-                  <Icon
-                    size={ICON_PX}
-                    strokeWidth={active ? 2 : 1.75}
-                    className="h-6 w-6"
-                  />
-                  <span className="max-w-full truncate px-0.5 text-[10px] font-medium leading-tight">
+                  <span className="relative inline-flex">
+                    <Icon
+                      size={ICON_PX}
+                      strokeWidth={active ? 2 : 1.75}
+                      className="h-6 w-6"
+                    />
+                    {showOpenDot ? (
+                      <span
+                        className="absolute -right-px -top-px h-[5px] w-[5px] rounded-full bg-[#e5484d]"
+                        aria-hidden
+                      />
+                    ) : null}
+                  </span>
+                  <span
+                    className={clsx(
+                      'max-w-full truncate px-0.5 text-[11px] font-medium leading-tight',
+                      active ? 'text-[#fcd535]' : 'text-text-secondary',
+                    )}
+                  >
                     {label}
                   </span>
                 </>

@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { formatPrice } from '../../data/mock'
+import { SymbolLogo } from '../SymbolLogo'
 import clsx from 'clsx'
 
 const DESKTOP_TIMEFRAMES = ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W', '1Mo']
@@ -74,12 +75,6 @@ function sma(values: number[], period: number) {
     const slice = values.slice(i + 1 - period, i + 1)
     return slice.reduce((a, b) => a + b, 0) / period
   })
-}
-
-function symbolInitials(symbol: string) {
-  const clean = symbol.replace(/[^A-Za-z0-9]/g, '')
-  if (clean.length <= 2) return clean.toUpperCase()
-  return clean.slice(0, 2).toUpperCase()
 }
 
 export function TradingChart() {
@@ -298,9 +293,7 @@ export function TradingChart() {
       <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-3 py-3 md:hidden">
         <Link to="/markets" className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fcd535]/20 text-[11px] font-bold text-[#fcd535]">
-              {symbolInitials(selectedSymbol)}
-            </span>
+            <SymbolLogo symbol={selectedSymbol} size={36} />
             <span className="truncate text-lg font-bold text-text">{selectedSymbol}</span>
             <ChevronDown size={16} className="shrink-0 text-text-secondary" />
           </div>

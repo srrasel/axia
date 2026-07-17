@@ -297,17 +297,17 @@ export function MobileTrades({
                           <button
                             type="button"
                             onClick={() => void closeGroup(g)}
-                            className="flex h-12 w-full items-center justify-center rounded-xl bg-[#fcd535] text-sm font-semibold text-[#000] transition-colors hover:bg-[#ceaf30]"
+                            className="flex h-12 w-full items-center justify-center rounded-xl bg-[#e5484d] text-sm font-semibold text-white transition-colors hover:bg-[#c93d42]"
                           >
                             {tab === 'pending' ? 'Cancel All Orders' : 'Close All Trades'}:{' '}
-                            <span className={clsx('ml-1', g.pnl >= 0 ? 'positive' : 'negative')}>
+                            <span className="ml-1 text-white">
                               {formatMoney(g.pnl)}
                             </span>
                           </button>
                           <button
                             type="button"
                             onClick={() => showChart(g.symbol)}
-                            className="flex h-12 w-full items-center justify-center rounded-xl border border-border bg-panel text-sm font-semibold text-text transition-colors hover:bg-muted"
+                            className="flex h-12 w-full items-center justify-center rounded-xl border border-[#404752] bg-transparent text-sm font-semibold text-text transition-colors hover:bg-muted/40"
                           >
                             Show Chart
                           </button>

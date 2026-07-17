@@ -69,7 +69,7 @@ export function MobileAccountSwitcher() {
           <span
             className={clsx(
               'flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold',
-              isLive ? 'bg-buy/20 text-buy' : 'bg-[#fcd535]/20 text-[#fcd535]',
+              isLive ? 'bg-buy/20 text-buy' : 'bg-[#f79009]/20 text-[#f79009]',
             )}
           >
             {isLive ? 'L' : 'D'}
@@ -102,8 +102,8 @@ export function MobileAccountSwitcher() {
 
             {picker ? (
               <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 pt-3">
-                <h3 className="text-lg font-semibold text-text">Switch account</h3>
-                <p className="mt-1 text-sm text-text-secondary">Choose Demo or Live account</p>
+                <h3 className="text-[15px] font-semibold text-text">Switch account</h3>
+                <p className="mt-1 text-[12px] text-text-secondary">Choose Demo or Live account</p>
                 <div className="mt-4 space-y-2">
                   {accounts.map((a) => {
                     const live = a.type === 'live'
@@ -114,32 +114,32 @@ export function MobileAccountSwitcher() {
                         type="button"
                         onClick={() => pickAccount(a)}
                         className={clsx(
-                          'flex w-full items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-colors',
+                          'flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors',
                           active
                             ? live
                               ? 'border-buy bg-buy/10'
-                              : 'border-[#fcd535] bg-[#fcd535]/10'
+                              : 'border-[#f79009] bg-[#f79009]/10'
                             : 'border-border hover:bg-muted',
                         )}
                       >
                         <span
                           className={clsx(
-                            'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold',
-                            live ? 'bg-buy/20 text-buy' : 'bg-[#fcd535]/20 text-[#fcd535]',
+                            'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[12px] font-bold',
+                            live ? 'bg-buy/20 text-buy' : 'bg-[#f79009]/20 text-[#f79009]',
                           )}
                         >
                           {live ? 'L' : 'D'}
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-semibold text-text">
+                          <span className="block text-[13px] font-semibold text-text">
                             {live ? 'Live' : 'Demo'}
                           </span>
-                          <span className="block truncate text-xs text-text-secondary">
+                          <span className="block truncate text-[11px] text-text-secondary">
                             #{a.number || a.id}
                           </span>
                         </span>
                         {active ? (
-                          <span className="text-xs font-semibold text-text-secondary">Active</span>
+                          <span className="text-[11px] font-semibold text-text-secondary">Active</span>
                         ) : null}
                       </button>
                     )
@@ -148,7 +148,7 @@ export function MobileAccountSwitcher() {
                 <button
                   type="button"
                   onClick={() => setPicker(false)}
-                  className="mt-4 h-11 rounded-xl border border-border text-sm font-semibold text-text hover:bg-muted"
+                  className="mt-4 h-11 rounded-xl border border-border text-[13px] font-semibold text-text hover:bg-muted"
                 >
                   Back
                 </button>
@@ -167,7 +167,9 @@ export function MobileAccountSwitcher() {
                   <span
                     className={clsx(
                       'rounded-full border px-2.5 py-0.5 text-xs font-semibold',
-                      !isLive ? 'border-[#fcd535] bg-[#fcd535]/10 text-[#fcd535]' : 'border-border text-text-secondary',
+                      !isLive
+                        ? 'border-[#f79009] bg-[#f79009]/10 text-[#f79009]'
+                        : 'border-border text-text-secondary',
                     )}
                   >
                     Demo

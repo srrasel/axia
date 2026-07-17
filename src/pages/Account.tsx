@@ -7,6 +7,7 @@ import { UserAvatar } from '../components/UserAvatar'
 import { useApp } from '../context/AppContext'
 import { api } from '../api/client'
 import { calcUsedMargin, formatMoney, getPlatformCurrency } from '../data/mock'
+import { morePathWithTab } from '../lib/moreTab'
 import { PREMIUM_THRESHOLD } from '../types'
 import {
   AlertCircle,
@@ -31,6 +32,7 @@ import {
 } from 'lucide-react'
 
 function PageShell({ title, children }: { title: string; children: ReactNode }) {
+  const navigate = useNavigate()
   return (
     <>
       {/* Desktop account sidebar only — mobile uses main footer nav */}
@@ -39,13 +41,14 @@ function PageShell({ title, children }: { title: string; children: ReactNode }) 
       </div>
       <div className="panel flex min-w-0 flex-1 flex-col overflow-hidden border-l-0">
         <div className="flex items-center gap-2 border-b border-border px-3 py-3 sm:gap-3 sm:px-5">
-          <Link
-            to="/more"
+          <button
+            type="button"
+            onClick={() => navigate(morePathWithTab())}
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-panel text-text-secondary hover:bg-muted md:hidden"
             aria-label="Back to More"
           >
             <ArrowLeft size={18} />
-          </Link>
+          </button>
           <div className="min-w-0 truncate text-[20px] font-semibold leading-tight">{title}</div>
         </div>
         <div className="flex-1 overflow-y-auto p-3 pb-4 sm:p-5">{children}</div>
@@ -1135,7 +1138,7 @@ export function DepositPage() {
                 type="button"
                 onClick={() => setAmount(v)}
                 className={clsx(
-                  'rounded-full border bg-transparent px-3.5 py-1.5 text-xs font-semibold transition-colors',
+                  'rounded-[4px] border bg-transparent px-3.5 py-1.5 text-xs font-semibold transition-colors',
                   amount === v
                     ? 'border-[#fff] text-[#fff]'
                     : 'border-border text-text-secondary hover:border-[#F0B90B]/50 hover:text-brand-ink',
@@ -1312,17 +1315,17 @@ export function DepositPage() {
                       type="button"
                       onClick={() => setBankCountry(c.countryCode)}
                       className={clsx(
-                        'rounded-xl border bg-transparent px-3 py-3 text-left transition-all',
+                        'rounded-lg border bg-transparent px-2.5 py-1.5 text-left transition-all',
                         active ? 'border-[#fff] text-[#fff]' : 'border-border hover:border-[#F0B90B]/50',
                       )}
                     >
-                      <div className="text-sm font-semibold">{c.label}</div>
+                      <div className="text-[13px] font-semibold leading-tight">{c.label}</div>
                       {c.contactOnly ? (
-                        <div className={clsx('mt-1 text-[11px]', active ? 'text-[#fff]' : 'text-text-secondary')}>
+                        <div className={clsx('mt-0.5 text-[10px] leading-tight', active ? 'text-[#fff]' : 'text-text-secondary')}>
                           Contact Finance
                         </div>
                       ) : (
-                        <div className={clsx('mt-1 text-[11px]', active ? 'text-[#fff]' : 'text-text-secondary')}>
+                        <div className={clsx('mt-0.5 text-[10px] leading-tight', active ? 'text-[#fff]' : 'text-text-secondary')}>
                           Local transfer
                         </div>
                       )}

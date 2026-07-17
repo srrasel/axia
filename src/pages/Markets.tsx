@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import { useApp } from '../context/AppContext'
 import { ARABIAN_SYMBOLS, NITAJFX_FAVORITES } from '../api/twelveData'
 import { formatPrice } from '../data/mock'
+import { SymbolLogo } from '../components/SymbolLogo'
 
 const FAV_KEY = 'seekapa_favorites'
 
@@ -37,26 +38,6 @@ function loadFavorites(): string[] {
   } catch {
     return [...NITAJFX_FAVORITES]
   }
-}
-
-function symbolInitials(symbol: string) {
-  const clean = symbol.replace(/[^A-Za-z0-9]/g, '')
-  if (clean.length <= 2) return clean.toUpperCase()
-  return clean.slice(0, 2).toUpperCase()
-}
-
-const AVATAR_TONES = [
-  'bg-[#fcd535]/20 text-[#fcd535]',
-  'bg-buy/15 text-buy',
-  'bg-sell/15 text-sell',
-  'bg-link/15 text-link',
-  'bg-muted text-text-secondary',
-]
-
-function avatarTone(symbol: string) {
-  let hash = 0
-  for (let i = 0; i < symbol.length; i++) hash = (hash + symbol.charCodeAt(i) * (i + 1)) % AVATAR_TONES.length
-  return AVATAR_TONES[hash]
 }
 
 export function MarketsPage() {
@@ -133,7 +114,7 @@ export function MarketsPage() {
             className={clsx(
               'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-sm font-medium transition-colors',
                 category === 'favorites'
-                  ? 'border-transparent bg-[#fcd535] text-[#202630]'
+                  ? 'border-transparent bg-white text-[#202630]'
                   : 'border-border bg-transparent text-text-secondary hover:bg-muted hover:text-text',
               )}
               aria-label="Favorites"
@@ -151,7 +132,7 @@ export function MarketsPage() {
                 className={clsx(
                   'h-9 shrink-0 rounded-full border px-3.5 text-sm font-medium transition-colors',
                   category === c.key
-                    ? 'border-transparent bg-[#fcd535] text-[#202630]'
+                    ? 'border-transparent bg-white text-[#202630]'
                     : 'border-border bg-transparent text-text-secondary hover:bg-muted hover:text-text',
                 )}
               >
@@ -177,14 +158,7 @@ export function MarketsPage() {
               onClick={() => openSymbol(item.symbol)}
               className="flex w-full items-center gap-3 border-b border-border/60 px-4 py-3.5 text-left transition-colors hover:bg-muted active:bg-sidebar-active sm:px-6"
             >
-              <div
-                className={clsx(
-                  'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xs font-bold tracking-wide',
-                  avatarTone(item.symbol),
-                )}
-              >
-                {symbolInitials(item.symbol)}
-              </div>
+              <SymbolLogo symbol={item.symbol} size={44} />
 
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[15px] font-semibold text-text">{item.name}</div>
