@@ -63,7 +63,7 @@ export function MobileAccountSwitcher() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex h-auto max-w-full items-center gap-1.5 overflow-hidden rounded-full bg-[#29313d] py-2 pl-[5px] pr-2"
+          className="flex h-auto max-w-full items-center gap-1.5 overflow-hidden rounded-full bg-[#29313d] py-2 pl-[10px] pr-2"
           aria-label="Open account details"
         >
           <span
@@ -89,14 +89,14 @@ export function MobileAccountSwitcher() {
             aria-label="Close account sheet"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute inset-x-0 bottom-0 flex max-h-[min(92dvh,100%)] flex-col overflow-hidden rounded-t-2xl border-t border-border bg-panel shadow-2xl pb-[calc(5px+env(safe-area-inset-bottom,0px))]">
+          <div className="absolute inset-x-0 bottom-[10px] flex max-h-[min(92dvh,100%)] flex-col overflow-hidden rounded-t-2xl border-t border-border bg-panel shadow-2xl pb-[calc(5px+env(safe-area-inset-bottom,0px))]">
             <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border" aria-hidden />
 
             {picker ? (
               <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-3 pb-[5px]">
                 <h3 className="text-[15px] font-semibold text-text">Switch account</h3>
                 <p className="mt-1 text-[12px] text-text-secondary">Choose Demo or Live account</p>
-                <div className="mt-4 space-y-2 pb-[5px]">
+                <div className="mt-4 space-y-3 pb-[5px]">
                   {accounts.map((a) => {
                     const live = a.type === 'live'
                     const active = a.id === activeAccountId
@@ -106,32 +106,39 @@ export function MobileAccountSwitcher() {
                         type="button"
                         onClick={() => pickAccount(a)}
                         className={clsx(
-                          'flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors',
+                          'flex w-full items-center gap-4 rounded-2xl border px-4 py-[18px] text-left transition-colors',
                           active
                             ? live
-                              ? 'border-buy bg-buy/10'
-                              : 'border-[#f79009] bg-[#f79009]/10'
-                            : 'border-border hover:bg-muted',
+                              ? 'border-buy/70 bg-buy/10 shadow-[0_0_0_1px_rgba(34,160,107,0.12)]'
+                              : 'border-[#f79009]/70 bg-[#f79009]/10 shadow-[0_0_0_1px_rgba(247,144,9,0.12)]'
+                            : 'border-border/80 bg-[#1e242d] hover:border-border hover:bg-[#232a34]',
                         )}
                       >
                         <span
                           className={clsx(
-                            'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[12px] font-bold',
+                            'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[15px] font-bold tracking-wide',
                             live ? 'bg-buy/20 text-buy' : 'bg-[#f79009]/20 text-[#f79009]',
                           )}
                         >
                           {live ? 'L' : 'D'}
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block text-[13px] font-semibold text-text">
-                            {live ? 'Live' : 'Demo'}
+                          <span className="block text-[16px] font-semibold leading-snug tracking-tight text-text">
+                            {live ? 'Live account' : 'Demo account'}
                           </span>
-                          <span className="block truncate text-[11px] text-text-secondary">
-                            #{a.number || a.id}
+                          <span className="mt-1 block truncate text-[13px] leading-snug text-text-secondary">
+                            {live ? 'Real trade' : 'Practice trade'}
                           </span>
                         </span>
                         {active ? (
-                          <span className="text-[11px] font-semibold text-text-secondary">Active</span>
+                          <span
+                            className={clsx(
+                              'shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide',
+                              live ? 'bg-buy/15 text-buy' : 'bg-[#f79009]/15 text-[#f79009]',
+                            )}
+                          >
+                            Active
+                          </span>
                         ) : null}
                       </button>
                     )
