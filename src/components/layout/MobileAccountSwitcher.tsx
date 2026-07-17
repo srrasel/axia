@@ -126,7 +126,7 @@ export function MobileAccountSwitcher() {
                                 : 'border-transparent bg-[#1a2332] hover:bg-[#1e2838]',
                             )}
                           >
-                            <span className="flex flex-wrap items-center gap-2.5">
+                            <span className="flex items-center justify-between gap-3">
                               <span
                                 className={clsx(
                                   'text-[18px] font-bold leading-none',
@@ -137,7 +137,7 @@ export function MobileAccountSwitcher() {
                               </span>
                               <span
                                 className={clsx(
-                                  'rounded-full border px-2.5 py-0.5 text-[12px] font-semibold',
+                                  'shrink-0 rounded-full border px-2.5 py-0.5 text-[12px] font-semibold',
                                   live
                                     ? 'border-[#22a06b]/50 text-[#22a06b]'
                                     : 'border-[#f79009]/50 text-[#f79009]',
@@ -146,10 +146,10 @@ export function MobileAccountSwitcher() {
                                 {live ? 'Live Trading' : 'Practice Mode'}
                               </span>
                             </span>
-                            <span className="mt-3 block text-[14px] leading-snug text-[#c8cdd5]">
+                            <span className="mt-3 block min-h-[40px] text-[14px] leading-snug text-[#c8cdd5]">
                               {live
                                 ? 'Trade with real money and gain full access.'
-                                : 'Practice trading with virtual funds and test your trading strategies.'}
+                                : 'Practice trading with virtual funds.'}
                             </span>
                           </button>
                         )
