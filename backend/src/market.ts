@@ -112,6 +112,8 @@ const INTERVAL: Record<string, { td: string; sec: number }> = {
   '1D': { td: '1day', sec: 86400 },
   '1W': { td: '1week', sec: 604800 },
   '1Mo': { td: '1month', sec: 2592000 },
+  '3Mo': { td: '1month', sec: 7776000 },
+  '1Y': { td: '1month', sec: 31536000 },
 }
 
 export function mockCandles(symbol: string, timeframe = '5M', bars = 120) {

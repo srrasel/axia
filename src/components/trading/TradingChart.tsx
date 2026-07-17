@@ -27,7 +27,7 @@ import { formatPrice } from '../../data/mock'
 import { SymbolLogo } from '../SymbolLogo'
 import clsx from 'clsx'
 
-const DESKTOP_TIMEFRAMES = ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W', '1Mo']
+const DESKTOP_TIMEFRAMES = ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W', '1Mo', '3Mo', '1Y']
 
 /** Mobile interval bar — trading-app style pills, mapped to supported TFs */
 const MOBILE_TIMEFRAMES: Array<{ key: string; label: string }> = [
@@ -37,7 +37,23 @@ const MOBILE_TIMEFRAMES: Array<{ key: string; label: string }> = [
   { key: '1D', label: '1D' },
   { key: '1W', label: '1W' },
   { key: '1Mo', label: '1M' },
+  { key: '3Mo', label: '3M' },
+  { key: '1Y', label: '1Y' },
 ]
+
+const TIMEFRAME_RANGE_LABEL: Record<string, string> = {
+  '1M': '1 Minute',
+  '5M': '5 Minutes',
+  '15M': '15 Minutes',
+  '30M': '30 Minutes',
+  '1H': '1 Hour',
+  '4H': '4 Hours',
+  '1D': '1 Day',
+  '1W': '1 Week',
+  '1Mo': '1 Month',
+  '3Mo': '3 Months',
+  '1Y': '1 Year',
+}
 
 const TWO_DEC_SYMBOLS = new Set([
   'BTCUSD',
@@ -306,7 +322,9 @@ export function TradingChart() {
               {positive ? '+' : ''}
               {changePct.toFixed(2)}%
             </span>
-            <span className="text-text-secondary">· 1 Month</span>
+            <span className="text-text-secondary">
+              · {TIMEFRAME_RANGE_LABEL[timeframe] ?? timeframe}
+            </span>
           </div>
         </Link>
         <div className="flex shrink-0 items-center gap-1.5">

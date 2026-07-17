@@ -67,7 +67,7 @@ export function TradingPage() {
           <TradesTable />
 
           {/* Mobile / tablet trade action bar */}
-          <div className="panel fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 flex items-stretch gap-2 border-t p-3 md:bottom-0 lg:hidden">
+          <div className="panel fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 flex items-stretch gap-2 border-t px-3 pt-3 pb-[18px] md:bottom-0 lg:hidden">
             <button
               type="button"
               onClick={() => openTrade('sell')}

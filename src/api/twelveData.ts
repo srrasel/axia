@@ -83,6 +83,8 @@ const INTERVAL_SECONDS: Record<string, number> = {
   '1D': 86400,
   '1W': 604800,
   '1Mo': 2592000,
+  '3Mo': 7776000,
+  '1Y': 31536000,
 }
 
 export function generateMockCandles(symbol: string, timeframe = '5M', bars = 120): Candle[] {
@@ -198,6 +200,8 @@ const INTERVAL_MAP: Record<string, string> = {
   '1D': '1day',
   '1W': '1week',
   '1Mo': '1month',
+  '3Mo': '1month',
+  '1Y': '1month',
 }
 
 export async function fetchCandles(symbol: string, timeframe = '5M'): Promise<Candle[]> {
