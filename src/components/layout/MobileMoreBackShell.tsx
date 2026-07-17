@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { morePathWithTab } from '../lib/moreTab'
+import { morePathWithTab } from '../../lib/moreTab'
 
 export function MobileMoreBackShell({
   title,
