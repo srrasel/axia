@@ -1131,14 +1131,14 @@ export function DepositPage() {
             />
           </div>
 
-          <div className="mt-3 flex w-full justify-between gap-1">
+          <div className="mt-3 grid w-full grid-cols-4 gap-2">
             {[100, 250, 500, 1000, 5000, 10000].map((v) => (
               <button
                 key={v}
                 type="button"
                 onClick={() => setAmount(v)}
                 className={clsx(
-                  'rounded-lg border bg-transparent px-2 py-2.5 text-xs font-semibold transition-colors sm:px-5',
+                  'rounded-lg border bg-transparent px-2 py-2.5 text-xs font-semibold transition-colors',
                   amount === v
                     ? 'border-[#fff] text-[#fff]'
                     : 'border-border text-text-secondary hover:border-[#F0B90B]/50 hover:text-brand-ink',
