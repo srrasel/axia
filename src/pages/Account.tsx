@@ -1131,21 +1131,21 @@ export function DepositPage() {
             />
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-2">
-            {[100, 250, 500, 1000, 5000].map((v) => (
+          <div className="mt-3 flex w-full justify-between gap-1">
+            {[100, 250, 500, 1000, 5000, 10000].map((v) => (
               <button
                 key={v}
                 type="button"
                 onClick={() => setAmount(v)}
                 className={clsx(
-                  'rounded-lg border bg-transparent px-5 py-2.5 text-xs font-semibold transition-colors',
+                  'rounded-lg border bg-transparent px-2 py-2.5 text-xs font-semibold transition-colors sm:px-5',
                   amount === v
                     ? 'border-[#fff] text-[#fff]'
                     : 'border-border text-text-secondary hover:border-[#F0B90B]/50 hover:text-brand-ink',
                 )}
               >
                 {currency.symbol}
-                {v}
+                {v.toLocaleString('en-US')}
               </button>
             ))}
           </div>
@@ -1198,7 +1198,7 @@ export function DepositPage() {
               <input
                 value={card.name}
                 onChange={(e) => setCard((c) => ({ ...c, name: e.target.value }))}
-                className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B]"
+                className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:border-[#fff] focus:border-[#F0B90B]"
                 placeholder="Full name"
                 autoComplete="cc-name"
               />
@@ -1210,7 +1210,7 @@ export function DepositPage() {
                 <input
                   value={card.number}
                   onChange={(e) => setCard((c) => ({ ...c, number: formatCardNumber(e.target.value) }))}
-                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 pr-12 font-mono outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B]"
+                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 pr-12 font-mono outline-none transition-colors hover:border-[#fff] focus:border-[#F0B90B]"
                   placeholder="ACCT-000003"
                   inputMode="numeric"
                   autoComplete="cc-number"
@@ -1225,7 +1225,7 @@ export function DepositPage() {
                 <input
                   value={card.expiry}
                   onChange={(e) => setCard((c) => ({ ...c, expiry: formatExpiry(e.target.value) }))}
-                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B]"
+                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none transition-colors hover:border-[#fff] focus:border-[#F0B90B]"
                   placeholder="MM/YY"
                   inputMode="numeric"
                   autoComplete="cc-exp"
@@ -1236,7 +1236,7 @@ export function DepositPage() {
                 <input
                   value={card.cvc}
                   onChange={(e) => setCard((c) => ({ ...c, cvc: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
-                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B]"
+                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none transition-colors hover:border-[#fff] focus:border-[#F0B90B]"
                   placeholder="123"
                   inputMode="numeric"
                   autoComplete="cc-csc"
@@ -1407,7 +1407,7 @@ export function DepositPage() {
                   <input
                     value={bankReference}
                     onChange={(e) => setBankReference(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:border-[#F0B90B] focus:border-[#F0B90B]"
+                    className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:border-[#fff] focus:border-[#F0B90B]"
                     placeholder="Transfer ID / reference (optional)"
                   />
                 </label>
