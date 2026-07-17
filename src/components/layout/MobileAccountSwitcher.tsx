@@ -62,29 +62,29 @@ export function MobileAccountSwitcher() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex max-w-[min(100%,13.5rem)] shrink-0 items-center gap-2 rounded-full bg-[#29313d] py-1.5 pl-1.5 pr-2.5 sm:hidden"
+        className="flex max-w-[min(100%,10.5rem)] min-w-0 shrink items-center gap-1 rounded-full bg-[#29313d] py-1 pl-1 pr-1.5 sm:hidden"
         aria-label="Open account details"
       >
         <span
           className={clsx(
-            'flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-bold',
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold',
             isLive ? 'bg-buy/20 text-buy' : 'bg-[#fcd535]/20 text-[#fcd535]',
           )}
         >
           {isLive ? 'L' : 'D'}
         </span>
-        <span className="min-w-0 truncate text-sm font-semibold tabular-nums text-text">
+        <span className="min-w-0 truncate text-[12px] font-semibold tabular-nums text-text">
           {formatMoney(metrics.equity)}
         </span>
         <span
           className={clsx(
-            'shrink-0 text-xs font-semibold tabular-nums',
+            'shrink-0 text-[10px] font-semibold tabular-nums',
             pnl >= 0 ? 'positive' : 'negative',
           )}
         >
           {formatMoney(pnl)}
         </span>
-        <ChevronDown size={14} className="shrink-0 text-text-secondary" />
+        <ChevronDown size={12} className="shrink-0 text-text-secondary" />
       </button>
 
       {open ? (

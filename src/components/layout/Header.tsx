@@ -89,9 +89,9 @@ export function Header() {
 
   return (
     <header className="panel relative z-40 flex h-14 shrink-0 items-center gap-2 overflow-visible border-b px-4 sm:h-16 sm:gap-3 sm:px-5">
-      <div className="flex min-w-0 items-center sm:contents">
-        <Link to="/platform" className="flex shrink-0 items-center pr-[10px] sm:pr-0">
-          <BrandLogo className="h-8 w-auto sm:h-10" />
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden sm:contents sm:flex-none">
+        <Link to="/platform" className="flex shrink-0 items-center pr-[6px] sm:pr-0">
+          <BrandLogo className="h-7 w-auto sm:h-10" />
         </Link>
 
         <MobileAccountSwitcher />

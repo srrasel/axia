@@ -404,19 +404,19 @@ export function TradingChart() {
       </div>
 
       {/* Mobile time interval bar */}
-      <div className="flex shrink-0 items-center gap-1 border-t border-border px-2 py-2 md:hidden">
+      <div className="flex shrink-0 items-center gap-0.5 border-t border-border px-1.5 py-1.5 md:hidden">
         <button
           type="button"
           onClick={() =>
             setChartIndicator(chartIndicator === 'None' ? 'Moving Average' : 'None')
           }
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-text-secondary hover:bg-muted hover:text-text"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-text-secondary hover:bg-muted hover:text-text"
           aria-label="Chart settings"
         >
-          <CandlestickChart size={18} strokeWidth={1.75} />
+          <CandlestickChart size={16} strokeWidth={1.75} />
         </button>
 
-        <div className="flex min-w-0 flex-1 items-center justify-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {MOBILE_TIMEFRAMES.map(({ key, label }) => {
             const active = timeframe === key
             return (
@@ -425,10 +425,10 @@ export function TradingChart() {
                 type="button"
                 onClick={() => setTimeframe(key)}
                 className={clsx(
-                  'flex h-8 min-w-8 shrink-0 items-center justify-center px-2.5 text-[13px] font-semibold transition-colors',
+                  'flex h-7 min-w-7 shrink-0 items-center justify-center px-1.5 text-[11px] font-semibold transition-colors',
                   active
-                    ? 'rounded-[4px] border-4 border-[#29313d] bg-[#29313d] text-text'
-                    : 'rounded-full border-4 border-transparent text-text-secondary hover:rounded-[4px] hover:bg-muted hover:text-text',
+                    ? 'rounded-[4px] border-2 border-[#29313d] bg-[#29313d] text-text'
+                    : 'rounded-full border-2 border-transparent text-text-secondary hover:rounded-[4px] hover:bg-muted hover:text-text',
                 )}
               >
                 {label}
@@ -440,10 +440,10 @@ export function TradingChart() {
         <button
           type="button"
           onClick={fullscreen}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-text-secondary hover:bg-muted hover:text-text"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-text-secondary hover:bg-muted hover:text-text"
           aria-label="Fullscreen"
         >
-          <Maximize2 size={18} strokeWidth={1.75} />
+          <Maximize2 size={16} strokeWidth={1.75} />
         </button>
       </div>
     </div>
