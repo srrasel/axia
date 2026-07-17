@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeftRight, ChevronDown, Copy, Settings2 } from 'lucide-react'
+import { ArrowLeftRight, Copy, Settings2 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../context/AppContext'
 import { formatMoney } from '../../data/mock'
@@ -74,18 +74,9 @@ export function MobileAccountSwitcher() {
           >
             {isLive ? 'L' : 'D'}
           </span>
-          <span className="min-w-0 flex-1 truncate text-left text-[12px] font-semibold leading-none tabular-nums text-text">
+          <span className="min-w-0 flex-1 truncate text-left text-[15px] font-semibold leading-none tabular-nums text-text">
             {formatMoney(metrics.equity)}
           </span>
-          <span
-            className={clsx(
-              'shrink-0 text-[10px] font-semibold leading-none tabular-nums',
-              pnl >= 0 ? 'positive' : 'negative',
-            )}
-          >
-            {formatMoney(pnl)}
-          </span>
-          <ChevronDown size={12} className="shrink-0 text-text-secondary" />
         </button>
       </div>
 
