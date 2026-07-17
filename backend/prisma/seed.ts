@@ -242,8 +242,37 @@ async function seedStaff() {
     })
   }
 
-  const { ensureBankAccounts } = await import('../src/bankAccounts.js')
-  await ensureBankAccounts()
+  // Seed country bank accounts (inline — Docker image has no /src)
+  const bankCountries = [
+    { countryCode: 'SA', label: 'Saudi Arabia', sortOrder: 1, contactOnly: false },
+    { countryCode: 'AE', label: 'UAE', sortOrder: 2, contactOnly: false },
+    { countryCode: 'QA', label: 'Qatar', sortOrder: 3, contactOnly: false },
+    { countryCode: 'BH', label: 'Bahrain', sortOrder: 4, contactOnly: false },
+    { countryCode: 'OM', label: 'Oman', sortOrder: 5, contactOnly: false },
+    { countryCode: 'JO', label: 'Jordan', sortOrder: 6, contactOnly: false },
+    { countryCode: 'KW', label: 'Kuwait', sortOrder: 7, contactOnly: false },
+    { countryCode: 'INTL', label: 'International Transfer', sortOrder: 8, contactOnly: true },
+  ] as const
+
+  for (const def of bankCountries) {
+    await prisma.bankAccount.upsert({
+      where: { countryCode: def.countryCode },
+      update: {},
+      create: {
+        countryCode: def.countryCode,
+        label: def.label,
+        sortOrder: def.sortOrder,
+        contactOnly: def.contactOnly,
+        bankName: def.contactOnly ? '' : 'NitajFX Partner Bank',
+        accountName: def.contactOnly ? '' : 'NitajFX Trading Ltd',
+        iban: def.contactOnly ? '' : 'AE070331234567890123456',
+        swift: def.contactOnly ? '' : 'EBILAEAD',
+        referenceHint: def.contactOnly
+          ? 'Contact the Finance Department for international wire instructions.'
+          : 'Use your registered email as payment reference',
+      },
+    })
+  }
 }
 
 main()
