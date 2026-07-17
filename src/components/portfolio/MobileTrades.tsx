@@ -11,9 +11,35 @@ import {
 import clsx from 'clsx'
 import { useApp } from '../../context/AppContext'
 import { calcPnl, contractSize, formatMoney } from '../../data/mock'
+import { parseTradeDate } from './tradeDates'
 import type { Trade } from '../../types'
 
 type Tab = 'open' | 'pending' | 'closed'
+type HistoryPeriod = 'today' | '7d' | '1m' | 'all'
+
+const HISTORY_PERIODS: Array<{ value: HistoryPeriod; label: string }> = [
+  { value: 'today', label: 'Today' },
+  { value: '7d', label: 'Last 7 Days' },
+  { value: '1m', label: 'Last 1 Month' },
+  { value: 'all', label: 'All History' },
+]
+
+function inHistoryPeriod(t: Trade, period: HistoryPeriod) {
+  if (period === 'all') return true
+  const d = parseTradeDate(t.closeTime ?? t.openTime)
+  if (!d) return false
+  const now = new Date()
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  if (period === 'today') return d >= start
+  if (period === '7d') {
+    const from = new Date(start)
+    from.setDate(from.getDate() - 6)
+    return d >= from
+  }
+  const from = new Date(start)
+  from.setMonth(from.getMonth() - 1)
+  return d >= from
+}
 
 const AVATAR_TONES = [
   'bg-[#fcd535]/20 text-[#fcd535]',
@@ -85,6 +111,7 @@ export function MobileTrades({
     useApp()
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('open')
+  const [historyPeriod, setHistoryPeriod] = useState<HistoryPeriod>('all')
   const [expanded, setExpanded] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -108,10 +135,11 @@ export function MobileTrades({
   const openCount = accountTrades.filter((t) => t.status === 'open').length
   const pendingCount = accountTrades.filter((t) => t.status === 'pending').length
 
-  const filtered = useMemo(
-    () => accountTrades.filter((t) => t.status === tab),
-    [accountTrades, tab],
-  )
+  const filtered = useMemo(() => {
+    const byStatus = accountTrades.filter((t) => t.status === tab)
+    if (tab !== 'closed') return byStatus
+    return byStatus.filter((t) => inHistoryPeriod(t, historyPeriod))
+  }, [accountTrades, tab, historyPeriod])
 
   const groups = useMemo(() => groupBySymbol(filtered), [filtered])
 
@@ -212,11 +240,11 @@ export function MobileTrades({
         </div>
 
         <div className="mt-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-text-secondary">
+          <div className="flex min-w-0 flex-1 items-center gap-2.5">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-text-secondary">
               <ArrowLeftRight size={18} strokeWidth={1.75} />
             </span>
-            <div>
+            <div className="min-w-0">
               <div className="text-[12px] font-medium text-text-secondary">PnL</div>
               <div
                 className={clsx(
@@ -228,6 +256,30 @@ export function MobileTrades({
               </div>
             </div>
           </div>
+          {tab === 'closed' ? (
+            <div className="relative shrink-0">
+              <select
+                className="h-10 appearance-none rounded-md border border-border bg-panel py-2 pl-3 pr-7 text-sm outline-none"
+                value={historyPeriod}
+                onChange={(e) => {
+                  setHistoryPeriod(e.target.value as HistoryPeriod)
+                  setExpanded(null)
+                }}
+                aria-label="History period"
+              >
+                {HISTORY_PERIODS.map((p) => (
+                  <option key={p.value} value={p.value}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={14}
+                className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary"
+                aria-hidden
+              />
+            </div>
+          ) : null}
         </div>
       </div>
 
