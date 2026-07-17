@@ -6,6 +6,7 @@ import { TradingPage } from './pages/Trading'
 import { PortfolioPage } from './pages/Portfolio'
 import { MarketsPage } from './pages/Markets'
 import { MorePage } from './pages/More'
+import { homePath } from './lib/homePath'
 import {
   AiAssistantPage,
   AnalyticsPage,
@@ -34,6 +35,10 @@ function Protected() {
   return <Outlet />
 }
 
+function HomeRedirect() {
+  return <Navigate to={homePath()} replace />
+}
+
 export default function App() {
   return (
     <AppProvider>
@@ -44,7 +49,7 @@ export default function App() {
 
         <Route element={<Protected />}>
           <Route element={<PlatformLayout />}>
-            <Route path="/" element={<Navigate to="/member" replace />} />
+            <Route path="/" element={<HomeRedirect />} />
             <Route path="/member" element={<TradingPage />} />
             <Route path="/platform" element={<Navigate to="/member" replace />} />
             <Route path="/markets" element={<MarketsPage />} />
@@ -73,7 +78,7 @@ export default function App() {
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/member" replace />} />
+        <Route path="*" element={<HomeRedirect />} />
       </Routes>
     </AppProvider>
   )

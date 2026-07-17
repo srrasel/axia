@@ -8,9 +8,9 @@ import type { TradingAccount } from '../../types'
 
 function AccountRow({ label, value, className = '' }: { label: string; value: string; className?: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 py-3">
-      <span className="text-sm text-text-secondary">{label}</span>
-      <span className={clsx('text-sm font-semibold tabular-nums text-text', className)}>{value}</span>
+    <div className="flex items-center justify-between gap-3 py-1.5">
+      <span className="text-xs text-text-secondary">{label}</span>
+      <span className={clsx('text-xs font-semibold tabular-nums text-text', className)}>{value}</span>
     </div>
   )
 }
@@ -145,11 +145,11 @@ export function MobileAccountSwitcher() {
                 </button>
               </div>
             ) : (
-              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 pt-4">
-                <div className="flex flex-wrap items-center gap-2">
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 pt-3">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <span
                     className={clsx(
-                      'rounded-full border px-2.5 py-0.5 text-xs font-semibold',
+                      'rounded-full border px-2 py-0.5 text-[11px] font-semibold',
                       isLive ? 'border-buy bg-buy/10 text-buy' : 'border-border text-text-secondary',
                     )}
                   >
@@ -157,7 +157,7 @@ export function MobileAccountSwitcher() {
                   </span>
                   <span
                     className={clsx(
-                      'rounded-full border px-2.5 py-0.5 text-xs font-semibold',
+                      'rounded-full border px-2 py-0.5 text-[11px] font-semibold',
                       !isLive
                         ? 'border-[#f79009] bg-[#f79009]/10 text-[#f79009]'
                         : 'border-border text-text-secondary',
@@ -167,19 +167,19 @@ export function MobileAccountSwitcher() {
                   </span>
                 </div>
 
-                <h2 className="mt-3 text-2xl font-bold text-text">{isLive ? 'Live' : 'Demo'}</h2>
+                <h2 className="mt-2 text-xl font-bold text-text">{isLive ? 'Live' : 'Demo'}</h2>
 
                 <button
                   type="button"
                   onClick={() => void copyId()}
-                  className="mt-1 flex items-center gap-1.5 text-sm text-text-secondary"
+                  className="mt-0.5 flex items-center gap-1.5 text-xs text-text-secondary"
                 >
                   <span className="tabular-nums">#{accountLabel}</span>
-                  <Copy size={14} />
-                  {copied ? <span className="text-xs text-buy">Copied</span> : null}
+                  <Copy size={12} />
+                  {copied ? <span className="text-[11px] text-buy">Copied</span> : null}
                 </button>
 
-                <div className="mt-2 divide-y divide-border/60">
+                <div className="mt-1.5 divide-y divide-border/60">
                   <AccountRow label="Equity" value={formatMoney(metrics.equity)} />
                   <AccountRow
                     label="Unrealized P/L"
@@ -197,24 +197,24 @@ export function MobileAccountSwitcher() {
                   <AccountRow label="Leverage" value={account?.leverage || '—'} />
                 </div>
 
-                <div className="mt-5 space-y-2.5">
+                <div className="mt-4 space-y-2">
                   <button
                     type="button"
                     onClick={() => {
                       setOpen(false)
                       navigate('/account/manage')
                     }}
-                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#fcd535] text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]"
+                    className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#fcd535] text-[13px] font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]"
                   >
-                    <Settings2 size={18} strokeWidth={1.75} />
+                    <Settings2 size={16} strokeWidth={1.75} />
                     Manage
                   </button>
                   <button
                     type="button"
                     onClick={() => setPicker(true)}
-                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-panel text-sm font-semibold text-text transition-colors hover:bg-muted"
+                    className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border bg-panel text-[13px] font-semibold text-text transition-colors hover:bg-muted"
                   >
-                    <ArrowLeftRight size={18} strokeWidth={1.75} />
+                    <ArrowLeftRight size={16} strokeWidth={1.75} />
                     Switch Account
                   </button>
                   <button
@@ -223,7 +223,7 @@ export function MobileAccountSwitcher() {
                       setOpen(false)
                       navigate('/account/manage')
                     }}
-                    className="w-full py-2 text-center text-sm font-semibold text-link"
+                    className="w-full py-1.5 text-center text-xs font-semibold text-link"
                   >
                     Create New Account
                   </button>
