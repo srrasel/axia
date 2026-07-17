@@ -1126,7 +1126,7 @@ export function DepositPage() {
               min={1}
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="h-14 w-full rounded-xl border border-border bg-muted/40 pl-10 pr-4 text-2xl font-semibold outline-none transition-colors hover:border-[#fff] focus:border-[#F0B90B]"
+              className="h-14 w-full rounded-xl border border-border bg-muted/40 pl-10 pr-4 text-2xl font-semibold outline-none transition-colors hover:border-[#fff] focus:border-[#fff]"
               required
             />
           </div>
@@ -1407,7 +1407,7 @@ export function DepositPage() {
                   <input
                     value={bankReference}
                     onChange={(e) => setBankReference(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:border-[#fff] focus:border-[#F0B90B]"
+                    className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:border-[#fff] focus:border-[#fff]"
                     placeholder="Transfer ID / reference (optional)"
                   />
                 </label>
