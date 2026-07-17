@@ -62,7 +62,7 @@ export function MobileAccountSwitcher() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex max-w-[min(100%,10.5rem)] min-w-0 shrink items-center gap-1 rounded-full bg-[#29313d] py-1 pl-1 pr-1.5 sm:hidden"
+        className="flex max-w-[min(100%,14rem)] min-w-0 shrink items-center gap-1 rounded-full bg-[#29313d] py-1 pl-1 pr-1.5 sm:hidden"
         aria-label="Open account details"
       >
         <span
