@@ -106,7 +106,7 @@ export function MobileAccountSwitcher() {
 
                 {picker ? (
                   <div className="flex min-h-0 flex-1 flex-col px-4 pt-3 pb-[5px]">
-                    <h3 className="text-[20px] font-semibold text-text">Switch account</h3>
+                    <h3 className="text-[20px] font-semibold capitalize text-text">Switch Account</h3>
                     <p className="mt-1 text-[12px] text-text-secondary">Choose Demo or Live account</p>
                     <div className="mt-4 min-h-0 flex-1 space-y-3.5 overflow-y-auto pb-3">
                       {accounts.map((a) => {
@@ -148,8 +148,8 @@ export function MobileAccountSwitcher() {
                             </span>
                             <span className="mt-3 block min-h-[40px] text-[14px] leading-snug text-[#c8cdd5]">
                               {live
-                                ? 'Trade with real money and gain full access.'
-                                : 'Practice trading with virtual funds.'}
+                                ? 'Trade with real money and gain full access to markets and tools.'
+                                : 'Practice trading with virtual funds and test your trading strategies.'}
                             </span>
                           </button>
                         )
