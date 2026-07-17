@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeftRight, Copy, Settings2 } from 'lucide-react'
+import { ArrowLeftRight, ChevronDown, Copy, Settings2 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../context/AppContext'
 import { formatMoney } from '../../data/mock'
@@ -63,7 +63,7 @@ export function MobileAccountSwitcher() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex h-auto max-w-full items-center gap-1.5 overflow-hidden rounded-full bg-[#29313d] py-2 pl-2 pr-2.5"
+          className="flex h-auto max-w-full items-center gap-1.5 overflow-hidden rounded-full bg-[#29313d] py-2 pl-[5px] pr-2"
           aria-label="Open account details"
         >
           <span
@@ -77,6 +77,7 @@ export function MobileAccountSwitcher() {
           <span className="min-w-0 truncate text-left text-[15px] font-semibold leading-none tabular-nums text-text">
             {formatMoney(metrics.equity)}
           </span>
+          <ChevronDown size={12} className="shrink-0 text-text-secondary" aria-hidden />
         </button>
       </div>
 
@@ -88,14 +89,14 @@ export function MobileAccountSwitcher() {
             aria-label="Close account sheet"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute inset-x-0 bottom-0 flex max-h-[min(92dvh,100%)] flex-col overflow-hidden rounded-t-2xl border-t border-border bg-panel shadow-2xl pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <div className="absolute inset-x-0 bottom-0 flex max-h-[min(92dvh,100%)] flex-col overflow-hidden rounded-t-2xl border-t border-border bg-panel shadow-2xl pb-[calc(5px+env(safe-area-inset-bottom,0px))]">
             <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border" aria-hidden />
 
             {picker ? (
-              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 pt-3">
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-3 pb-[5px]">
                 <h3 className="text-[15px] font-semibold text-text">Switch account</h3>
                 <p className="mt-1 text-[12px] text-text-secondary">Choose Demo or Live account</p>
-                <div className="mt-4 space-y-2">
+                <div className="mt-4 space-y-2 pb-[5px]">
                   {accounts.map((a) => {
                     const live = a.type === 'live'
                     const active = a.id === activeAccountId
