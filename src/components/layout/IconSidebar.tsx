@@ -19,7 +19,7 @@ import {
 import clsx from 'clsx'
 
 const desktopItems = [
-  { to: '/platform', icon: LineChart, label: 'Trading', end: true },
+  { to: '/member', icon: LineChart, label: 'Trading', end: true },
   { to: '/markets', icon: List, label: 'Markets' },
   { to: '/signals', icon: Store, label: 'Signals' },
   { to: '/premium', icon: Crosshair, label: 'Premium' },
@@ -32,7 +32,7 @@ const desktopItems = [
 ]
 
 const mobileItems = [
-  { to: '/platform', icon: CandlestickChart, label: 'Trade', end: true },
+  { to: '/member', icon: CandlestickChart, label: 'Trade', end: true },
   { to: '/markets', icon: LineChart, label: 'Market' },
   { to: '/portfolio', icon: Briefcase, label: 'Portfolio' },
   { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },

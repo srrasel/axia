@@ -28,7 +28,7 @@ export function SignalsPage() {
               <span className={side === 'Buy' ? 'positive' : 'negative'}>{side}</span>
             </div>
             <div className="mt-2 text-sm text-text-secondary">Confidence {conf}%</div>
-            <Link to="/platform" className="mt-3 inline-block text-sm font-medium text-link">
+            <Link to="/member" className="mt-3 inline-block text-sm font-medium text-link">
               Open chart →
             </Link>
           </div>

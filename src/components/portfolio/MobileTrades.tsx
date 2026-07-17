@@ -90,7 +90,7 @@ export function MobileTrades({
 
   const showChart = (symbol: string) => {
     setSelectedSymbol(symbol)
-    navigate('/platform')
+    navigate('/member')
   }
 
   const closeGroup = async (group: SymbolGroup) => {

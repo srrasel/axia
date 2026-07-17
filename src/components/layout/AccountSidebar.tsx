@@ -65,7 +65,7 @@ function SidebarBody({ onClose, showClose }: { onClose?: () => void; showClose?:
         type="button"
         onClick={() => {
           close()
-          navigate('/platform')
+          navigate('/member')
         }}
         className="auth-btn mx-2 mt-3 mb-3 flex w-[calc(100%-1rem)] cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#fcd535] px-3 py-3 text-[15px] font-semibold tracking-wide !text-[#202630] transition-colors duration-200 hover:bg-[#ceaf30]"
       >

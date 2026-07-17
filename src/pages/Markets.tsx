@@ -92,7 +92,7 @@ export function MarketsPage() {
 
   const openSymbol = (symbol: string) => {
     setSelectedSymbol(symbol)
-    navigate('/platform')
+    navigate('/member')
   }
 
   return (

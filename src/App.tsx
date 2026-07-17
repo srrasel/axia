@@ -44,8 +44,9 @@ export default function App() {
 
         <Route element={<Protected />}>
           <Route element={<PlatformLayout />}>
-            <Route path="/" element={<Navigate to="/platform" replace />} />
-            <Route path="/platform" element={<TradingPage />} />
+            <Route path="/" element={<Navigate to="/member" replace />} />
+            <Route path="/member" element={<TradingPage />} />
+            <Route path="/platform" element={<Navigate to="/member" replace />} />
             <Route path="/markets" element={<MarketsPage />} />
             <Route path="/more" element={<MorePage />} />
             <Route path="/portfolio" element={<PortfolioPage />} />
@@ -72,7 +73,7 @@ export default function App() {
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/platform" replace />} />
+        <Route path="*" element={<Navigate to="/member" replace />} />
       </Routes>
     </AppProvider>
   )

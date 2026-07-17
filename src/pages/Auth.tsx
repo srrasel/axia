@@ -23,7 +23,7 @@ export function LoginPage() {
   const [tempToken, setTempToken] = useState<string | null>(null)
   const [code, setCode] = useState('')
 
-  if (isAuthenticated) return <Navigate to="/platform" replace />
+  if (isAuthenticated) return <Navigate to="/member" replace />
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -32,7 +32,7 @@ export function LoginPage() {
     const result = await login(email, password, remember)
     setLoading(false)
     if (!result) {
-      navigate('/platform')
+      navigate('/member')
       return
     }
     if (result.requires2fa && result.tempToken) {
@@ -50,7 +50,7 @@ export function LoginPage() {
     const err = await verifyLogin2fa(tempToken, code)
     setLoading(false)
     if (err) setError(err)
-    else navigate('/platform')
+    else navigate('/member')
   }
 
   if (tempToken) {
@@ -133,7 +133,7 @@ export function ForgotPasswordPage() {
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  if (isAuthenticated) return <Navigate to="/platform" replace />
+  if (isAuthenticated) return <Navigate to="/member" replace />
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -191,7 +191,7 @@ export function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const referralCode = params.get('ref') || undefined
 
-  if (isAuthenticated) return <Navigate to="/platform" replace />
+  if (isAuthenticated) return <Navigate to="/member" replace />
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -208,7 +208,7 @@ export function RegisterPage() {
     const err = await register(name, email, password, referralCode)
     setLoading(false)
     if (err) setError(err)
-    else navigate('/platform')
+    else navigate('/member')
   }
 
   return (

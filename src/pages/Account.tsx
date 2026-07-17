@@ -449,7 +449,7 @@ export function ManageAccountsPage() {
                   onClick={() => {
                     switchAccount(a.id)
                     setMenu(null)
-                    navigate('/platform')
+                    navigate('/member')
                   }}
                 >
                   Trade
@@ -517,7 +517,7 @@ export function ManageAccountsPage() {
                         onClick={() => {
                           switchAccount(a.id)
                           setMenu(null)
-                          navigate('/platform')
+                          navigate('/member')
                         }}
                       >
                         Trade
