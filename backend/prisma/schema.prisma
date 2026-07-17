@@ -126,7 +126,7 @@ model Account {
   type         AccountType
   platform     String        @default("MT5")
   leverage     String        @default("1:400")
-  currency     String        @default("EUR")
+  currency     String        @default("USD")
   balance      Float         @default(0)
   equity       Float         @default(0)
   credit       Float         @default(0)
@@ -196,7 +196,7 @@ model PlatformEarning {
   id          String      @id @default(cuid())
   type        EarningType
   amount      Float
-  currency    String      @default("EUR")
+  currency    String      @default("USD")
   description String
   userId      String?
   user        User?       @relation(fields: [userId], references: [id], onDelete: SetNull)

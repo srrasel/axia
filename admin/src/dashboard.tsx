@@ -115,7 +115,7 @@ export function Dashboard() {
   }
 
   const s = data.stats
-  const cur = s.currency || currencyCode || 'EUR'
+  const cur = s.currency || currencyCode || 'USD'
   const periodDeposits = series.reduce((a: number, d: any) => a + d.deposits, 0)
   const periodWithdrawals = series.reduce((a: number, d: any) => a + d.withdrawals, 0)
   const periodEarnings = series.reduce((a: number, d: any) => a + d.earnings, 0)

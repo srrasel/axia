@@ -21,7 +21,7 @@ export const ACCOUNTS: TradingAccount[] = [
     type: 'live',
     platform: 'MT5',
     leverage: '1:400',
-    currency: 'EUR',
+    currency: 'USD',
     equity: 0,
     balance: 0,
     credit: 0,
@@ -31,7 +31,7 @@ export const ACCOUNTS: TradingAccount[] = [
     type: 'demo',
     platform: 'MT5',
     leverage: '1:400',
-    currency: 'EUR',
+    currency: 'USD',
     equity: 24767.36,
     balance: 24767.36,
     credit: 0,
@@ -177,11 +177,11 @@ function readStoredPlatformCurrency() {
   } catch {
     /* ignore */
   }
-  return 'EUR'
+  return 'USD'
 }
 
-let platformCurrencyCode = typeof localStorage !== 'undefined' ? readStoredPlatformCurrency() : 'EUR'
-let platformCurrencySymbol = CURRENCY_SYMBOLS[platformCurrencyCode] || '€'
+let platformCurrencyCode = typeof localStorage !== 'undefined' ? readStoredPlatformCurrency() : 'USD'
+let platformCurrencySymbol = CURRENCY_SYMBOLS[platformCurrencyCode] || '$'
 
 export function setPlatformCurrency(codeOrSymbol?: string) {
   if (!codeOrSymbol) return

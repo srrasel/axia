@@ -49,7 +49,7 @@ async function main() {
             equity: 0,
             leverage: '1:400',
             platform: 'MT5',
-            currency: 'EUR',
+            currency: 'USD',
           },
           {
             number: '6611306',
@@ -58,7 +58,7 @@ async function main() {
             equity: 24767.36,
             leverage: '1:400',
             platform: 'MT5',
-            currency: 'EUR',
+            currency: 'USD',
           },
         ],
       },
@@ -153,9 +153,10 @@ async function main() {
   })
   await prisma.setting.upsert({
     where: { key: 'currency' },
-    update: {},
-    create: { key: 'currency', value: 'EUR' },
+    update: { value: 'USD' },
+    create: { key: 'currency', value: 'USD' },
   })
+  await prisma.account.updateMany({ data: { currency: 'USD' } })
   await prisma.setting.upsert({
     where: { key: 'trading_fee_per_lot' },
     update: {},

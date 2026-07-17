@@ -64,8 +64,8 @@ export const SETTING_DEFS: SettingMeta[] = [
     description: 'Platform currency. Changing it converts balances with live ECB FX rates (USD/EUR/GBP)',
     type: 'select',
     group: 'General',
-    options: ['EUR', 'USD', 'GBP'],
-    defaultValue: 'EUR',
+    options: ['USD', 'EUR', 'GBP'],
+    defaultValue: 'USD',
   },
   {
     key: 'support_email',
@@ -350,12 +350,12 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 export async function getCurrencyCode() {
   const settings = await loadSettings()
-  const code = (settings.currency || 'EUR').toUpperCase()
-  return CURRENCY_SYMBOLS[code] ? code : 'EUR'
+  const code = (settings.currency || 'USD').toUpperCase()
+  return CURRENCY_SYMBOLS[code] ? code : 'USD'
 }
 
 export function currencySymbol(code?: string) {
-  const c = (code || 'EUR').toUpperCase()
+  const c = (code || 'USD').toUpperCase()
   return CURRENCY_SYMBOLS[c] || `${c} `
 }
 

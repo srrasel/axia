@@ -21,7 +21,7 @@ const FALLBACK: Record<string, Record<string, number>> = {
 
 function normalizeCode(code: string) {
   const c = code.toUpperCase()
-  return CURRENCY_SYMBOLS[c] ? c : 'EUR'
+  return CURRENCY_SYMBOLS[c] ? c : 'USD'
 }
 
 /** Fetch live USD / EUR / GBP cross rates (Frankfurter / ECB). */

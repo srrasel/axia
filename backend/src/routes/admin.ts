@@ -557,7 +557,7 @@ adminRouter.get('/earnings', async (req, res) => {
       withdraw_fee_percent: settings.withdraw_fee_percent,
       referral_commission_percent: settings.referral_commission_percent,
     },
-    currency: settings.currency || 'EUR',
+    currency: settings.currency || 'USD',
     currencySymbol: currencySymbol(settings.currency),
   })
 })
@@ -734,7 +734,7 @@ adminRouter.put('/settings', async (req, res) => {
   // Always persist currency as uppercase EUR/USD/GBP
   if (toWrite.currency) {
     const normalized = toWrite.currency.toUpperCase()
-    toWrite.currency = ['EUR', 'USD', 'GBP'].includes(normalized) ? normalized : existing.currency || 'EUR'
+    toWrite.currency = ['USD', 'EUR', 'GBP'].includes(normalized) ? normalized : existing.currency || 'USD'
   }
   const nextCurrency = toWrite.currency
   const current = await getCurrencyCode()

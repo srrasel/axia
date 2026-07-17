@@ -22,11 +22,11 @@ function readStoredCurrency() {
   } catch {
     /* ignore */
   }
-  return 'EUR'
+  return 'USD'
 }
 
 let activeCode = readStoredCurrency()
-let activeSymbol = SYMBOLS[activeCode] || '€'
+let activeSymbol = SYMBOLS[activeCode] || '$'
 const listeners = new Set<() => void>()
 
 function notifyCurrencyListeners() {
@@ -34,8 +34,8 @@ function notifyCurrencyListeners() {
 }
 
 export function setActiveCurrency(code: string) {
-  const next = (code || 'EUR').toUpperCase()
-  activeCode = SYMBOLS[next] ? next : 'EUR'
+  const next = (code || 'USD').toUpperCase()
+  activeCode = SYMBOLS[next] ? next : 'USD'
   activeSymbol = SYMBOLS[activeCode] || `${activeCode} `
   try {
     localStorage.setItem(STORAGE_KEY, activeCode)
@@ -73,7 +73,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     try {
       const r = await api<{ values?: { currency?: string } }>('/api/admin/settings')
-      const next = (r.values?.currency || 'EUR').toUpperCase()
+      const next = (r.values?.currency || 'USD').toUpperCase()
       setActiveCurrency(next)
     } catch {
       /* ignore before login */

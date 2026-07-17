@@ -149,7 +149,7 @@ function EarningsPage() {
     <div>
       <PageHeader title="Platform Earnings">
         <div className="flex items-center gap-2">
-          <span className="rounded bg-muted px-2 py-1 text-xs font-semibold">{data.currency || 'EUR'}</span>
+          <span className="rounded bg-muted px-2 py-1 text-xs font-semibold">{data.currency || 'USD'}</span>
           <select className="h-10 rounded border border-border px-2 text-sm" value={type} onChange={(e) => setType(e.target.value)}>
           <option value="">All types</option>
           <option value="trading_fee">Trading fee</option>
@@ -595,7 +595,7 @@ function SettingsPage() {
         setDefs(r.definitions || [])
         setValues(r.values || {})
         setFx(r.fx || null)
-        const cur = r.values?.currency || 'EUR'
+        const cur = r.values?.currency || 'USD'
         setOriginalCurrency(cur)
         setActiveCurrency(cur)
       })
@@ -612,7 +612,7 @@ function SettingsPage() {
   if (error) return <p className="text-sell">{error}</p>
   if (!defs.length) return <p className="text-secondary">Loading settings…</p>
 
-  const nextCur = values.currency || 'EUR'
+  const nextCur = values.currency || 'USD'
   const ratePreview =
     fx?.matrix?.[originalCurrency]?.[nextCur] != null ? Number(fx.matrix[originalCurrency][nextCur]) : null
 
@@ -664,7 +664,7 @@ function SettingsPage() {
                     body: JSON.stringify({ settings: values, convertCurrency: convertOnSave }),
                   },
                 )
-                const savedCurrency = r.values?.currency || values.currency || 'EUR'
+                const savedCurrency = r.values?.currency || values.currency || 'USD'
                 setActiveCurrency(savedCurrency)
                 await refresh()
                 if (r.conversion && r.conversion.rate !== 1) {
