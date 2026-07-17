@@ -242,16 +242,16 @@ export function MobileTrades({
         {groups.length === 0 ? (
           <div className="flex min-h-[min(52vh,28rem)] flex-col items-center justify-center px-4 text-center">
             <div className="relative flex h-[7.5rem] w-[7.5rem] items-center justify-center" aria-hidden>
-              <span className="absolute inset-0 rounded-full border border-[#fcd535]/20" />
-              <span className="absolute inset-[14%] rounded-full border border-[#fcd535]/35" />
-              <span className="absolute inset-[28%] rounded-full border border-[#fcd535]/55" />
-              <span className="relative text-[2.25rem] font-light leading-none text-[#fcd535]">+</span>
+              <span className="absolute inset-0 rounded-full border border-white/20" />
+              <span className="absolute inset-[14%] rounded-full border border-white/35" />
+              <span className="absolute inset-[28%] rounded-full border border-white/55" />
+              <span className="relative text-[2.25rem] font-light leading-none text-white">+</span>
             </div>
             <p className="mt-5 text-[14px] text-text-secondary">Nothing here yet!</p>
             <button
               type="button"
               onClick={() => navigate('/markets')}
-              className="mt-5 h-11 rounded-xl border border-[#fcd535] px-5 text-[14px] font-semibold text-[#fcd535] transition-colors hover:bg-[#fcd535]/10"
+              className="mt-5 h-11 rounded-xl border border-white px-5 text-[14px] font-semibold text-white transition-colors hover:bg-white/10"
             >
               Open a position
             </button>
