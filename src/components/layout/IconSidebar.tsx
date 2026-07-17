@@ -150,7 +150,7 @@ export function IconSidebar({ mobileOnly = false }: { mobileOnly?: boolean }) {
 
       {/* Mobile bottom bar */}
       <nav
-        className="panel fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t px-0 pb-[max(0.375rem,env(safe-area-inset-bottom))] pt-1 md:hidden"
+        className="panel fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t px-0 pb-[max(0.375rem,env(safe-area-inset-bottom))] pt-[9px] md:hidden"
         aria-label="Mobile navigation"
       >
         {mobileItems.map(({ to, icon: Icon, label, end }) => (
@@ -179,7 +179,7 @@ export function IconSidebar({ mobileOnly = false }: { mobileOnly?: boolean }) {
                     />
                     {showOpenDot ? (
                       <span
-                        className="absolute -right-px -top-px h-[5px] w-[5px] rounded-full bg-[#e5484d]"
+                        className="absolute -right-px -top-px h-[15px] w-[15px] rounded-full bg-[#e5484d]"
                         aria-hidden
                       />
                     ) : null}

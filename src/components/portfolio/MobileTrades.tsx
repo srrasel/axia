@@ -16,12 +16,23 @@ import type { Trade } from '../../types'
 
 type Tab = 'open' | 'pending' | 'closed'
 type HistoryPeriod = 'today' | '7d' | '1m' | 'all'
+type MarketFilter = 'gold' | 'euro' | 'forex' | 'commodity' | 'crypto' | 'stock' | 'index'
 
 const HISTORY_PERIODS: Array<{ value: HistoryPeriod; label: string }> = [
+  { value: 'all', label: 'All History' },
   { value: 'today', label: 'Today' },
   { value: '7d', label: 'Last 7 Days' },
   { value: '1m', label: 'Last 1 Month' },
-  { value: 'all', label: 'All History' },
+]
+
+const MARKET_OPTIONS: Array<{ value: MarketFilter; label: string }> = [
+  { value: 'gold', label: 'Gold' },
+  { value: 'euro', label: 'Euro' },
+  { value: 'forex', label: 'Forex' },
+  { value: 'commodity', label: 'Commodities' },
+  { value: 'crypto', label: 'Crypto' },
+  { value: 'stock', label: 'Stocks' },
+  { value: 'index', label: 'Indices' },
 ]
 
 function inHistoryPeriod(t: Trade, period: HistoryPeriod) {
@@ -39,6 +50,18 @@ function inHistoryPeriod(t: Trade, period: HistoryPeriod) {
   const from = new Date(start)
   from.setMonth(from.getMonth() - 1)
   return d >= from
+}
+
+function matchesOneMarket(t: Trade, market: MarketFilter) {
+  const sym = t.symbol.toUpperCase()
+  if (market === 'gold') return sym.includes('XAU') || sym.includes('GOLD')
+  if (market === 'euro') return sym.includes('EUR')
+  return t.category === market
+}
+
+function matchesMarkets(t: Trade, markets: MarketFilter[]) {
+  if (markets.length === 0) return true
+  return markets.some((m) => matchesOneMarket(t, m))
 }
 
 const AVATAR_TONES = [
@@ -112,6 +135,8 @@ export function MobileTrades({
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('open')
   const [historyPeriod, setHistoryPeriod] = useState<HistoryPeriod>('all')
+  const [marketFilters, setMarketFilters] = useState<MarketFilter[]>([])
+  const [marketOpen, setMarketOpen] = useState(false)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -138,8 +163,22 @@ export function MobileTrades({
   const filtered = useMemo(() => {
     const byStatus = accountTrades.filter((t) => t.status === tab)
     if (tab !== 'closed') return byStatus
-    return byStatus.filter((t) => inHistoryPeriod(t, historyPeriod))
-  }, [accountTrades, tab, historyPeriod])
+    return byStatus.filter((t) => inHistoryPeriod(t, historyPeriod) && matchesMarkets(t, marketFilters))
+  }, [accountTrades, tab, historyPeriod, marketFilters])
+
+  const marketLabel =
+    marketFilters.length === 0
+      ? 'All Markets'
+      : marketFilters.length === 1
+        ? (MARKET_OPTIONS.find((m) => m.value === marketFilters[0])?.label ?? '1 Market')
+        : `${marketFilters.length} Markets`
+
+  const toggleMarket = (value: MarketFilter) => {
+    setMarketFilters((prev) =>
+      prev.includes(value) ? prev.filter((m) => m !== value) : [...prev, value],
+    )
+    setExpanded(null)
+  }
 
   const groups = useMemo(() => groupBySymbol(filtered), [filtered])
 
@@ -215,6 +254,7 @@ export function MobileTrades({
                 onClick={() => {
                   setTab(t.key)
                   setExpanded(null)
+                  setMarketOpen(false)
                 }}
                 className={clsx(
                   'flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold transition-colors',
@@ -257,27 +297,109 @@ export function MobileTrades({
             </div>
           </div>
           {tab === 'closed' ? (
-            <div className="relative shrink-0">
-              <select
-                className="h-10 appearance-none rounded-md border border-border bg-panel py-2 pl-3 pr-7 text-sm outline-none"
-                value={historyPeriod}
-                onChange={(e) => {
-                  setHistoryPeriod(e.target.value as HistoryPeriod)
-                  setExpanded(null)
-                }}
-                aria-label="History period"
-              >
-                {HISTORY_PERIODS.map((p) => (
-                  <option key={p.value} value={p.value}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={14}
-                className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary"
-                aria-hidden
-              />
+            <div className="flex shrink-0 items-center gap-2">
+              <div className="relative">
+                <select
+                  className="h-10 max-w-[8.5rem] appearance-none rounded-md border border-border bg-panel py-2 pl-3 pr-7 text-sm outline-none"
+                  value={historyPeriod}
+                  onChange={(e) => {
+                    setHistoryPeriod(e.target.value as HistoryPeriod)
+                    setExpanded(null)
+                  }}
+                  aria-label="History period"
+                >
+                  {HISTORY_PERIODS.map((p) => (
+                    <option key={p.value} value={p.value}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={14}
+                  className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary"
+                  aria-hidden
+                />
+              </div>
+              <div className="relative">
+                <button
+                  type="button"
+                  aria-label="Market filter"
+                  aria-expanded={marketOpen}
+                  onClick={() => setMarketOpen((v) => !v)}
+                  className="flex h-10 max-w-[9.5rem] items-center gap-1 rounded-md border border-border bg-panel py-2 pl-3 pr-2 text-left text-sm text-text"
+                >
+                  <span className="min-w-0 flex-1 truncate">{marketLabel}</span>
+                  <ChevronDown
+                    size={14}
+                    className={clsx(
+                      'shrink-0 text-text-secondary transition-transform',
+                      marketOpen && 'rotate-180',
+                    )}
+                    aria-hidden
+                  />
+                </button>
+                {marketOpen ? (
+                  <>
+                    <button
+                      type="button"
+                      className="fixed inset-0 z-20 cursor-default"
+                      aria-label="Close market filter"
+                      onClick={() => setMarketOpen(false)}
+                    />
+                    <div className="absolute right-0 top-11 z-30 w-48 overflow-hidden rounded-xl border border-border bg-panel py-1 shadow-xl">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMarketFilters([])
+                          setExpanded(null)
+                        }}
+                        className={clsx(
+                          'flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted',
+                          marketFilters.length === 0 ? 'text-[#fcd535]' : 'text-text',
+                        )}
+                      >
+                        <span
+                          className={clsx(
+                            'flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px]',
+                            marketFilters.length === 0
+                              ? 'border-[#fcd535] bg-[#fcd535] text-[#202630]'
+                              : 'border-border',
+                          )}
+                        >
+                          {marketFilters.length === 0 ? '✓' : ''}
+                        </span>
+                        All Markets
+                      </button>
+                      {MARKET_OPTIONS.map((m) => {
+                        const checked = marketFilters.includes(m.value)
+                        return (
+                          <button
+                            key={m.value}
+                            type="button"
+                            onClick={() => toggleMarket(m.value)}
+                            className={clsx(
+                              'flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted',
+                              checked ? 'text-[#fcd535]' : 'text-text',
+                            )}
+                          >
+                            <span
+                              className={clsx(
+                                'flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px]',
+                                checked
+                                  ? 'border-[#fcd535] bg-[#fcd535] text-[#202630]'
+                                  : 'border-border',
+                              )}
+                            >
+                              {checked ? '✓' : ''}
+                            </span>
+                            {m.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </>
+                ) : null}
+              </div>
             </div>
           ) : null}
         </div>
