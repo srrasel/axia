@@ -162,7 +162,7 @@ export function IconSidebar({ mobileOnly = false }: { mobileOnly?: boolean }) {
               const active = to === '/more' ? isMoreSection(pathname) : isActive
               return clsx(
                 'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1 transition-colors',
-                active ? 'text-[#fcd535]' : 'text-text-secondary',
+                active ? 'text-white' : 'text-text-secondary',
               )
             }}
           >
@@ -187,7 +187,7 @@ export function IconSidebar({ mobileOnly = false }: { mobileOnly?: boolean }) {
                   <span
                     className={clsx(
                       'max-w-full truncate px-0.5 text-[11px] font-medium leading-tight',
-                      active ? 'text-[#fcd535]' : 'text-text-secondary',
+                      active ? 'text-white' : 'text-text-secondary',
                     )}
                   >
                     {label}
