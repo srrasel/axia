@@ -1,8 +1,9 @@
 import { Router } from 'express'
+import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { prisma } from '../prisma.js'
-import { managerRequired, staffRequired } from '../auth.js'
-import { calcPnl } from '../trading.js'
+import { adminRequired, managerRequired, staffRequired } from '../auth.js'
+import { calcPnl, initialsFromName, referralCode } from '../trading.js'
 import { fetchQuotes, WATCHLIST } from '../market.js'
 import { settleTradeClose } from '../settle.js'
 import { currencySymbol, getCurrencyCode } from '../settings.js'
@@ -331,11 +332,103 @@ crmRouter.get('/staff', async (_req, res) => {
       name: true,
       email: true,
       role: true,
+      active: true,
+      createdAt: true,
+      lastSeenAt: true,
       _count: { select: { assignedClients: true } },
     },
-    orderBy: { name: 'asc' },
+    orderBy: [{ role: 'asc' }, { name: 'asc' }],
   })
   return res.json({ staff })
+})
+
+/** Admin only — create CRM desk users (manager / employee) */
+crmRouter.post('/staff', adminRequired, async (req, res) => {
+  const schema = z.object({
+    name: z.string().min(2),
+    email: z.string().email(),
+    password: z.string().min(6),
+    role: z.enum(['MANAGER', 'EMPLOYEE']),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
+
+  const email = parsed.data.email.toLowerCase()
+  const exists = await prisma.user.findUnique({ where: { email } })
+  if (exists) return res.status(400).json({ error: 'Email already exists' })
+
+  const user = await prisma.user.create({
+    data: {
+      name: parsed.data.name,
+      email,
+      passwordHash: await bcrypt.hash(parsed.data.password, 10),
+      initials: initialsFromName(parsed.data.name),
+      referralCode: referralCode(parsed.data.name),
+      role: parsed.data.role,
+      verified: true,
+      funded: true,
+      questionnaireDone: true,
+      kycStatus: 'approved',
+      active: true,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      active: true,
+      createdAt: true,
+      _count: { select: { assignedClients: true } },
+    },
+  })
+  return res.status(201).json({ user })
+})
+
+/** Admin only — update CRM staff role / active / name */
+crmRouter.patch('/staff/:id', adminRequired, async (req, res) => {
+  const schema = z.object({
+    name: z.string().min(2).optional(),
+    role: z.enum(['MANAGER', 'EMPLOYEE']).optional(),
+    active: z.boolean().optional(),
+    password: z.string().min(6).optional(),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
+
+  const target = await prisma.user.findFirst({
+    where: { id: String(req.params.id), role: { in: ['MANAGER', 'EMPLOYEE', 'ADMIN'] } },
+  })
+  if (!target) return res.status(404).json({ error: 'Staff member not found' })
+  if (target.role === 'ADMIN') {
+    return res.status(400).json({ error: 'Cannot modify admin accounts here' })
+  }
+  if (target.id === req.user!.id) {
+    return res.status(400).json({ error: 'Cannot modify your own staff account here' })
+  }
+
+  const data: Record<string, unknown> = {}
+  if (parsed.data.name) {
+    data.name = parsed.data.name
+    data.initials = initialsFromName(parsed.data.name)
+  }
+  if (parsed.data.role) data.role = parsed.data.role
+  if (parsed.data.active !== undefined) data.active = parsed.data.active
+  if (parsed.data.password) data.passwordHash = await bcrypt.hash(parsed.data.password, 10)
+
+  const user = await prisma.user.update({
+    where: { id: target.id },
+    data,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      active: true,
+      createdAt: true,
+      _count: { select: { assignedClients: true } },
+    },
+  })
+  return res.json({ user })
 })
 
 /** Market price overrides */

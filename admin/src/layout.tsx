@@ -17,10 +17,15 @@ import {
   Building2,
   Menu,
   X,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  UserCog,
   type LucideIcon,
 } from 'lucide-react'
 import clsx from 'clsx'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useAuth } from './auth'
 import { CurrencyProvider, money, useCurrency } from './currency'
 import { BrandLogo } from './BrandLogo'
@@ -43,6 +48,7 @@ const navGroups: { title: string; items: { to: string; icon: LucideIcon; label: 
       { to: '/crm/online', icon: Wifi, label: 'Online now' },
       { to: '/crm/performance', icon: TrendingUp, label: 'Winners / losers' },
       { to: '/crm/prices', icon: Gauge, label: 'Market prices' },
+      { to: '/crm/staff', icon: UserCog, label: 'CRM users' },
     ],
   },
   {
@@ -92,7 +98,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                     clsx(
                       'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-secondary transition-colors hover:bg-muted hover:text-text',
                       isActive &&
-                        'bg-sidebar-active font-semibold text-text shadow-[inset_0_0_0_1px_rgba(252,213,53,0.18)]',
+                        'bg-sidebar-active font-semibold text-text',
                     )
                   }
                 >
@@ -342,3 +348,134 @@ export const btnPrimary =
   'h-10 shrink-0 rounded-xl bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]'
 export const inputClass =
   'h-10 w-full min-w-0 rounded-xl border border-border bg-panel px-3 text-sm text-text outline-none transition-colors placeholder:text-secondary hover:border-white/40 focus:border-accent sm:w-auto'
+
+export const PAGE_SIZE = 10
+
+export function usePagination<T>(items: T[], pageSize = PAGE_SIZE) {
+  const [page, setPage] = useState(1)
+  const total = items.length
+  const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1)
+
+  useEffect(() => {
+    setPage(1)
+  }, [total, pageSize])
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages)
+  }, [page, totalPages])
+
+  const pageItems = useMemo(() => {
+    const start = (page - 1) * pageSize
+    return items.slice(start, start + pageSize)
+  }, [items, page, pageSize])
+
+  const from = total === 0 ? 0 : (page - 1) * pageSize + 1
+  const to = Math.min(page * pageSize, total)
+
+  return { page, setPage, pageItems, total, totalPages, from, to, pageSize }
+}
+
+function pageWindow(current: number, total: number): (number | '…')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const pages: (number | '…')[] = [1]
+  const start = Math.max(2, current - 1)
+  const end = Math.min(total - 1, current + 1)
+  if (start > 2) pages.push('…')
+  for (let i = start; i <= end; i++) pages.push(i)
+  if (end < total - 1) pages.push('…')
+  pages.push(total)
+  return pages
+}
+
+export function TablePagination({
+  page,
+  totalPages,
+  total,
+  from,
+  to,
+  onPageChange,
+  className,
+}: {
+  page: number
+  totalPages: number
+  total: number
+  from: number
+  to: number
+  onPageChange: (page: number) => void
+  className?: string
+}) {
+  if (total === 0) return null
+
+  const pages = pageWindow(page, totalPages)
+  const btn =
+    'inline-flex h-8 min-w-8 items-center justify-center rounded-lg border border-border bg-panel text-secondary transition-colors hover:border-accent/40 hover:bg-muted hover:text-text disabled:pointer-events-none disabled:opacity-35'
+
+  return (
+    <div
+      className={clsx(
+        'flex flex-col gap-3 border-t border-border/60 bg-muted/30 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4',
+        className,
+      )}
+    >
+      <p className="text-xs text-secondary sm:text-sm">
+        Showing <span className="font-semibold tabular-nums text-text">{from}</span>
+        {'–'}
+        <span className="font-semibold tabular-nums text-text">{to}</span>
+        {' of '}
+        <span className="font-semibold tabular-nums text-text">{total}</span>
+      </p>
+      <div className="flex flex-wrap items-center gap-1">
+        <button type="button" className={btn} disabled={page <= 1} onClick={() => onPageChange(1)} aria-label="First page">
+          <ChevronsLeft size={14} />
+        </button>
+        <button
+          type="button"
+          className={btn}
+          disabled={page <= 1}
+          onClick={() => onPageChange(page - 1)}
+          aria-label="Previous page"
+        >
+          <ChevronLeft size={14} />
+        </button>
+        {pages.map((p, i) =>
+          p === '…' ? (
+            <span key={`e-${i}`} className="px-1.5 text-xs text-secondary">
+              …
+            </span>
+          ) : (
+            <button
+              key={p}
+              type="button"
+              className={clsx(
+                btn,
+                p === page && 'border-accent/50 bg-accent/15 font-semibold text-accent hover:bg-accent/20 hover:text-accent',
+              )}
+              onClick={() => onPageChange(p)}
+              aria-current={p === page ? 'page' : undefined}
+            >
+              {p}
+            </button>
+          ),
+        )}
+        <button
+          type="button"
+          className={btn}
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(page + 1)}
+          aria-label="Next page"
+        >
+          <ChevronRight size={14} />
+        </button>
+        <button
+          type="button"
+          className={btn}
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(totalPages)}
+          aria-label="Last page"
+        >
+          <ChevronsRight size={14} />
+        </button>
+      </div>
+    </div>
+  )
+}

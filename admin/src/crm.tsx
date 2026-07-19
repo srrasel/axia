@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from './api'
 import { useAuth } from './auth'
-import { Card, PageHeader, money, StatusBadge, btnPrimary, inputClass } from './layout'
+import { Card, PageHeader, money, StatusBadge, btnPrimary, inputClass, usePagination, TablePagination } from './layout'
 import { getActiveCurrency } from './currency'
 
 function isManagerRole(role?: string) {
@@ -20,6 +20,7 @@ export function CrmTransactionsPage() {
   const [type, setType] = useState('')
   const [q, setQ] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const pager = usePagination(rows)
 
   const load = () => {
     const params = new URLSearchParams()
@@ -69,55 +70,66 @@ export function CrmTransactionsPage() {
       </PageHeader>
       {error ? <p className="mb-3 text-sell">{error}</p> : null}
 
-      <div className="hidden overflow-auto rounded-2xl border border-border bg-panel md:block">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs text-secondary">
-            <tr>
-              <th className="px-3 py-2.5">Client</th>
-              <th className="px-3 py-2.5">Assigned</th>
-              <th className="px-3 py-2.5">Type</th>
-              <th className="px-3 py-2.5">Amount</th>
-              <th className="px-3 py-2.5">Fee</th>
-              <th className="px-3 py-2.5">Status</th>
-              <th className="px-3 py-2.5">Note</th>
-              <th className="px-3 py-2.5">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((t) => (
-              <tr key={t.id} className="border-t border-border">
-                <td className="px-3 py-2.5">
-                  <Link className="text-link" to={`/crm/desk/${t.user.id}`}>
-                    {t.user.name}
-                  </Link>
-                  <div className="text-xs text-secondary">{t.user.email}</div>
-                </td>
-                <td className="px-3 py-2.5 text-secondary">{t.user.assignedTo?.name || '—'}</td>
-                <td className="px-3 py-2.5 capitalize">{t.type}</td>
-                <td className={`px-3 py-2.5 font-medium ${pnlClass(t.amount)}`}>{money(t.amount)}</td>
-                <td className="px-3 py-2.5">{money(t.fee || 0)}</td>
-                <td className="px-3 py-2.5">
-                  <StatusBadge status={t.status} />
-                </td>
-                <td className="max-w-[180px] truncate px-3 py-2.5">{t.note || t.payment}</td>
-                <td className="whitespace-nowrap px-3 py-2.5 text-secondary">
-                  {new Date(t.createdAt).toLocaleString()}
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 ? (
+      <div className="hidden overflow-hidden rounded-2xl border border-border bg-panel md:block">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary">
               <tr>
-                <td colSpan={8} className="px-3 py-8 text-center text-secondary">
-                  No transactions
-                </td>
+                <th className="px-3 py-2.5">Client</th>
+                <th className="px-3 py-2.5">Assigned</th>
+                <th className="px-3 py-2.5">Type</th>
+                <th className="px-3 py-2.5">Amount</th>
+                <th className="px-3 py-2.5">Fee</th>
+                <th className="px-3 py-2.5">Status</th>
+                <th className="px-3 py-2.5">Note</th>
+                <th className="px-3 py-2.5">Date</th>
               </tr>
-            ) : null}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {pager.pageItems.map((t) => (
+                <tr key={t.id} className="border-t border-border">
+                  <td className="px-3 py-2.5">
+                    <Link className="text-link" to={`/crm/desk/${t.user.id}`}>
+                      {t.user.name}
+                    </Link>
+                    <div className="text-xs text-secondary">{t.user.email}</div>
+                  </td>
+                  <td className="px-3 py-2.5 text-secondary">{t.user.assignedTo?.name || '—'}</td>
+                  <td className="px-3 py-2.5 capitalize">{t.type}</td>
+                  <td className={`px-3 py-2.5 font-medium ${pnlClass(t.amount)}`}>{money(t.amount)}</td>
+                  <td className="px-3 py-2.5">{money(t.fee || 0)}</td>
+                  <td className="px-3 py-2.5">
+                    <StatusBadge status={t.status} />
+                  </td>
+                  <td className="max-w-[180px] truncate px-3 py-2.5">{t.note || t.payment}</td>
+                  <td className="whitespace-nowrap px-3 py-2.5 text-secondary">
+                    {new Date(t.createdAt).toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+              {pager.total === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-3 py-8 text-center text-secondary">
+                    No transactions
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+        <TablePagination
+          page={pager.page}
+          totalPages={pager.totalPages}
+          total={pager.total}
+          from={pager.from}
+          to={pager.to}
+          onPageChange={pager.setPage}
+        />
       </div>
 
-      <div className="space-y-2 md:hidden">
-        {rows.map((t) => (
+      <div className="md:hidden">
+        <div className="space-y-2">
+          {pager.pageItems.map((t) => (
           <div key={t.id} className="rounded-2xl border border-border bg-panel p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -152,11 +164,21 @@ export function CrmTransactionsPage() {
             <div className="mt-2 text-xs text-secondary">{new Date(t.createdAt).toLocaleString()}</div>
           </div>
         ))}
-        {rows.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-panel px-4 py-8 text-center text-sm text-secondary">
-            No transactions
-          </div>
-        ) : null}
+          {pager.total === 0 ? (
+            <div className="rounded-2xl border border-border bg-panel px-4 py-8 text-center text-sm text-secondary">
+              No transactions
+            </div>
+          ) : null}
+        </div>
+        <TablePagination
+          page={pager.page}
+          totalPages={pager.totalPages}
+          total={pager.total}
+          from={pager.from}
+          to={pager.to}
+          onPageChange={pager.setPage}
+          className="mt-2 rounded-2xl border border-border"
+        />
       </div>
     </div>
   )
@@ -169,6 +191,7 @@ export function CrmDeskPage() {
   const [q, setQ] = useState('')
   const [mine, setMine] = useState(false)
   const navigate = useNavigate()
+  const pager = usePagination(clients)
 
   const load = () => {
     const params = new URLSearchParams()
@@ -206,21 +229,22 @@ export function CrmDeskPage() {
         </div>
       </PageHeader>
 
-      <div className="hidden overflow-auto rounded-2xl border border-border bg-panel md:block">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs text-secondary">
-            <tr>
-              <th className="px-3 py-2.5">Client</th>
-              <th className="px-3 py-2.5">Status</th>
-              <th className="px-3 py-2.5">Assigned to</th>
-              <th className="px-3 py-2.5">Floating</th>
-              <th className="px-3 py-2.5">Realized</th>
-              <th className="px-3 py-2.5">Open</th>
-              <th className="px-3 py-2.5">Assign</th>
-            </tr>
-          </thead>
-          <tbody>
-            {clients.map((c) => (
+      <div className="hidden overflow-hidden rounded-2xl border border-border bg-panel md:block">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary">
+              <tr>
+                <th className="px-3 py-2.5">Client</th>
+                <th className="px-3 py-2.5">Status</th>
+                <th className="px-3 py-2.5">Assigned to</th>
+                <th className="px-3 py-2.5">Floating</th>
+                <th className="px-3 py-2.5">Realized</th>
+                <th className="px-3 py-2.5">Open</th>
+                <th className="px-3 py-2.5">Assign</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pager.pageItems.map((c) => (
               <tr key={c.id} className="border-t border-border">
                 <td className="px-3 py-2.5">
                   <button type="button" className="text-left text-link" onClick={() => navigate(`/crm/desk/${c.id}`)}>
@@ -260,7 +284,7 @@ export function CrmDeskPage() {
                 </td>
               </tr>
             ))}
-            {clients.length === 0 ? (
+            {pager.total === 0 ? (
               <tr>
                 <td colSpan={7} className="px-3 py-8 text-center text-secondary">
                   No clients found
@@ -269,10 +293,20 @@ export function CrmDeskPage() {
             ) : null}
           </tbody>
         </table>
+        </div>
+        <TablePagination
+          page={pager.page}
+          totalPages={pager.totalPages}
+          total={pager.total}
+          from={pager.from}
+          to={pager.to}
+          onPageChange={pager.setPage}
+        />
       </div>
 
-      <div className="space-y-2 md:hidden">
-        {clients.map((c) => (
+      <div className="md:hidden">
+        <div className="space-y-2">
+          {pager.pageItems.map((c) => (
           <div key={c.id} className="rounded-2xl border border-border bg-panel p-4">
             <div className="flex items-start justify-between gap-3">
               <button
@@ -323,11 +357,21 @@ export function CrmDeskPage() {
             </select>
           </div>
         ))}
-        {clients.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-panel px-4 py-8 text-center text-sm text-secondary">
-            No clients found
-          </div>
-        ) : null}
+          {pager.total === 0 ? (
+            <div className="rounded-2xl border border-border bg-panel px-4 py-8 text-center text-sm text-secondary">
+              No clients found
+            </div>
+          ) : null}
+        </div>
+        <TablePagination
+          page={pager.page}
+          totalPages={pager.totalPages}
+          total={pager.total}
+          from={pager.from}
+          to={pager.to}
+          onPageChange={pager.setPage}
+          className="mt-2 rounded-2xl border border-border"
+        />
       </div>
     </div>
   )
@@ -344,6 +388,9 @@ export function CrmClientDetailPage() {
   const [adjust, setAdjust] = useState({ accountId: '', amount: 50, note: '' })
   const [exitPrices, setExitPrices] = useState<Record<string, string>>({})
   const [markPrices, setMarkPrices] = useState<Record<string, string>>({})
+  const tradesPager = usePagination(data?.client?.trades || [])
+  const transactionsPager = usePagination(data?.client?.transactions || [])
+  const contactsPager = usePagination(data?.client?.contactsAsClient || [])
 
   const load = () =>
     void api<{ client: any; floatingPnl: number; realizedPnl: number; online: boolean }>(`/api/admin/crm/clients/${id}`)
@@ -418,8 +465,8 @@ export function CrmClientDetailPage() {
               Save contact
             </button>
           </form>
-          <div className="mt-3 max-h-40 space-y-2 overflow-auto text-sm">
-            {(c.contactsAsClient || []).map((x: any) => (
+          <div className="mt-3 space-y-2 text-sm">
+            {contactsPager.pageItems.map((x: any) => (
               <div key={x.id} className="rounded-xl bg-muted/50 px-3 py-2">
                 <div className="text-xs text-secondary">
                   {x.staff.name} · {new Date(x.createdAt).toLocaleString()}
@@ -427,7 +474,19 @@ export function CrmClientDetailPage() {
                 {x.note}
               </div>
             ))}
+            {contactsPager.total === 0 ? (
+              <p className="text-secondary">No contact notes yet.</p>
+            ) : null}
           </div>
+          <TablePagination
+            page={contactsPager.page}
+            totalPages={contactsPager.totalPages}
+            total={contactsPager.total}
+            from={contactsPager.from}
+            to={contactsPager.to}
+            onPageChange={contactsPager.setPage}
+            className="mt-2 rounded-xl border border-border"
+          />
         </div>
       </div>
 
@@ -513,22 +572,23 @@ export function CrmClientDetailPage() {
       ) : null}
 
       <h2 className="mb-2 font-semibold">Open / recent trades</h2>
-      <div className="mb-5 hidden overflow-auto rounded-2xl border border-border bg-panel md:block">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs text-secondary">
-            <tr>
-              <th className="px-3 py-2.5">Symbol</th>
-              <th className="px-3 py-2.5">Side</th>
-              <th className="px-3 py-2.5">Vol</th>
-              <th className="px-3 py-2.5">Open</th>
-              <th className="px-3 py-2.5">Current</th>
-              <th className="px-3 py-2.5">Status</th>
-              <th className="px-3 py-2.5">PnL</th>
-              {manager ? <th className="px-3 py-2.5">Manager controls</th> : null}
-            </tr>
-          </thead>
-          <tbody>
-            {c.trades.map((t: any) => {
+      <div className="mb-5 hidden overflow-hidden rounded-2xl border border-border bg-panel md:block">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary">
+              <tr>
+                <th className="px-3 py-2.5">Symbol</th>
+                <th className="px-3 py-2.5">Side</th>
+                <th className="px-3 py-2.5">Vol</th>
+                <th className="px-3 py-2.5">Open</th>
+                <th className="px-3 py-2.5">Current</th>
+                <th className="px-3 py-2.5">Status</th>
+                <th className="px-3 py-2.5">PnL</th>
+                {manager ? <th className="px-3 py-2.5">Manager controls</th> : null}
+              </tr>
+            </thead>
+            <tbody>
+              {tradesPager.pageItems.map((t: any) => {
               const pnl = t.status === 'closed' ? t.realizedPnl || 0 : calcLocalPnl(t)
               return (
                 <tr key={t.id} className="border-t border-border">
@@ -593,7 +653,7 @@ export function CrmClientDetailPage() {
                 </tr>
               )
             })}
-            {c.trades.length === 0 ? (
+            {tradesPager.total === 0 ? (
               <tr>
                 <td colSpan={manager ? 8 : 7} className="px-3 py-8 text-center text-secondary">
                   No trades
@@ -602,10 +662,20 @@ export function CrmClientDetailPage() {
             ) : null}
           </tbody>
         </table>
+        </div>
+        <TablePagination
+          page={tradesPager.page}
+          totalPages={tradesPager.totalPages}
+          total={tradesPager.total}
+          from={tradesPager.from}
+          to={tradesPager.to}
+          onPageChange={tradesPager.setPage}
+        />
       </div>
 
-      <div className="mb-5 space-y-2 md:hidden">
-        {c.trades.map((t: any) => {
+      <div className="mb-5 md:hidden">
+        <div className="space-y-2">
+          {tradesPager.pageItems.map((t: any) => {
           const pnl = t.status === 'closed' ? t.realizedPnl || 0 : calcLocalPnl(t)
           return (
             <div key={t.id} className="rounded-2xl border border-border bg-panel p-4">
@@ -684,27 +754,38 @@ export function CrmClientDetailPage() {
             </div>
           )
         })}
-        {c.trades.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-panel px-4 py-8 text-center text-sm text-secondary">
-            No trades
-          </div>
-        ) : null}
+          {tradesPager.total === 0 ? (
+            <div className="rounded-2xl border border-border bg-panel px-4 py-8 text-center text-sm text-secondary">
+              No trades
+            </div>
+          ) : null}
+        </div>
+        <TablePagination
+          page={tradesPager.page}
+          totalPages={tradesPager.totalPages}
+          total={tradesPager.total}
+          from={tradesPager.from}
+          to={tradesPager.to}
+          onPageChange={tradesPager.setPage}
+          className="mt-2 rounded-2xl border border-border"
+        />
       </div>
 
       <h2 className="mb-2 font-semibold">Transactions</h2>
-      <div className="hidden overflow-auto rounded-2xl border border-border bg-panel md:block">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs text-secondary">
-            <tr>
-              <th className="px-3 py-2.5">Type</th>
-              <th className="px-3 py-2.5">Amount</th>
-              <th className="px-3 py-2.5">Status</th>
-              <th className="px-3 py-2.5">Note</th>
-              <th className="px-3 py-2.5">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {c.transactions.map((t: any) => (
+      <div className="hidden overflow-hidden rounded-2xl border border-border bg-panel md:block">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary">
+              <tr>
+                <th className="px-3 py-2.5">Type</th>
+                <th className="px-3 py-2.5">Amount</th>
+                <th className="px-3 py-2.5">Status</th>
+                <th className="px-3 py-2.5">Note</th>
+                <th className="px-3 py-2.5">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transactionsPager.pageItems.map((t: any) => (
               <tr key={t.id} className="border-t border-border">
                 <td className="px-3 py-2.5 capitalize">{t.type}</td>
                 <td className={`px-3 py-2.5 font-medium ${pnlClass(t.amount)}`}>{money(t.amount)}</td>
@@ -715,7 +796,7 @@ export function CrmClientDetailPage() {
                 <td className="px-3 py-2.5 text-secondary">{new Date(t.createdAt).toLocaleString()}</td>
               </tr>
             ))}
-            {c.transactions.length === 0 ? (
+            {transactionsPager.total === 0 ? (
               <tr>
                 <td colSpan={5} className="px-3 py-8 text-center text-secondary">
                   No transactions
@@ -724,10 +805,20 @@ export function CrmClientDetailPage() {
             ) : null}
           </tbody>
         </table>
+        </div>
+        <TablePagination
+          page={transactionsPager.page}
+          totalPages={transactionsPager.totalPages}
+          total={transactionsPager.total}
+          from={transactionsPager.from}
+          to={transactionsPager.to}
+          onPageChange={transactionsPager.setPage}
+        />
       </div>
 
-      <div className="space-y-2 md:hidden">
-        {c.transactions.map((t: any) => (
+      <div className="md:hidden">
+        <div className="space-y-2">
+          {transactionsPager.pageItems.map((t: any) => (
           <div key={t.id} className="rounded-2xl border border-border bg-panel p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="capitalize font-medium">{t.type}</div>
@@ -738,11 +829,21 @@ export function CrmClientDetailPage() {
             <div className="mt-2 text-xs text-secondary">{new Date(t.createdAt).toLocaleString()}</div>
           </div>
         ))}
-        {c.transactions.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-panel px-4 py-8 text-center text-sm text-secondary">
-            No transactions
-          </div>
-        ) : null}
+          {transactionsPager.total === 0 ? (
+            <div className="rounded-2xl border border-border bg-panel px-4 py-8 text-center text-sm text-secondary">
+              No transactions
+            </div>
+          ) : null}
+        </div>
+        <TablePagination
+          page={transactionsPager.page}
+          totalPages={transactionsPager.totalPages}
+          total={transactionsPager.total}
+          from={transactionsPager.from}
+          to={transactionsPager.to}
+          onPageChange={transactionsPager.setPage}
+          className="mt-2 rounded-2xl border border-border"
+        />
       </div>
     </div>
   )
@@ -770,6 +871,7 @@ function calcLocalPnl(t: {
 /** Online clients */
 export function CrmOnlinePage() {
   const [data, setData] = useState<any>(null)
+  const pager = usePagination(data?.users || [])
   const load = () => void api('/api/admin/crm/online').then(setData)
   useEffect(() => {
     load()
@@ -790,19 +892,20 @@ export function CrmOnlinePage() {
         </span>
       </PageHeader>
 
-      <div className="hidden overflow-auto rounded-2xl border border-border bg-panel md:block">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs text-secondary">
-            <tr>
-              <th className="px-3 py-2.5">Client</th>
-              <th className="px-3 py-2.5">Assigned</th>
-              <th className="px-3 py-2.5">Last seen</th>
-              <th className="px-3 py-2.5">Open trades</th>
-              <th className="px-3 py-2.5">Floating</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.users.map((u: any) => (
+      <div className="hidden overflow-hidden rounded-2xl border border-border bg-panel md:block">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary">
+              <tr>
+                <th className="px-3 py-2.5">Client</th>
+                <th className="px-3 py-2.5">Assigned</th>
+                <th className="px-3 py-2.5">Last seen</th>
+                <th className="px-3 py-2.5">Open trades</th>
+                <th className="px-3 py-2.5">Floating</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pager.pageItems.map((u: any) => (
               <tr key={u.id} className="border-t border-border">
                 <td className="px-3 py-2.5">
                   <Link to={`/crm/desk/${u.id}`} className="text-link">
@@ -818,7 +921,7 @@ export function CrmOnlinePage() {
                 <td className={`px-3 py-2.5 font-medium ${pnlClass(u.floatingPnl)}`}>{money(u.floatingPnl)}</td>
               </tr>
             ))}
-            {data.users.length === 0 ? (
+            {pager.total === 0 ? (
               <tr>
                 <td colSpan={5} className="px-3 py-8 text-center text-secondary">
                   Nobody online right now — open the trading app as a client to appear here.
@@ -827,10 +930,20 @@ export function CrmOnlinePage() {
             ) : null}
           </tbody>
         </table>
+        </div>
+        <TablePagination
+          page={pager.page}
+          totalPages={pager.totalPages}
+          total={pager.total}
+          from={pager.from}
+          to={pager.to}
+          onPageChange={pager.setPage}
+        />
       </div>
 
-      <div className="space-y-2 md:hidden">
-        {data.users.map((u: any) => (
+      <div className="md:hidden">
+        <div className="space-y-2">
+          {pager.pageItems.map((u: any) => (
           <div key={u.id} className="rounded-2xl border border-border bg-panel p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -863,11 +976,125 @@ export function CrmOnlinePage() {
             </div>
           </div>
         ))}
-        {data.users.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-panel px-4 py-8 text-center text-sm text-secondary">
-            Nobody online right now — open the trading app as a client to appear here.
-          </div>
-        ) : null}
+          {pager.total === 0 ? (
+            <div className="rounded-2xl border border-border bg-panel px-4 py-8 text-center text-sm text-secondary">
+              Nobody online right now — open the trading app as a client to appear here.
+            </div>
+          ) : null}
+        </div>
+        <TablePagination
+          page={pager.page}
+          totalPages={pager.totalPages}
+          total={pager.total}
+          from={pager.from}
+          to={pager.to}
+          onPageChange={pager.setPage}
+          className="mt-2 rounded-2xl border border-border"
+        />
+      </div>
+    </div>
+  )
+}
+
+function PerformanceList({ rows, title }: { rows: any[]; title: string }) {
+  const pager = usePagination(rows)
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-panel">
+      <div className="border-b border-border px-4 py-3 font-semibold">{title}</div>
+
+      <div className="hidden md:block">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary">
+              <tr>
+                <th className="px-3 py-2.5">Client</th>
+                <th className="px-3 py-2.5">Staff</th>
+                <th className="px-3 py-2.5">Total PnL</th>
+                <th className="px-3 py-2.5">Floating</th>
+                <th className="px-3 py-2.5">Realized</th>
+                <th className="px-3 py-2.5">Online</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pager.pageItems.map((r) => (
+                <tr key={r.id} className="border-t border-border">
+                  <td className="px-3 py-2.5">
+                    <Link to={`/crm/desk/${r.id}`} className="text-link">
+                      {r.name}
+                    </Link>
+                  </td>
+                  <td className="px-3 py-2.5">{r.assignedTo?.name || '—'}</td>
+                  <td className={`px-3 py-2.5 font-semibold ${pnlClass(r.totalPnl)}`}>{money(r.totalPnl)}</td>
+                  <td className={`px-3 py-2.5 ${pnlClass(r.floatingPnl)}`}>{money(r.floatingPnl)}</td>
+                  <td className={`px-3 py-2.5 ${pnlClass(r.realizedPnl)}`}>{money(r.realizedPnl)}</td>
+                  <td className="px-3 py-2.5">
+                    <StatusBadge status={r.online ? 'Yes' : 'No'} />
+                  </td>
+                </tr>
+              ))}
+              {pager.total === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-3 py-6 text-center text-secondary">
+                    No clients above threshold
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+        <TablePagination
+          page={pager.page}
+          totalPages={pager.totalPages}
+          total={pager.total}
+          from={pager.from}
+          to={pager.to}
+          onPageChange={pager.setPage}
+        />
+      </div>
+
+      <div className="p-3 md:hidden">
+        <div className="space-y-2">
+          {pager.pageItems.map((r) => (
+            <div key={r.id} className="rounded-xl border border-border bg-muted/30 p-3">
+              <div className="flex items-start justify-between gap-3">
+                <Link to={`/crm/desk/${r.id}`} className="font-medium text-link">
+                  {r.name}
+                </Link>
+                <StatusBadge status={r.online ? 'Online' : 'Offline'} />
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <div className="text-[10px] uppercase tracking-wide text-secondary">Total PnL</div>
+                  <div className={`font-semibold ${pnlClass(r.totalPnl)}`}>{money(r.totalPnl)}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] uppercase tracking-wide text-secondary">Staff</div>
+                  <div className="text-secondary">{r.assignedTo?.name || '—'}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wide text-secondary">Floating</div>
+                  <div className={pnlClass(r.floatingPnl)}>{money(r.floatingPnl)}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] uppercase tracking-wide text-secondary">Realized</div>
+                  <div className={pnlClass(r.realizedPnl)}>{money(r.realizedPnl)}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+          {pager.total === 0 ? (
+            <div className="px-2 py-6 text-center text-sm text-secondary">No clients above threshold</div>
+          ) : null}
+        </div>
+        <TablePagination
+          page={pager.page}
+          totalPages={pager.totalPages}
+          total={pager.total}
+          from={pager.from}
+          to={pager.to}
+          onPageChange={pager.setPage}
+        />
       </div>
     </div>
   )
@@ -885,86 +1112,6 @@ export function CrmPerformancePage() {
 
   if (!data) return <p className="text-secondary">Loading performance…</p>
   const { symbol } = getActiveCurrency()
-
-  const PerformanceList = ({ rows, title }: { rows: any[]; title: string }) => (
-    <div className="rounded-2xl border border-border bg-panel">
-      <div className="border-b border-border px-4 py-3 font-semibold">{title}</div>
-
-      <div className="hidden overflow-auto md:block">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs text-secondary">
-            <tr>
-              <th className="px-3 py-2.5">Client</th>
-              <th className="px-3 py-2.5">Staff</th>
-              <th className="px-3 py-2.5">Total PnL</th>
-              <th className="px-3 py-2.5">Floating</th>
-              <th className="px-3 py-2.5">Realized</th>
-              <th className="px-3 py-2.5">Online</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} className="border-t border-border">
-                <td className="px-3 py-2.5">
-                  <Link to={`/crm/desk/${r.id}`} className="text-link">
-                    {r.name}
-                  </Link>
-                </td>
-                <td className="px-3 py-2.5">{r.assignedTo?.name || '—'}</td>
-                <td className={`px-3 py-2.5 font-semibold ${pnlClass(r.totalPnl)}`}>{money(r.totalPnl)}</td>
-                <td className={`px-3 py-2.5 ${pnlClass(r.floatingPnl)}`}>{money(r.floatingPnl)}</td>
-                <td className={`px-3 py-2.5 ${pnlClass(r.realizedPnl)}`}>{money(r.realizedPnl)}</td>
-                <td className="px-3 py-2.5">
-                  <StatusBadge status={r.online ? 'Yes' : 'No'} />
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-3 py-6 text-center text-secondary">
-                  No clients above threshold
-                </td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="space-y-2 p-3 md:hidden">
-        {rows.map((r) => (
-          <div key={r.id} className="rounded-xl border border-border bg-muted/30 p-3">
-            <div className="flex items-start justify-between gap-3">
-              <Link to={`/crm/desk/${r.id}`} className="font-medium text-link">
-                {r.name}
-              </Link>
-              <StatusBadge status={r.online ? 'Online' : 'Offline'} />
-            </div>
-            <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Total PnL</div>
-                <div className={`font-semibold ${pnlClass(r.totalPnl)}`}>{money(r.totalPnl)}</div>
-              </div>
-              <div className="text-right">
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Staff</div>
-                <div className="text-secondary">{r.assignedTo?.name || '—'}</div>
-              </div>
-              <div>
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Floating</div>
-                <div className={pnlClass(r.floatingPnl)}>{money(r.floatingPnl)}</div>
-              </div>
-              <div className="text-right">
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Realized</div>
-                <div className={pnlClass(r.realizedPnl)}>{money(r.realizedPnl)}</div>
-              </div>
-            </div>
-          </div>
-        ))}
-        {rows.length === 0 ? (
-          <div className="px-2 py-6 text-center text-sm text-secondary">No clients above threshold</div>
-        ) : null}
-      </div>
-    </div>
-  )
 
   return (
     <div>
@@ -996,6 +1143,7 @@ export function CrmPricesPage() {
   const [data, setData] = useState<any>(null)
   const [forms, setForms] = useState<Record<string, string>>({})
   const [msg, setMsg] = useState<string | null>(null)
+  const pager = usePagination(data?.quotes || [])
 
   const load = () => void api('/api/admin/crm/prices').then(setData)
   useEffect(() => {
@@ -1036,19 +1184,20 @@ export function CrmPricesPage() {
       )}
       {msg ? <p className="mb-3 rounded-xl border border-buy/30 bg-buy/10 px-3 py-2 text-sm text-buy">{msg}</p> : null}
 
-      <div className="hidden overflow-auto rounded-2xl border border-border bg-panel md:block">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs text-secondary">
-            <tr>
-              <th className="px-3 py-2.5">Symbol</th>
-              <th className="px-3 py-2.5">Live / forced</th>
-              <th className="px-3 py-2.5">Bid / Ask</th>
-              <th className="px-3 py-2.5">Override</th>
-              <th className="px-3 py-2.5">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.quotes.map((q: any) => {
+      <div className="hidden overflow-hidden rounded-2xl border border-border bg-panel md:block">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary">
+              <tr>
+                <th className="px-3 py-2.5">Symbol</th>
+                <th className="px-3 py-2.5">Live / forced</th>
+                <th className="px-3 py-2.5">Bid / Ask</th>
+                <th className="px-3 py-2.5">Override</th>
+                <th className="px-3 py-2.5">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pager.pageItems.map((q: any) => {
               const ov = data.overrides.find((o: any) => o.symbol === q.symbol && o.active)
               return (
                 <tr key={q.symbol} className="border-t border-border">
@@ -1101,10 +1250,20 @@ export function CrmPricesPage() {
             })}
           </tbody>
         </table>
+        </div>
+        <TablePagination
+          page={pager.page}
+          totalPages={pager.totalPages}
+          total={pager.total}
+          from={pager.from}
+          to={pager.to}
+          onPageChange={pager.setPage}
+        />
       </div>
 
-      <div className="space-y-2 md:hidden">
-        {data.quotes.map((q: any) => {
+      <div className="md:hidden">
+        <div className="space-y-2">
+          {pager.pageItems.map((q: any) => {
           const ov = data.overrides.find((o: any) => o.symbol === q.symbol && o.active)
           return (
             <div key={q.symbol} className="rounded-2xl border border-border bg-panel p-4">
@@ -1154,6 +1313,230 @@ export function CrmPricesPage() {
             </div>
           )
         })}
+        </div>
+        <TablePagination
+          page={pager.page}
+          totalPages={pager.totalPages}
+          total={pager.total}
+          from={pager.from}
+          to={pager.to}
+          onPageChange={pager.setPage}
+          className="mt-2 rounded-2xl border border-border"
+        />
+      </div>
+    </div>
+  )
+}
+
+/** Admin — create & manage CRM desk users */
+export function CrmStaffPage() {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
+  const [staff, setStaff] = useState<any[]>([])
+  const [showCreate, setShowCreate] = useState(false)
+  const [form, setForm] = useState({ name: '', email: '', password: 'crm123456', role: 'EMPLOYEE' as 'MANAGER' | 'EMPLOYEE' })
+  const [error, setError] = useState<string | null>(null)
+  const [msg, setMsg] = useState<string | null>(null)
+  const [busy, setBusy] = useState<string | null>(null)
+  const pager = usePagination(staff)
+
+  const load = () =>
+    void api<{ staff: any[] }>('/api/admin/crm/staff')
+      .then((r) => setStaff(r.staff))
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'))
+
+  useEffect(() => {
+    load()
+  }, [])
+
+  const createStaff = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!isAdmin) return
+    setError(null)
+    setMsg(null)
+    setBusy('create')
+    try {
+      await api('/api/admin/crm/staff', { method: 'POST', body: JSON.stringify(form) })
+      setMsg(`Created ${form.role.toLowerCase()} ${form.name}`)
+      setShowCreate(false)
+      setForm({ name: '', email: '', password: 'crm123456', role: 'EMPLOYEE' })
+      load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Create failed')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const patchStaff = async (id: string, body: Record<string, unknown>) => {
+    if (!isAdmin) return
+    setError(null)
+    setMsg(null)
+    setBusy(id)
+    try {
+      await api(`/api/admin/crm/staff/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
+      load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Update failed')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  return (
+    <div>
+      <PageHeader title="CRM users" subtitle="Managers and employees who log into the admin / CRM desk.">
+        {isAdmin ? (
+          <button type="button" className={btnPrimary} onClick={() => setShowCreate((v) => !v)}>
+            {showCreate ? 'Cancel' : 'Create CRM user'}
+          </button>
+        ) : null}
+      </PageHeader>
+
+      {!isAdmin ? (
+        <p className="mb-4 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-sm text-accent">
+          View only — only admins can create or edit CRM users.
+        </p>
+      ) : null}
+      {msg ? <p className="mb-4 rounded-xl border border-buy/30 bg-buy/15 px-3 py-2 text-sm text-buy">{msg}</p> : null}
+      {error ? <p className="mb-4 rounded-xl border border-sell/30 bg-sell/15 px-3 py-2 text-sm text-sell">{error}</p> : null}
+
+      {showCreate && isAdmin ? (
+        <form
+          className="mb-5 grid gap-2 rounded-2xl border border-border bg-panel p-4 sm:grid-cols-2 lg:grid-cols-5"
+          onSubmit={(e) => void createStaff(e)}
+        >
+          <input
+            className={inputClass}
+            placeholder="Full name"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            required
+          />
+          <input
+            className={inputClass}
+            type="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            required
+          />
+          <input
+            className={inputClass}
+            type="text"
+            placeholder="Password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
+            minLength={6}
+          />
+          <select
+            className={inputClass}
+            value={form.role}
+            onChange={(e) => setForm({ ...form, role: e.target.value as 'MANAGER' | 'EMPLOYEE' })}
+          >
+            <option value="EMPLOYEE">Employee</option>
+            <option value="MANAGER">Manager</option>
+          </select>
+          <button type="submit" disabled={busy === 'create'} className={`${btnPrimary} disabled:opacity-60`}>
+            {busy === 'create' ? 'Creating…' : 'Save'}
+          </button>
+        </form>
+      ) : null}
+
+      <div className="overflow-hidden rounded-2xl border border-border bg-panel">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary">
+              <tr>
+                <th className="px-3 py-2.5">Name</th>
+                <th className="px-3 py-2.5">Email</th>
+                <th className="px-3 py-2.5">Role</th>
+                <th className="px-3 py-2.5">Clients</th>
+                <th className="px-3 py-2.5">Status</th>
+                {isAdmin ? <th className="px-3 py-2.5">Actions</th> : null}
+              </tr>
+            </thead>
+            <tbody>
+              {pager.pageItems.map((s) => {
+                const canEdit = isAdmin && s.role !== 'ADMIN' && s.id !== user?.id
+                return (
+                  <tr key={s.id} className="border-t border-border">
+                    <td className="px-3 py-2.5 font-medium">{s.name}</td>
+                    <td className="px-3 py-2.5 text-secondary">{s.email}</td>
+                    <td className="px-3 py-2.5">
+                      {canEdit ? (
+                        <select
+                          className="h-9 rounded-lg border border-border bg-panel px-2 text-sm"
+                          value={s.role}
+                          disabled={busy === s.id}
+                          onChange={(e) => void patchStaff(s.id, { role: e.target.value })}
+                        >
+                          <option value="EMPLOYEE">Employee</option>
+                          <option value="MANAGER">Manager</option>
+                        </select>
+                      ) : (
+                        <StatusBadge status={s.role} />
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 tabular-nums">{s._count?.assignedClients ?? 0}</td>
+                    <td className="px-3 py-2.5">
+                      <StatusBadge status={s.active === false ? 'Offline' : 'Active'} />
+                    </td>
+                    {isAdmin ? (
+                      <td className="px-3 py-2.5">
+                        {canEdit ? (
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              disabled={busy === s.id}
+                              className="text-sm text-link disabled:opacity-50"
+                              onClick={() =>
+                                void patchStaff(s.id, {
+                                  active: s.active === false,
+                                })
+                              }
+                            >
+                              {s.active === false ? 'Enable' : 'Disable'}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={busy === s.id}
+                              className="text-sm text-secondary hover:text-text disabled:opacity-50"
+                              onClick={() => {
+                                const password = window.prompt('New password (min 6 chars)', 'crm123456')
+                                if (password && password.length >= 6) void patchStaff(s.id, { password })
+                              }}
+                            >
+                              Reset password
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-secondary">—</span>
+                        )}
+                      </td>
+                    ) : null}
+                  </tr>
+                )
+              })}
+              {pager.total === 0 ? (
+                <tr>
+                  <td colSpan={isAdmin ? 6 : 5} className="px-3 py-8 text-center text-secondary">
+                    No CRM users yet
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+        <TablePagination
+          page={pager.page}
+          totalPages={pager.totalPages}
+          total={pager.total}
+          from={pager.from}
+          to={pager.to}
+          onPageChange={pager.setPage}
+        />
       </div>
     </div>
   )

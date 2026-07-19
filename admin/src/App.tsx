@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { api } from './api'
 import { AuthProvider, useAuth } from './auth'
-import { AdminLayout, Card, PageHeader, money } from './layout'
+import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination } from './layout'
 import { setActiveCurrency, useCurrency } from './currency'
 import { BrandLogo } from './BrandLogo'
 import { Dashboard } from './dashboard'
@@ -12,6 +12,7 @@ import {
   CrmOnlinePage,
   CrmPerformancePage,
   CrmPricesPage,
+  CrmStaffPage,
   CrmTransactionsPage,
 } from './crm'
 import { BankAccountsPage } from './bank-accounts'
@@ -67,7 +68,7 @@ function Login() {
             <label className="mb-3 block text-sm">
               Email
               <input
-                className="mt-1 h-11 w-full rounded-md border border-border px-3"
+                className="mt-1 h-11 w-full rounded-md border border-border bg-panel px-3 text-text outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -76,7 +77,7 @@ function Login() {
               Password
               <input
                 type="password"
-                className="mt-1 h-11 w-full rounded-md border border-border px-3"
+                className="mt-1 h-11 w-full rounded-md border border-border bg-panel px-3 text-text outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -86,7 +87,7 @@ function Login() {
           <label className="mb-4 block text-sm">
             Authenticator code
             <input
-              className="mt-1 h-11 w-full rounded-md border border-border px-3 tracking-widest"
+              className="mt-1 h-11 w-full rounded-md border border-border bg-panel px-3 tracking-widest text-text outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               inputMode="numeric"
@@ -128,6 +129,7 @@ function EarningsPage() {
   const [type, setType] = useState('')
   const [manual, setManual] = useState({ amount: 50, description: 'Manual adjustment' })
   const [error, setError] = useState<string | null>(null)
+  const recentPager = usePagination((data?.recent as any[]) || [])
 
   const load = () =>
     void api(`/api/admin/earnings${type ? `?type=${type}` : ''}`)
@@ -211,29 +213,44 @@ function EarningsPage() {
         <button type="submit" className="h-10 rounded bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]">Add</button>
       </form>
 
-      <div className="overflow-auto rounded-xl border border-border bg-panel">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs text-secondary">
-            <tr>
-              <th className="px-3 py-2">Type</th>
-              <th className="px-3 py-2">Amount</th>
-              <th className="px-3 py-2">Description</th>
-              <th className="px-3 py-2">User</th>
-              <th className="px-3 py-2">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.recent.map((e: any) => (
-              <tr key={e.id} className="border-t">
-                <td className="px-3 py-2 capitalize">{e.type.replaceAll('_', ' ')}</td>
-                <td className="px-3 py-2 font-semibold text-buy">{money(e.amount)}</td>
-                <td className="px-3 py-2">{e.description}</td>
-                <td className="px-3 py-2">{e.user?.name || '—'}</td>
-                <td className="px-3 py-2">{new Date(e.createdAt).toLocaleString()}</td>
+      <div className="overflow-hidden rounded-xl border border-border bg-panel">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary">
+              <tr>
+                <th className="px-3 py-2">Type</th>
+                <th className="px-3 py-2">Amount</th>
+                <th className="px-3 py-2">Description</th>
+                <th className="px-3 py-2">User</th>
+                <th className="px-3 py-2">Date</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {recentPager.pageItems.map((e: any) => (
+                <tr key={e.id} className="border-t border-border">
+                  <td className="px-3 py-2 capitalize">{e.type.replaceAll('_', ' ')}</td>
+                  <td className="px-3 py-2 font-semibold text-buy">{money(e.amount)}</td>
+                  <td className="px-3 py-2">{e.description}</td>
+                  <td className="px-3 py-2">{e.user?.name || '—'}</td>
+                  <td className="px-3 py-2">{new Date(e.createdAt).toLocaleString()}</td>
+                </tr>
+              ))}
+              {recentPager.total === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-3 py-8 text-center text-secondary">No earnings entries</td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+        <TablePagination
+          page={recentPager.page}
+          totalPages={recentPager.totalPages}
+          total={recentPager.total}
+          from={recentPager.from}
+          to={recentPager.to}
+          onPageChange={recentPager.setPage}
+        />
       </div>
     </div>
   )
@@ -244,6 +261,7 @@ function UsersPage() {
   const [q, setQ] = useState('')
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', password: 'demo123' })
+  const pager = usePagination(users)
 
   const load = () => void api<{ users: any[] }>(`/api/admin/users?q=${encodeURIComponent(q)}`).then((r) => setUsers(r.users))
   useEffect(() => { load() }, [q])
@@ -275,31 +293,46 @@ function UsersPage() {
           <button type="submit" className="h-10 rounded bg-[#fcd535] text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]">Save</button>
         </form>
       ) : null}
-      <div className="overflow-auto rounded-xl border border-border bg-panel">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs text-secondary">
-            <tr>
-              <th className="px-3 py-2">Name</th>
-              <th className="px-3 py-2">Email</th>
-              <th className="px-3 py-2">KYC</th>
-              <th className="px-3 py-2">Funded</th>
-              <th className="px-3 py-2">Active</th>
-              <th className="px-3 py-2">Trades</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id} className="border-t border-border hover:bg-muted/50">
-                <td className="px-3 py-2"><Link className="font-medium text-link" to={`/users/${u.id}`}>{u.name}</Link></td>
-                <td className="px-3 py-2">{u.email}</td>
-                <td className="px-3 py-2 capitalize">{u.kycStatus}</td>
-                <td className="px-3 py-2">{u.funded ? 'Yes' : 'No'}</td>
-                <td className="px-3 py-2">{u.active ? 'Yes' : 'No'}</td>
-                <td className="px-3 py-2">{u._count?.trades ?? 0}</td>
+      <div className="overflow-hidden rounded-xl border border-border bg-panel">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary">
+              <tr>
+                <th className="px-3 py-2">Name</th>
+                <th className="px-3 py-2">Email</th>
+                <th className="px-3 py-2">KYC</th>
+                <th className="px-3 py-2">Funded</th>
+                <th className="px-3 py-2">Active</th>
+                <th className="px-3 py-2">Trades</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {pager.pageItems.map((u) => (
+                <tr key={u.id} className="border-t border-border hover:bg-muted/50">
+                  <td className="px-3 py-2"><Link className="font-medium text-link" to={`/users/${u.id}`}>{u.name}</Link></td>
+                  <td className="px-3 py-2">{u.email}</td>
+                  <td className="px-3 py-2 capitalize">{u.kycStatus}</td>
+                  <td className="px-3 py-2">{u.funded ? 'Yes' : 'No'}</td>
+                  <td className="px-3 py-2">{u.active ? 'Yes' : 'No'}</td>
+                  <td className="px-3 py-2">{u._count?.trades ?? 0}</td>
+                </tr>
+              ))}
+              {pager.total === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-3 py-8 text-center text-secondary">No users found</td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+        <TablePagination
+          page={pager.page}
+          totalPages={pager.totalPages}
+          total={pager.total}
+          from={pager.from}
+          to={pager.to}
+          onPageChange={pager.setPage}
+        />
       </div>
     </div>
   )
@@ -309,6 +342,8 @@ function UserDetail() {
   const { id } = useParams()
   const [user, setUser] = useState<any>(null)
   const [adjust, setAdjust] = useState({ accountId: '', amount: 100, note: '' })
+  const accountsPager = usePagination((user?.accounts as any[]) || [])
+  const tradesPager = usePagination((user?.trades as any[]) || [])
   const load = () => void api<{ user: any }>(`/api/admin/users/${id}`).then((r) => {
     setUser(r.user)
     setAdjust((a) => ({ ...a, accountId: r.user.accounts[0]?.id || '' }))
@@ -351,18 +386,24 @@ function UserDetail() {
         </div>
       </div>
       <h2 className="mb-2 font-semibold">Accounts</h2>
-      <div className="mb-6 overflow-auto rounded-xl border border-border bg-panel">
-        <table className="w-full text-sm">
-          <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2 text-left">Number</th><th className="px-3 py-2 text-left">Type</th><th className="px-3 py-2 text-left">Balance</th><th className="px-3 py-2 text-left">Equity</th></tr></thead>
-          <tbody>{user.accounts.map((a: any) => <tr key={a.id} className="border-t"><td className="px-3 py-2">{a.number}</td><td className="px-3 py-2">{a.type}</td><td className="px-3 py-2">{money(a.balance)}</td><td className="px-3 py-2">{money(a.equity)}</td></tr>)}</tbody>
-        </table>
+      <div className="mb-6 overflow-hidden rounded-xl border border-border bg-panel">
+        <div className="overflow-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2 text-left">Number</th><th className="px-3 py-2 text-left">Type</th><th className="px-3 py-2 text-left">Balance</th><th className="px-3 py-2 text-left">Equity</th></tr></thead>
+            <tbody>{accountsPager.pageItems.map((a: any) => <tr key={a.id} className="border-t border-border"><td className="px-3 py-2">{a.number}</td><td className="px-3 py-2">{a.type}</td><td className="px-3 py-2">{money(a.balance)}</td><td className="px-3 py-2">{money(a.equity)}</td></tr>)}</tbody>
+          </table>
+        </div>
+        <TablePagination page={accountsPager.page} totalPages={accountsPager.totalPages} total={accountsPager.total} from={accountsPager.from} to={accountsPager.to} onPageChange={accountsPager.setPage} />
       </div>
       <h2 className="mb-2 font-semibold">Recent trades</h2>
-      <div className="overflow-auto rounded-xl border border-border bg-panel">
-        <table className="w-full text-sm">
-          <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2 text-left">Symbol</th><th className="px-3 py-2 text-left">Side</th><th className="px-3 py-2 text-left">Status</th><th className="px-3 py-2 text-left">Volume</th><th className="px-3 py-2 text-left">PnL</th></tr></thead>
-          <tbody>{user.trades.map((t: any) => <tr key={t.id} className="border-t"><td className="px-3 py-2">{t.symbol}</td><td className="px-3 py-2">{t.side}</td><td className="px-3 py-2">{t.status}</td><td className="px-3 py-2">{t.volume}</td><td className="px-3 py-2">{t.realizedPnl != null ? money(t.realizedPnl) : '—'}</td></tr>)}</tbody>
-        </table>
+      <div className="overflow-hidden rounded-xl border border-border bg-panel">
+        <div className="overflow-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2 text-left">Symbol</th><th className="px-3 py-2 text-left">Side</th><th className="px-3 py-2 text-left">Status</th><th className="px-3 py-2 text-left">Volume</th><th className="px-3 py-2 text-left">PnL</th></tr></thead>
+            <tbody>{tradesPager.pageItems.map((t: any) => <tr key={t.id} className="border-t border-border"><td className="px-3 py-2">{t.symbol}</td><td className="px-3 py-2">{t.side}</td><td className="px-3 py-2">{t.status}</td><td className="px-3 py-2">{t.volume}</td><td className="px-3 py-2">{t.realizedPnl != null ? money(t.realizedPnl) : '—'}</td></tr>)}</tbody>
+          </table>
+        </div>
+        <TablePagination page={tradesPager.page} totalPages={tradesPager.totalPages} total={tradesPager.total} from={tradesPager.from} to={tradesPager.to} onPageChange={tradesPager.setPage} />
       </div>
     </div>
   )
@@ -370,15 +411,22 @@ function UserDetail() {
 
 function AccountsPage() {
   const [accounts, setAccounts] = useState<any[]>([])
+  const pager = usePagination(accounts)
   useEffect(() => { void api<{ accounts: any[] }>('/api/admin/accounts').then((r) => setAccounts(r.accounts)) }, [])
   return (
     <div>
       <PageHeader title="Accounts" />
-      <div className="overflow-auto rounded-xl border border-border bg-panel">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2">User</th><th className="px-3 py-2">Number</th><th className="px-3 py-2">Type</th><th className="px-3 py-2">Balance</th><th className="px-3 py-2">Leverage</th></tr></thead>
-          <tbody>{accounts.map((a) => <tr key={a.id} className="border-t"><td className="px-3 py-2">{a.user.name}</td><td className="px-3 py-2">{a.number}</td><td className="px-3 py-2">{a.type}</td><td className="px-3 py-2">{money(a.balance)}</td><td className="px-3 py-2">{a.leverage}</td></tr>)}</tbody>
-        </table>
+      <div className="overflow-hidden rounded-xl border border-border bg-panel">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2">User</th><th className="px-3 py-2">Number</th><th className="px-3 py-2">Type</th><th className="px-3 py-2">Balance</th><th className="px-3 py-2">Leverage</th></tr></thead>
+            <tbody>
+              {pager.pageItems.map((a) => <tr key={a.id} className="border-t border-border"><td className="px-3 py-2">{a.user.name}</td><td className="px-3 py-2">{a.number}</td><td className="px-3 py-2">{a.type}</td><td className="px-3 py-2">{money(a.balance)}</td><td className="px-3 py-2">{a.leverage}</td></tr>)}
+              {pager.total === 0 ? <tr><td colSpan={5} className="px-3 py-8 text-center text-secondary">No accounts</td></tr> : null}
+            </tbody>
+          </table>
+        </div>
+        <TablePagination page={pager.page} totalPages={pager.totalPages} total={pager.total} from={pager.from} to={pager.to} onPageChange={pager.setPage} />
       </div>
     </div>
   )
@@ -387,6 +435,7 @@ function AccountsPage() {
 function TradesPage() {
   const [trades, setTrades] = useState<any[]>([])
   const [status, setStatus] = useState('')
+  const pager = usePagination(trades)
   const load = () => void api<{ trades: any[] }>(`/api/admin/trades${status ? `?status=${status}` : ''}`).then((r) => setTrades(r.trades))
   useEffect(() => { load() }, [status])
   return (
@@ -399,28 +448,32 @@ function TradesPage() {
           <option value="closed">Closed</option>
         </select>
       </PageHeader>
-      <div className="overflow-auto rounded-xl border border-border bg-panel">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2">User</th><th className="px-3 py-2">Symbol</th><th className="px-3 py-2">Side</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Vol</th><th className="px-3 py-2">Open</th><th className="px-3 py-2">Current</th><th className="px-3 py-2">Action</th></tr></thead>
-          <tbody>
-            {trades.map((t) => (
-              <tr key={t.id} className="border-t">
-                <td className="px-3 py-2">{t.user.name}</td>
-                <td className="px-3 py-2">{t.symbol}</td>
-                <td className="px-3 py-2">{t.side}</td>
-                <td className="px-3 py-2">{t.status}</td>
-                <td className="px-3 py-2">{t.volume}</td>
-                <td className="px-3 py-2">{t.openPrice}</td>
-                <td className="px-3 py-2">{t.currentPrice}</td>
-                <td className="px-3 py-2">
-                  {t.status === 'open' ? (
-                    <button type="button" className="text-link" onClick={async () => { await api(`/api/admin/trades/${t.id}/close`, { method: 'POST' }); load() }}>Force close</button>
-                  ) : '—'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="overflow-hidden rounded-xl border border-border bg-panel">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2">User</th><th className="px-3 py-2">Symbol</th><th className="px-3 py-2">Side</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Vol</th><th className="px-3 py-2">Open</th><th className="px-3 py-2">Current</th><th className="px-3 py-2">Action</th></tr></thead>
+            <tbody>
+              {pager.pageItems.map((t) => (
+                <tr key={t.id} className="border-t border-border">
+                  <td className="px-3 py-2">{t.user.name}</td>
+                  <td className="px-3 py-2">{t.symbol}</td>
+                  <td className="px-3 py-2">{t.side}</td>
+                  <td className="px-3 py-2">{t.status}</td>
+                  <td className="px-3 py-2">{t.volume}</td>
+                  <td className="px-3 py-2">{t.openPrice}</td>
+                  <td className="px-3 py-2">{t.currentPrice}</td>
+                  <td className="px-3 py-2">
+                    {t.status === 'open' ? (
+                      <button type="button" className="text-link" onClick={async () => { await api(`/api/admin/trades/${t.id}/close`, { method: 'POST' }); load() }}>Force close</button>
+                    ) : '—'}
+                  </td>
+                </tr>
+              ))}
+              {pager.total === 0 ? <tr><td colSpan={8} className="px-3 py-8 text-center text-secondary">No trades</td></tr> : null}
+            </tbody>
+          </table>
+        </div>
+        <TablePagination page={pager.page} totalPages={pager.totalPages} total={pager.total} from={pager.from} to={pager.to} onPageChange={pager.setPage} />
       </div>
     </div>
   )
@@ -431,6 +484,7 @@ function TransactionsPage() {
   const [status, setStatus] = useState('pending')
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const pager = usePagination(transactions)
 
   const load = () =>
     void api<{ transactions: any[] }>(`/api/admin/transactions${status ? `?status=${status}` : ''}`)
@@ -465,68 +519,71 @@ function TransactionsPage() {
         </select>
       </PageHeader>
       {error ? <p className="mb-3 text-sm text-sell">{error}</p> : null}
-      <div className="overflow-auto rounded-xl border border-border bg-panel">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs text-secondary">
-            <tr>
-              <th className="px-3 py-2">User</th>
-              <th className="px-3 py-2">Type</th>
-              <th className="px-3 py-2">Amount</th>
-              <th className="px-3 py-2">Fee</th>
-              <th className="px-3 py-2">Status</th>
-              <th className="px-3 py-2">Payment</th>
-              <th className="px-3 py-2">Note</th>
-              <th className="px-3 py-2">Date</th>
-              <th className="px-3 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((t) => (
-              <tr key={t.id} className="border-t">
-                <td className="px-3 py-2">{t.user.name}</td>
-                <td className="px-3 py-2 capitalize">{t.type}</td>
-                <td className={`px-3 py-2 ${t.amount >= 0 ? 'text-buy' : 'text-sell'}`}>{money(t.amount)}</td>
-                <td className="px-3 py-2">{money(t.fee || 0)}</td>
-                <td className="px-3 py-2 capitalize">{t.status}</td>
-                <td className="px-3 py-2">
-                  <div>{t.payment}</div>
-                  {String(t.payment || '').toLowerCase().includes('bank') ? (
-                    <div className="text-[10px] font-semibold text-sell">Needs bank approval</div>
-                  ) : null}
-                  {String(t.payment || '').toLowerCase().includes('crypto') &&
-                  !String(t.payment || '').toLowerCase().includes('now') ? (
-                    <div className="text-[10px] font-semibold text-sell">Needs crypto approval</div>
-                  ) : null}
-                </td>
-                <td className="max-w-[180px] truncate px-3 py-2 text-xs text-secondary" title={t.note || ''}>
-                  {t.note || '—'}
-                </td>
-                <td className="px-3 py-2">{new Date(t.createdAt).toLocaleString()}</td>
-                <td className="px-3 py-2 space-x-2">
-                  {t.status === 'pending' && (t.type === 'deposit' || t.type === 'withdraw') ? (
-                    <>
-                      <button type="button" disabled={busy === t.id} className="text-buy disabled:opacity-50" onClick={() => void review(t.id, 'approved')}>
-                        Approve
-                      </button>
-                      <button type="button" disabled={busy === t.id} className="text-sell disabled:opacity-50" onClick={() => void review(t.id, 'rejected')}>
-                        Reject
-                      </button>
-                    </>
-                  ) : (
-                    '—'
-                  )}
-                </td>
-              </tr>
-            ))}
-            {transactions.length === 0 ? (
+      <div className="overflow-hidden rounded-xl border border-border bg-panel">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary">
               <tr>
-                <td colSpan={9} className="px-3 py-8 text-center text-secondary">
-                  No transactions for this filter
-                </td>
+                <th className="px-3 py-2">User</th>
+                <th className="px-3 py-2">Type</th>
+                <th className="px-3 py-2">Amount</th>
+                <th className="px-3 py-2">Fee</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Payment</th>
+                <th className="px-3 py-2">Note</th>
+                <th className="px-3 py-2">Date</th>
+                <th className="px-3 py-2">Actions</th>
               </tr>
-            ) : null}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {pager.pageItems.map((t) => (
+                <tr key={t.id} className="border-t border-border">
+                  <td className="px-3 py-2">{t.user.name}</td>
+                  <td className="px-3 py-2 capitalize">{t.type}</td>
+                  <td className={`px-3 py-2 ${t.amount >= 0 ? 'text-buy' : 'text-sell'}`}>{money(t.amount)}</td>
+                  <td className="px-3 py-2">{money(t.fee || 0)}</td>
+                  <td className="px-3 py-2 capitalize">{t.status}</td>
+                  <td className="px-3 py-2">
+                    <div>{t.payment}</div>
+                    {String(t.payment || '').toLowerCase().includes('bank') ? (
+                      <div className="text-[10px] font-semibold text-sell">Needs bank approval</div>
+                    ) : null}
+                    {String(t.payment || '').toLowerCase().includes('crypto') &&
+                    !String(t.payment || '').toLowerCase().includes('now') ? (
+                      <div className="text-[10px] font-semibold text-sell">Needs crypto approval</div>
+                    ) : null}
+                  </td>
+                  <td className="max-w-[180px] truncate px-3 py-2 text-xs text-secondary" title={t.note || ''}>
+                    {t.note || '—'}
+                  </td>
+                  <td className="px-3 py-2">{new Date(t.createdAt).toLocaleString()}</td>
+                  <td className="px-3 py-2 space-x-2">
+                    {t.status === 'pending' && (t.type === 'deposit' || t.type === 'withdraw') ? (
+                      <>
+                        <button type="button" disabled={busy === t.id} className="text-buy disabled:opacity-50" onClick={() => void review(t.id, 'approved')}>
+                          Approve
+                        </button>
+                        <button type="button" disabled={busy === t.id} className="text-sell disabled:opacity-50" onClick={() => void review(t.id, 'rejected')}>
+                          Reject
+                        </button>
+                      </>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {pager.total === 0 ? (
+                <tr>
+                  <td colSpan={9} className="px-3 py-8 text-center text-secondary">
+                    No transactions for this filter
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+        <TablePagination page={pager.page} totalPages={pager.totalPages} total={pager.total} from={pager.from} to={pager.to} onPageChange={pager.setPage} />
       </div>
     </div>
   )
@@ -534,34 +591,39 @@ function TransactionsPage() {
 
 function KycPage() {
   const [documents, setDocuments] = useState<any[]>([])
+  const pager = usePagination(documents)
   const load = () => void api<{ documents: any[] }>('/api/admin/kyc').then((r) => setDocuments(r.documents))
   useEffect(() => { load() }, [])
   return (
     <div>
       <PageHeader title="KYC Reviews" />
-      <div className="overflow-auto rounded-xl border border-border bg-panel">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2">User</th><th className="px-3 py-2">Kind</th><th className="px-3 py-2">Doc</th><th className="px-3 py-2">File</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Actions</th></tr></thead>
-          <tbody>
-            {documents.map((d) => (
-              <tr key={d.id} className="border-t">
-                <td className="px-3 py-2">{d.user.name}</td>
-                <td className="px-3 py-2">{d.kind}</td>
-                <td className="px-3 py-2">{d.docType}</td>
-                <td className="px-3 py-2">{d.fileName}</td>
-                <td className="px-3 py-2 capitalize">{d.status}</td>
-                <td className="px-3 py-2 space-x-2">
-                  {d.status === 'pending' ? (
-                    <>
-                      <button type="button" className="text-buy" onClick={async () => { await api(`/api/admin/kyc/${d.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'approved' }) }); load() }}>Approve</button>
-                      <button type="button" className="text-sell" onClick={async () => { await api(`/api/admin/kyc/${d.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'rejected', note: 'Please re-upload a clearer document' }) }); load() }}>Reject</button>
-                    </>
-                  ) : '—'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="overflow-hidden rounded-xl border border-border bg-panel">
+        <div className="overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2">User</th><th className="px-3 py-2">Kind</th><th className="px-3 py-2">Doc</th><th className="px-3 py-2">File</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Actions</th></tr></thead>
+            <tbody>
+              {pager.pageItems.map((d) => (
+                <tr key={d.id} className="border-t border-border">
+                  <td className="px-3 py-2">{d.user.name}</td>
+                  <td className="px-3 py-2">{d.kind}</td>
+                  <td className="px-3 py-2">{d.docType}</td>
+                  <td className="px-3 py-2">{d.fileName}</td>
+                  <td className="px-3 py-2 capitalize">{d.status}</td>
+                  <td className="px-3 py-2 space-x-2">
+                    {d.status === 'pending' ? (
+                      <>
+                        <button type="button" className="text-buy" onClick={async () => { await api(`/api/admin/kyc/${d.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'approved' }) }); load() }}>Approve</button>
+                        <button type="button" className="text-sell" onClick={async () => { await api(`/api/admin/kyc/${d.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'rejected', note: 'Please re-upload a clearer document' }) }); load() }}>Reject</button>
+                      </>
+                    ) : '—'}
+                  </td>
+                </tr>
+              ))}
+              {pager.total === 0 ? <tr><td colSpan={6} className="px-3 py-8 text-center text-secondary">No KYC documents</td></tr> : null}
+            </tbody>
+          </table>
+        </div>
+        <TablePagination page={pager.page} totalPages={pager.totalPages} total={pager.total} from={pager.from} to={pager.to} onPageChange={pager.setPage} />
       </div>
     </div>
   )
@@ -835,6 +897,7 @@ export default function App() {
           <Route path="/crm/online" element={<CrmOnlinePage />} />
           <Route path="/crm/performance" element={<CrmPerformancePage />} />
           <Route path="/crm/prices" element={<CrmPricesPage />} />
+          <Route path="/crm/staff" element={<CrmStaffPage />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/users/:id" element={<UserDetail />} />
           <Route path="/accounts" element={<AccountsPage />} />
