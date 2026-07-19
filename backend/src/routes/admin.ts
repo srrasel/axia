@@ -2,7 +2,7 @@ import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { prisma } from '../prisma.js'
-import { authRequired, isManager, managerRequired, publicUser, staffRequired } from '../auth.js'
+import { authRequired, isAdmin, isCrmStaff, isManager, managerRequired, publicUser, staffRequired, assignedClientsFilter, adminRequired } from '../auth.js'
 import { initialsFromName, referralCode } from '../trading.js'
 import { settleTradeClose } from '../settle.js'
 import { recordEarning } from '../earnings.js'
@@ -26,7 +26,12 @@ import { listAllBankAccounts, updateBankAccount } from '../bankAccounts.js'
 export const adminRouter = Router()
 adminRouter.use(authRequired, staffRequired)
 
-adminRouter.get('/dashboard', async (_req, res) => {
+adminRouter.get('/dashboard', async (req, res) => {
+  const scope = assignedClientsFilter(req)
+  const scoped = isCrmStaff(req.user?.role)
+  const userScope = { role: 'USER' as const, ...scope }
+  const viaUser = scoped ? { user: scope } : {}
+
   const [
     users,
     fundedUsers,
@@ -46,52 +51,62 @@ adminRouter.get('/dashboard', async (_req, res) => {
     accounts,
     settings,
   ] = await Promise.all([
-    prisma.user.count({ where: { role: 'USER' } }),
-    prisma.user.count({ where: { role: 'USER', funded: true } }),
-    prisma.trade.count(),
+    prisma.user.count({ where: userScope }),
+    prisma.user.count({ where: { ...userScope, funded: true } }),
+    prisma.trade.count({ where: viaUser }),
     prisma.transaction.aggregate({
-      where: { type: 'deposit', status: { in: ['completed', 'approved'] } },
+      where: { type: 'deposit', status: { in: ['completed', 'approved'] }, ...viaUser },
       _sum: { amount: true },
     }),
     prisma.transaction.aggregate({
-      where: { type: 'withdraw', status: { in: ['completed', 'approved'] } },
+      where: { type: 'withdraw', status: { in: ['completed', 'approved'] }, ...viaUser },
       _sum: { amount: true },
     }),
-    prisma.kycDocument.count({ where: { status: 'pending' } }),
-    prisma.trade.count({ where: { status: 'open' } }),
-    prisma.trade.count({ where: { status: 'pending' } }),
-    prisma.trade.count({ where: { status: 'closed' } }),
-    prisma.trade.aggregate({ _sum: { volume: true } }),
-    prisma.transaction.count({ where: { type: 'deposit', status: 'pending' } }),
-    prisma.transaction.count({ where: { type: 'withdraw', status: 'pending' } }),
-    prisma.platformEarning.aggregate({ _sum: { amount: true }, _count: true }),
+    prisma.kycDocument.count({ where: { status: 'pending', ...viaUser } }),
+    prisma.trade.count({ where: { status: 'open', ...viaUser } }),
+    prisma.trade.count({ where: { status: 'pending', ...viaUser } }),
+    prisma.trade.count({ where: { status: 'closed', ...viaUser } }),
+    prisma.trade.aggregate({ where: viaUser, _sum: { volume: true } }),
+    prisma.transaction.count({ where: { type: 'deposit', status: 'pending', ...viaUser } }),
+    prisma.transaction.count({ where: { type: 'withdraw', status: 'pending', ...viaUser } }),
+    prisma.platformEarning.aggregate({
+      where: scoped ? { user: scope } : undefined,
+      _sum: { amount: true },
+      _count: true,
+    }),
     prisma.trade.aggregate({
-      where: { status: 'closed' },
+      where: { status: 'closed', ...viaUser },
       _sum: { realizedPnl: true, commission: true },
     }),
     prisma.platformEarning.groupBy({
       by: ['type'],
+      where: scoped ? { user: scope } : undefined,
       _sum: { amount: true },
       _count: true,
     }),
-    prisma.account.aggregate({ _sum: { balance: true } }),
+    prisma.account.aggregate({
+      where: scoped ? { user: scope } : undefined,
+      _sum: { balance: true },
+    }),
     loadSettings(true),
   ])
 
   const recentUsers = await prisma.user.findMany({
-    where: { role: 'USER' },
+    where: userScope,
     orderBy: { createdAt: 'desc' },
     take: 5,
     select: { id: true, name: true, email: true, createdAt: true, funded: true, kycStatus: true },
   })
 
   const recentTx = await prisma.transaction.findMany({
+    where: viaUser,
     orderBy: { createdAt: 'desc' },
     take: 8,
     include: { user: { select: { name: true, email: true } }, account: { select: { number: true } } },
   })
 
   const recentEarnings = await prisma.platformEarning.findMany({
+    where: scoped ? { user: scope } : undefined,
     orderBy: { createdAt: 'desc' },
     take: 6,
     include: { user: { select: { name: true } } },
@@ -108,23 +123,27 @@ adminRouter.get('/dashboard', async (_req, res) => {
         createdAt: { gte: since },
         status: { in: ['completed', 'approved'] },
         type: { in: ['deposit', 'withdraw'] },
+        ...viaUser,
       },
       select: { type: true, amount: true, createdAt: true },
     }),
     prisma.platformEarning.findMany({
-      where: { createdAt: { gte: since } },
+      where: { createdAt: { gte: since }, ...(scoped ? { user: scope } : {}) },
       select: { amount: true, createdAt: true },
     }),
     prisma.user.findMany({
-      where: { role: 'USER', createdAt: { gte: since } },
+      where: { ...userScope, createdAt: { gte: since } },
       select: { createdAt: true },
     }),
     prisma.trade.findMany({
-      where: { openTime: { gte: since } },
+      where: { openTime: { gte: since }, ...viaUser },
       select: { volume: true, openTime: true, status: true },
     }),
     prisma.user.count({
-      where: { role: 'USER', lastSeenAt: { gte: new Date(Date.now() - 5 * 60 * 1000) } },
+      where: {
+        ...userScope,
+        lastSeenAt: { gte: new Date(Date.now() - 5 * 60 * 1000) },
+      },
     }).catch(() => 0),
   ])
 
@@ -178,6 +197,7 @@ adminRouter.get('/dashboard', async (_req, res) => {
   const pendingTx = pendingDeposits + pendingWithdrawals
 
   return res.json({
+    scope: scoped ? 'assigned' : 'platform',
     stats: {
       users,
       fundedUsers,
@@ -216,6 +236,9 @@ adminRouter.get('/dashboard', async (_req, res) => {
 })
 
 adminRouter.get('/users', async (req, res) => {
+  if (isCrmStaff(req.user?.role)) {
+    return res.status(403).json({ error: 'Not allowed' })
+  }
   const q = String(req.query.q || '').toLowerCase()
   const users = await prisma.user.findMany({
     where: {
@@ -243,7 +266,7 @@ adminRouter.get('/users', async (req, res) => {
 
 adminRouter.get('/users/:id', async (req, res) => {
   const user = await prisma.user.findUnique({
-    where: { id: req.params.id },
+    where: { id: String(req.params.id) },
     include: {
       accounts: true,
       trades: { orderBy: { openTime: 'desc' }, take: 50 },
@@ -253,10 +276,15 @@ adminRouter.get('/users/:id', async (req, res) => {
     },
   })
   if (!user) return res.status(404).json({ error: 'User not found' })
+  if (isCrmStaff(req.user?.role)) {
+    if (user.role !== 'USER' || user.assignedToId !== req.user!.id) {
+      return res.status(403).json({ error: 'Not your client' })
+    }
+  }
   return res.json({ user: publicUser(user) })
 })
 
-adminRouter.post('/users', async (req, res) => {
+adminRouter.post('/users', adminRequired, async (req, res) => {
   const schema = z.object({
     name: z.string().min(2),
     email: z.string().email(),
@@ -296,7 +324,7 @@ adminRouter.post('/users', async (req, res) => {
   return res.json({ user: publicUser(user) })
 })
 
-adminRouter.patch('/users/:id', async (req, res) => {
+adminRouter.patch('/users/:id', adminRequired, async (req, res) => {
   const schema = z.object({
     name: z.string().min(2).optional(),
     nationality: z.string().optional(),
@@ -314,19 +342,19 @@ adminRouter.patch('/users/:id', async (req, res) => {
   if (parsed.data.name) data.initials = initialsFromName(parsed.data.name)
 
   const user = await prisma.user.update({
-    where: { id: req.params.id },
+    where: { id: String(req.params.id) },
     data,
     include: { accounts: true, kycDocuments: true },
   })
   return res.json({ user: publicUser(user) })
 })
 
-adminRouter.post('/users/:id/password', async (req, res) => {
+adminRouter.post('/users/:id/password', adminRequired, async (req, res) => {
   const schema = z.object({ password: z.string().min(6) })
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) return res.status(400).json({ error: 'Invalid password' })
   await prisma.user.update({
-    where: { id: req.params.id },
+    where: { id: String(req.params.id) },
     data: { passwordHash: await bcrypt.hash(parsed.data.password, 10) },
   })
   return res.json({ ok: true })
@@ -343,7 +371,7 @@ adminRouter.post('/accounts/:id/adjust', async (req, res) => {
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
 
-  const account = await prisma.account.findUnique({ where: { id: req.params.id } })
+  const account = await prisma.account.findUnique({ where: { id: String(req.params.id) } })
   if (!account) return res.status(404).json({ error: 'Account not found' })
 
   await prisma.$transaction([
@@ -379,10 +407,14 @@ adminRouter.post('/accounts/:id/adjust', async (req, res) => {
 
 adminRouter.get('/trades', async (req, res) => {
   const status = req.query.status ? String(req.query.status) : undefined
+  const scope = assignedClientsFilter(req)
   const trades = await prisma.trade.findMany({
-    where: status ? { status: status as 'open' | 'pending' | 'closed' } : undefined,
+    where: {
+      ...(status ? { status: status as 'open' | 'pending' | 'closed' } : {}),
+      ...(Object.keys(scope).length ? { user: scope } : {}),
+    },
     include: {
-      user: { select: { name: true, email: true } },
+      user: { select: { id: true, name: true, email: true, assignedToId: true } },
       account: { select: { number: true, type: true } },
     },
     orderBy: { openTime: 'desc' },
@@ -392,15 +424,23 @@ adminRouter.get('/trades', async (req, res) => {
 })
 
 adminRouter.post('/trades/:id/close', async (req, res) => {
-  if (!isManager(req.user?.role)) {
-    return res.status(403).json({ error: 'Manager or admin only' })
-  }
   const schema = z.object({ exitPrice: z.number().positive().optional() })
   const parsed = schema.safeParse(req.body ?? {})
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
 
-  const trade = await prisma.trade.findUnique({ where: { id: req.params.id } })
+  const trade = await prisma.trade.findUnique({
+    where: { id: String(req.params.id) },
+    include: { user: { select: { id: true, assignedToId: true } } },
+  })
   if (!trade || trade.status !== 'open') return res.status(404).json({ error: 'Open trade not found' })
+
+  if (isCrmStaff(req.user?.role)) {
+    if (trade.user.assignedToId !== req.user!.id) {
+      return res.status(403).json({ error: 'Not your client trade' })
+    }
+  } else if (!isManager(req.user?.role)) {
+    return res.status(403).json({ error: 'Manager or admin only' })
+  }
 
   let exit = parsed.data.exitPrice
   if (exit == null) {
@@ -412,7 +452,7 @@ adminRouter.post('/trades/:id/close', async (req, res) => {
   return res.json({ ok: true, ...result })
 })
 
-adminRouter.get('/transactions', async (req, res) => {
+adminRouter.get('/transactions', adminRequired, async (req, res) => {
   const status = req.query.status ? String(req.query.status) : undefined
   const type = req.query.type ? String(req.query.type) : undefined
   const transactions = await prisma.transaction.findMany({
@@ -430,7 +470,7 @@ adminRouter.get('/transactions', async (req, res) => {
   return res.json({ transactions })
 })
 
-adminRouter.patch('/transactions/:id', async (req, res) => {
+adminRouter.patch('/transactions/:id', adminRequired, async (req, res) => {
   const schema = z.object({
     status: z.enum(['approved', 'rejected', 'completed']),
   })
@@ -438,7 +478,7 @@ adminRouter.patch('/transactions/:id', async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: 'Invalid status' })
 
   const existing = await prisma.transaction.findUnique({
-    where: { id: req.params.id },
+    where: { id: String(req.params.id) },
     include: { user: true, account: true },
   })
   if (!existing) return res.status(404).json({ error: 'Transaction not found' })
@@ -517,15 +557,31 @@ adminRouter.patch('/transactions/:id', async (req, res) => {
 
 adminRouter.get('/earnings', async (req, res) => {
   const type = req.query.type ? String(req.query.type) : undefined
+  const scoped = isCrmStaff(req.user?.role)
+  const scope = assignedClientsFilter(req)
+  const earningWhere = {
+    ...(type ? { type: type as any } : {}),
+    ...(scoped ? { user: scope } : {}),
+  }
+  const tradeWhere = {
+    status: 'closed' as const,
+    ...(scoped ? { user: scope } : {}),
+  }
+
   const [summary, byType, recent, settings] = await Promise.all([
-    prisma.platformEarning.aggregate({ _sum: { amount: true }, _count: true }),
+    prisma.platformEarning.aggregate({
+      where: scoped ? { user: scope } : undefined,
+      _sum: { amount: true },
+      _count: true,
+    }),
     prisma.platformEarning.groupBy({
       by: ['type'],
+      where: scoped ? { user: scope } : undefined,
       _sum: { amount: true },
       _count: true,
     }),
     prisma.platformEarning.findMany({
-      where: type ? { type: type as any } : undefined,
+      where: earningWhere,
       include: { user: { select: { name: true, email: true } } },
       orderBy: { createdAt: 'desc' },
       take: 100,
@@ -534,11 +590,12 @@ adminRouter.get('/earnings', async (req, res) => {
   ])
 
   const closedPnl = await prisma.trade.aggregate({
-    where: { status: 'closed' },
+    where: tradeWhere,
     _sum: { realizedPnl: true, commission: true },
   })
 
   return res.json({
+    scope: scoped ? 'assigned' : 'platform',
     summary: {
       totalEarnings: summary._sum.amount ?? 0,
       entries: summary._count,
@@ -551,18 +608,20 @@ adminRouter.get('/earnings', async (req, res) => {
       count: r._count,
     })),
     recent,
-    feeSettings: {
-      trading_fee_per_lot: settings.trading_fee_per_lot,
-      deposit_fee_percent: settings.deposit_fee_percent,
-      withdraw_fee_percent: settings.withdraw_fee_percent,
-      referral_commission_percent: settings.referral_commission_percent,
-    },
+    feeSettings: scoped
+      ? undefined
+      : {
+          trading_fee_per_lot: settings.trading_fee_per_lot,
+          deposit_fee_percent: settings.deposit_fee_percent,
+          withdraw_fee_percent: settings.withdraw_fee_percent,
+          referral_commission_percent: settings.referral_commission_percent,
+        },
     currency: settings.currency || 'USD',
     currencySymbol: currencySymbol(settings.currency),
   })
 })
 
-adminRouter.post('/earnings/manual', async (req, res) => {
+adminRouter.post('/earnings/manual', adminRequired, async (req, res) => {
   const schema = z.object({
     amount: z.number().positive(),
     description: z.string().min(2),
@@ -578,7 +637,7 @@ adminRouter.post('/earnings/manual', async (req, res) => {
   return res.json({ earning: row })
 })
 
-adminRouter.get('/kyc', async (_req, res) => {
+adminRouter.get('/kyc', adminRequired, async (_req, res) => {
   const docs = await prisma.kycDocument.findMany({
     include: { user: { select: { id: true, name: true, email: true, kycStatus: true } } },
     orderBy: { createdAt: 'desc' },
@@ -586,7 +645,7 @@ adminRouter.get('/kyc', async (_req, res) => {
   return res.json({ documents: docs })
 })
 
-adminRouter.patch('/kyc/:id', async (req, res) => {
+adminRouter.patch('/kyc/:id', adminRequired, async (req, res) => {
   const schema = z.object({
     status: z.enum(['pending', 'approved', 'rejected']),
     note: z.string().optional(),
@@ -595,7 +654,7 @@ adminRouter.patch('/kyc/:id', async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
 
   const doc = await prisma.kycDocument.update({
-    where: { id: req.params.id },
+    where: { id: String(req.params.id) },
     data: { status: parsed.data.status, note: parsed.data.note },
   })
 
@@ -623,7 +682,7 @@ adminRouter.patch('/kyc/:id', async (req, res) => {
   return res.json({ document: doc })
 })
 
-adminRouter.get('/settings', async (_req, res) => {
+adminRouter.get('/settings', adminRequired, async (_req, res) => {
   await ensureDefaultSettings()
   const values = await loadSettings(true)
   const rows = await prisma.setting.findMany({ orderBy: { key: 'asc' } })
@@ -648,7 +707,7 @@ adminRouter.post('/payments/nowpayments/test', async (req, res) => {
   return res.status(result.ok ? 200 : 400).json(result)
 })
 
-adminRouter.get('/fx', async (_req, res) => {
+adminRouter.get('/fx', adminRequired, async (_req, res) => {
   return res.json(await fxMatrix())
 })
 
@@ -789,7 +848,7 @@ adminRouter.put('/settings', async (req, res) => {
   return res.json({ ok: true, values: maskSecretSettings(values), conversion })
 })
 
-adminRouter.get('/bank-accounts', async (_req, res) => {
+adminRouter.get('/bank-accounts', adminRequired, async (_req, res) => {
   const accounts = await listAllBankAccounts()
   return res.json({ accounts })
 })
@@ -815,7 +874,7 @@ adminRouter.put('/bank-accounts/:countryCode', managerRequired, async (req, res)
   }
 })
 
-adminRouter.get('/accounts', async (_req, res) => {
+adminRouter.get('/accounts', adminRequired, async (_req, res) => {
   const accounts = await prisma.account.findMany({
     include: { user: { select: { name: true, email: true } } },
     orderBy: { createdAt: 'desc' },

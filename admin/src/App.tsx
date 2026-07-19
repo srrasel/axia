@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { api } from './api'
 import { AuthProvider, useAuth } from './auth'
-import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination } from './layout'
+import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination, canAccessPath, isCrmStaffRole } from './layout'
 import { setActiveCurrency, useCurrency } from './currency'
 import { BrandLogo } from './BrandLogo'
 import { Dashboard } from './dashboard'
@@ -124,7 +124,18 @@ function Protected({ children }: { children: ReactNode }) {
   return children
 }
 
+function RoleGate({ children }: { children: ReactNode }) {
+  const { user } = useAuth()
+  const location = useLocation()
+  if (user && isCrmStaffRole(user.role) && !canAccessPath(user.role, location.pathname)) {
+    return <Navigate to="/" replace />
+  }
+  return children
+}
+
 function EarningsPage() {
+  const { user } = useAuth()
+  const crmOnly = isCrmStaffRole(user?.role)
   const [data, setData] = useState<any>(null)
   const [type, setType] = useState('')
   const [manual, setManual] = useState({ amount: 50, description: 'Manual adjustment' })
@@ -149,7 +160,10 @@ function EarningsPage() {
 
   return (
     <div>
-      <PageHeader title="Platform Earnings">
+      <PageHeader
+        title={crmOnly ? 'My earnings' : 'Platform Earnings'}
+        subtitle={crmOnly ? 'Earnings and fees from your assigned clients only.' : undefined}
+      >
         <div className="flex items-center gap-2">
           <span className="rounded bg-muted px-2 py-1 text-xs font-semibold">{data.currency || 'USD'}</span>
           <select className="h-10 rounded border border-border px-2 text-sm" value={type} onChange={(e) => setType(e.target.value)}>
@@ -171,7 +185,7 @@ function EarningsPage() {
         <Card title="Client PnL" value={money(data.summary.clientRealizedPnl)} sub="Closed trades net" />
       </div>
 
-      <div className="mb-5 grid gap-4 lg:grid-cols-2">
+      <div className={`mb-5 grid gap-4 ${crmOnly || !data.feeSettings ? '' : 'lg:grid-cols-2'}`}>
         <div className="rounded-xl border border-border bg-panel p-4">
           <h2 className="mb-3 font-semibold">By type</h2>
           <div className="space-y-2">
@@ -181,9 +195,10 @@ function EarningsPage() {
                 <span className="font-semibold text-buy">{money(r.amount)}</span>
               </div>
             ))}
-            {data.byType.length === 0 ? <p className="text-sm text-secondary">No earnings yet — approve deposits or close trades.</p> : null}
+            {data.byType.length === 0 ? <p className="text-sm text-secondary">No earnings yet for your clients.</p> : null}
           </div>
         </div>
+        {!crmOnly && data.feeSettings ? (
         <div className="rounded-xl border border-border bg-panel p-4">
           <h2 className="mb-3 font-semibold">Fee settings (live)</h2>
           <div className="space-y-2 text-sm">
@@ -196,8 +211,10 @@ function EarningsPage() {
           </div>
           <p className="mt-3 text-xs text-secondary">Change these under Settings — they apply immediately.</p>
         </div>
+        ) : null}
       </div>
 
+      {!crmOnly ? (
       <form
         className="mb-5 flex flex-wrap gap-2 rounded-xl border border-border bg-panel p-4"
         onSubmit={async (e) => {
@@ -212,6 +229,7 @@ function EarningsPage() {
         <input className="h-10 flex-1 rounded border border-border px-2" value={manual.description} onChange={(e) => setManual({ ...manual, description: e.target.value })} />
         <button type="submit" className="h-10 rounded bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]">Add</button>
       </form>
+      ) : null}
 
       <div className="overflow-hidden rounded-xl border border-border bg-panel">
         <div className="overflow-auto">
@@ -885,7 +903,9 @@ export default function App() {
         <Route
           element={
             <Protected>
-              <AdminLayout />
+              <RoleGate>
+                <AdminLayout />
+              </RoleGate>
             </Protected>
           }
         >

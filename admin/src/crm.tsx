@@ -9,6 +9,10 @@ function isManagerRole(role?: string) {
   return role === 'ADMIN' || role === 'MANAGER'
 }
 
+function canManageAssigned(role?: string) {
+  return role === 'ADMIN' || role === 'MANAGER' || role === 'EMPLOYEE'
+}
+
 function pnlClass(n: number) {
   return n >= 0 ? 'text-buy' : 'text-sell'
 }
@@ -186,30 +190,39 @@ export function CrmTransactionsPage() {
 
 /** CRM — client desk list + detail */
 export function CrmDeskPage() {
+  const { user } = useAuth()
+  const crmOnly = user?.role === 'MANAGER' || user?.role === 'EMPLOYEE'
+  const isAdmin = user?.role === 'ADMIN'
   const [clients, setClients] = useState<any[]>([])
   const [staff, setStaff] = useState<any[]>([])
   const [q, setQ] = useState('')
-  const [mine, setMine] = useState(false)
+  const [mine, setMine] = useState(crmOnly)
   const navigate = useNavigate()
   const pager = usePagination(clients)
 
   const load = () => {
     const params = new URLSearchParams()
     if (q) params.set('q', q)
-    if (mine) params.set('mine', '1')
+    if (crmOnly || mine) params.set('mine', '1')
     void api<{ clients: any[] }>(`/api/admin/crm/clients?${params}`).then((r) => setClients(r.clients))
   }
 
   useEffect(() => {
     load()
-    void api<{ staff: any[] }>('/api/admin/crm/staff').then((r) => setStaff(r.staff))
-  }, [mine])
+    if (isAdmin) {
+      void api<{ staff: any[] }>('/api/admin/crm/staff').then((r) => setStaff(r.staff)).catch(() => setStaff([]))
+    }
+  }, [mine, crmOnly])
 
   return (
     <div>
       <PageHeader
-        title="Client desk"
-        subtitle="Open a client to view trades & transactions, log contacts, award bonuses, and control exit prices."
+        title={crmOnly ? 'My clients' : 'Client desk'}
+        subtitle={
+          crmOnly
+            ? 'Only your assigned clients — manage their trades, contacts, and accounts.'
+            : 'Open a client to view trades & transactions, log contacts, award bonuses, and control exit prices.'
+        }
       >
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
           <input
@@ -219,10 +232,12 @@ export function CrmDeskPage() {
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && load()}
           />
-          <label className="flex h-10 items-center gap-2 rounded-xl border border-border bg-panel px-3 text-sm">
-            <input type="checkbox" checked={mine} onChange={(e) => setMine(e.target.checked)} />
-            My clients
-          </label>
+          {!crmOnly ? (
+            <label className="flex h-10 items-center gap-2 rounded-xl border border-border bg-panel px-3 text-sm">
+              <input type="checkbox" checked={mine} onChange={(e) => setMine(e.target.checked)} />
+              My clients
+            </label>
+          ) : null}
           <button type="button" className={btnPrimary} onClick={load}>
             Search
           </button>
@@ -240,7 +255,7 @@ export function CrmDeskPage() {
                 <th className="px-3 py-2.5">Floating</th>
                 <th className="px-3 py-2.5">Realized</th>
                 <th className="px-3 py-2.5">Open</th>
-                <th className="px-3 py-2.5">Assign</th>
+                {isAdmin ? <th className="px-3 py-2.5">Assign</th> : null}
               </tr>
             </thead>
             <tbody>
@@ -262,6 +277,7 @@ export function CrmDeskPage() {
                 <td className={`px-3 py-2.5 ${pnlClass(c.floatingPnl)}`}>{money(c.floatingPnl)}</td>
                 <td className={`px-3 py-2.5 ${pnlClass(c.realizedPnl)}`}>{money(c.realizedPnl)}</td>
                 <td className="px-3 py-2.5">{c.openTrades}</td>
+                {isAdmin ? (
                 <td className="px-3 py-2.5">
                   <select
                     className="h-9 rounded-xl border border-border bg-panel px-2 text-xs"
@@ -282,11 +298,12 @@ export function CrmDeskPage() {
                     ))}
                   </select>
                 </td>
+                ) : null}
               </tr>
             ))}
             {pager.total === 0 ? (
               <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-secondary">
+                <td colSpan={isAdmin ? 7 : 6} className="px-3 py-8 text-center text-secondary">
                   No clients found
                 </td>
               </tr>
@@ -337,6 +354,7 @@ export function CrmDeskPage() {
                 <div className="text-secondary">{c.assignedTo?.name || '—'}</div>
               </div>
             </div>
+            {isAdmin ? (
             <select
               className={`${inputClass} mt-3 w-full`}
               value={c.assignedTo?.id || ''}
@@ -355,6 +373,7 @@ export function CrmDeskPage() {
                 </option>
               ))}
             </select>
+            ) : null}
           </div>
         ))}
           {pager.total === 0 ? (
@@ -380,7 +399,7 @@ export function CrmDeskPage() {
 export function CrmClientDetailPage() {
   const { id } = useParams()
   const { user } = useAuth()
-  const manager = isManagerRole(user?.role)
+  const manager = canManageAssigned(user?.role)
   const [data, setData] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [note, setNote] = useState('')

@@ -28,8 +28,9 @@ import {
   Clock3,
 } from 'lucide-react'
 import { api } from './api'
-import { Card, PageHeader, Panel, money } from './layout'
+import { Card, PageHeader, Panel, money, isCrmStaffRole } from './layout'
 import { setActiveCurrency, useCurrency } from './currency'
+import { useAuth } from './auth'
 
 const CHART = {
   deposit: '#22a06b',
@@ -75,6 +76,8 @@ function ChartTooltip({ active, payload, label }: any) {
 }
 
 export function Dashboard() {
+  const { user } = useAuth()
+  const crmOnly = isCrmStaffRole(user?.role)
   const { code: currencyCode } = useCurrency()
   const [data, setData] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
@@ -131,8 +134,12 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Dashboard"
-        subtitle={`${s.platformName || 'NitajFX'} · last 14 days · ${cur}`}
+        title={crmOnly ? 'My dashboard' : 'Dashboard'}
+        subtitle={
+          crmOnly
+            ? `Your assigned clients · last 14 days · ${cur}`
+            : `${s.platformName || 'NitajFX'} · last 14 days · ${cur}`
+        }
       >
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-buy/30 bg-buy/15 px-3 py-1 text-xs font-semibold text-buy">
@@ -148,18 +155,27 @@ export function Dashboard() {
           >
             Earnings
           </Link>
-          <Link
-            to="/transactions"
-            className="rounded-xl border border-border bg-panel px-3.5 py-2 text-sm font-medium text-text hover:bg-muted"
-          >
-            Money ops
-          </Link>
+          {!crmOnly ? (
+            <Link
+              to="/transactions"
+              className="rounded-xl border border-border bg-panel px-3.5 py-2 text-sm font-medium text-text hover:bg-muted"
+            >
+              Money ops
+            </Link>
+          ) : (
+            <Link
+              to="/crm/desk"
+              className="rounded-xl border border-border bg-panel px-3.5 py-2 text-sm font-medium text-text hover:bg-muted"
+            >
+              My clients
+            </Link>
+          )}
         </div>
       </PageHeader>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card
-          title="Platform earnings"
+          title={crmOnly ? 'My clients earnings' : 'Platform earnings'}
           value={money(s.platformEarnings)}
           sub={`${s.earningEntries || 0} ledger entries`}
           icon={Coins}
@@ -168,19 +184,19 @@ export function Dashboard() {
         <Card
           title="Net cash flow"
           value={money(s.netFlow)}
-          sub="Deposits − withdrawals"
+          sub={crmOnly ? 'Your clients · deposits − withdrawals' : 'Deposits − withdrawals'}
           icon={s.netFlow >= 0 ? ArrowUpRight : ArrowDownRight}
           tone={s.netFlow >= 0 ? 'good' : 'bad'}
         />
         <Card
-          title="Client balances"
+          title={crmOnly ? 'Client balances' : 'Client balances'}
           value={money(s.totalBalances)}
-          sub="All accounts"
+          sub={crmOnly ? 'Assigned accounts' : 'All accounts'}
           icon={Wallet}
           tone="info"
         />
         <Card
-          title="Users"
+          title={crmOnly ? 'My clients' : 'Users'}
           value={String(s.users)}
           sub={`${s.fundedUsers || 0} funded · ${s.onlineUsers ?? 0} online`}
           icon={Users}
@@ -411,10 +427,14 @@ export function Dashboard() {
           </div>
         </Panel>
 
-        <Panel title="Recent users" action={<Link to="/users" className="text-xs font-semibold text-link hover:underline">View all</Link>}>
+        <Panel title={crmOnly ? 'Recent clients' : 'Recent users'} action={<Link to={crmOnly ? '/crm/desk' : '/users'} className="text-xs font-semibold text-link hover:underline">View all</Link>}>
           <div className="space-y-0.5">
             {data.recentUsers.map((u: any) => (
-              <Link key={u.id} to={`/users/${u.id}`} className="flex items-center justify-between rounded-xl px-2.5 py-2.5 text-sm transition-colors hover:bg-muted">
+              <Link
+                key={u.id}
+                to={crmOnly ? `/crm/desk/${u.id}` : `/users/${u.id}`}
+                className="flex items-center justify-between rounded-xl px-2.5 py-2.5 text-sm transition-colors hover:bg-muted"
+              >
                 <div className="min-w-0">
                   <div className="truncate font-medium text-text">{u.name}</div>
                   <div className="truncate text-xs text-secondary">{u.email}</div>
@@ -427,7 +447,7 @@ export function Dashboard() {
           </div>
         </Panel>
 
-        <Panel title="Recent transactions" action={<Link to="/transactions" className="text-xs font-semibold text-link hover:underline">View all</Link>}>
+        <Panel title="Recent transactions" action={<Link to={crmOnly ? '/crm/transactions' : '/transactions'} className="text-xs font-semibold text-link hover:underline">View all</Link>}>
           <div className="space-y-0.5">
             {data.recentTx.map((t: any) => (
               <div key={t.id} className="flex items-center justify-between rounded-xl px-2.5 py-2.5 text-sm transition-colors hover:bg-muted">
@@ -447,12 +467,20 @@ export function Dashboard() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {[
-          { to: '/kyc', label: `KYC queue (${s.pendingKyc})` },
-          { to: '/crm/online', label: 'Online clients' },
-          { to: '/crm/performance', label: 'Winners / losers' },
-          { to: '/settings', label: 'Settings' },
-        ].map((item) => (
+        {(crmOnly
+          ? [
+              { to: '/crm/desk', label: 'My clients' },
+              { to: '/trades', label: `Trades (${s.openTrades} open)` },
+              { to: '/crm/online', label: 'Online clients' },
+              { to: '/crm/performance', label: 'Winners / losers' },
+            ]
+          : [
+              { to: '/kyc', label: `KYC queue (${s.pendingKyc})` },
+              { to: '/crm/online', label: 'Online clients' },
+              { to: '/crm/performance', label: 'Winners / losers' },
+              { to: '/settings', label: 'Settings' },
+            ]
+        ).map((item) => (
           <Link
             key={item.to}
             to={item.to}

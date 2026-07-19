@@ -32,35 +32,65 @@ import { BrandLogo } from './BrandLogo'
 
 export { money }
 
-const navGroups: { title: string; items: { to: string; icon: LucideIcon; label: string; end?: boolean }[] }[] = [
+export function isAdminRole(role?: string) {
+  return role === 'ADMIN'
+}
+
+export function isCrmStaffRole(role?: string) {
+  return role === 'MANAGER' || role === 'EMPLOYEE'
+}
+
+/** Paths CRM staff (manager/employee) are allowed to open */
+export const CRM_STAFF_PATHS = [
+  '/',
+  '/earnings',
+  '/trades',
+  '/crm/transactions',
+  '/crm/desk',
+  '/crm/online',
+  '/crm/performance',
+] as const
+
+export function canAccessPath(role: string | undefined, pathname: string) {
+  if (!role) return false
+  if (isAdminRole(role)) return true
+  if (!isCrmStaffRole(role)) return false
+  if (pathname === '/' || pathname === '') return true
+  if (CRM_STAFF_PATHS.some((p) => p !== '/' && (pathname === p || pathname.startsWith(p + '/')))) return true
+  return false
+}
+
+type NavItem = { to: string; icon: LucideIcon; label: string; end?: boolean; adminOnly?: boolean; crmAllowed?: boolean }
+
+const navGroups: { title: string; items: NavItem[] }[] = [
   {
     title: 'Overview',
     items: [
-      { to: '/', icon: LayoutDashboard, label: 'Dashboard', end: true },
-      { to: '/earnings', icon: Coins, label: 'Earnings' },
+      { to: '/', icon: LayoutDashboard, label: 'Dashboard', end: true, crmAllowed: true },
+      { to: '/earnings', icon: Coins, label: 'Earnings', crmAllowed: true },
     ],
   },
   {
     title: 'CRM',
     items: [
-      { to: '/crm/transactions', icon: Receipt, label: 'Transactions' },
-      { to: '/crm/desk', icon: Headset, label: 'Client desk' },
-      { to: '/crm/online', icon: Wifi, label: 'Online now' },
-      { to: '/crm/performance', icon: TrendingUp, label: 'Winners / losers' },
-      { to: '/crm/prices', icon: Gauge, label: 'Market prices' },
-      { to: '/crm/staff', icon: UserCog, label: 'CRM users' },
+      { to: '/crm/transactions', icon: Receipt, label: 'Transactions', crmAllowed: true },
+      { to: '/crm/desk', icon: Headset, label: 'Client desk', crmAllowed: true },
+      { to: '/crm/online', icon: Wifi, label: 'Online now', crmAllowed: true },
+      { to: '/crm/performance', icon: TrendingUp, label: 'Winners / losers', crmAllowed: true },
+      { to: '/crm/prices', icon: Gauge, label: 'Market prices', adminOnly: true },
+      { to: '/crm/staff', icon: UserCog, label: 'CRM users', adminOnly: true },
     ],
   },
   {
     title: 'Operations',
     items: [
-      { to: '/users', icon: Users, label: 'Users' },
-      { to: '/accounts', icon: Landmark, label: 'Accounts' },
-      { to: '/trades', icon: CandlestickChart, label: 'Trades' },
-      { to: '/transactions', icon: ArrowLeftRight, label: 'Money ops' },
-      { to: '/bank-accounts', icon: Building2, label: 'Bank accounts' },
-      { to: '/kyc', icon: BadgeCheck, label: 'KYC' },
-      { to: '/settings', icon: Settings, label: 'Settings' },
+      { to: '/users', icon: Users, label: 'Users', adminOnly: true },
+      { to: '/accounts', icon: Landmark, label: 'Accounts', adminOnly: true },
+      { to: '/trades', icon: CandlestickChart, label: 'Trades', crmAllowed: true },
+      { to: '/transactions', icon: ArrowLeftRight, label: 'Money ops', adminOnly: true },
+      { to: '/bank-accounts', icon: Building2, label: 'Bank accounts', adminOnly: true },
+      { to: '/kyc', icon: BadgeCheck, label: 'KYC', adminOnly: true },
+      { to: '/settings', icon: Settings, label: 'Settings', adminOnly: true },
     ],
   },
 ]
@@ -68,6 +98,17 @@ const navGroups: { title: string; items: { to: string; icon: LucideIcon; label: 
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const admin = isAdminRole(user?.role)
+  const visibleGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => {
+        if (admin) return true
+        if (item.adminOnly) return false
+        return item.crmAllowed === true
+      }),
+    }))
+    .filter((g) => g.items.length > 0)
 
   return (
     <>
@@ -82,13 +123,16 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         {user?.role} · <CurrencyBadge />
       </div>
       <nav className="relative flex-1 space-y-5 overflow-y-auto px-3 pb-4">
-        {navGroups.map((group) => (
+        {visibleGroups.map((group) => (
           <div key={group.title}>
             <div className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary/70">
               {group.title}
             </div>
             <div className="space-y-0.5">
-              {group.items.map(({ to, icon: Icon, label, end }) => (
+              {group.items.map(({ to, icon: Icon, label, end }) => {
+                const displayLabel =
+                  to === '/crm/desk' && isCrmStaffRole(user?.role) ? 'My clients' : label
+                return (
                 <NavLink
                   key={to}
                   to={to}
@@ -112,11 +156,12 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                       >
                         <Icon size={15} />
                       </span>
-                      {label}
+                      {displayLabel}
                     </>
                   )}
                 </NavLink>
-              ))}
+                )
+              })}
             </div>
           </div>
         ))}

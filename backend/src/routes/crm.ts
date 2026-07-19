@@ -2,7 +2,7 @@ import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { prisma } from '../prisma.js'
-import { adminRequired, managerRequired, staffRequired } from '../auth.js'
+import { adminRequired, assignedClientsFilter, assertAssignedClient, isCrmStaff, staffRequired } from '../auth.js'
 import { calcPnl, initialsFromName, referralCode } from '../trading.js'
 import { fetchQuotes, WATCHLIST } from '../market.js'
 import { settleTradeClose } from '../settle.js'
@@ -19,10 +19,11 @@ crmRouter.get('/transactions', async (req, res) => {
   const type = req.query.type ? String(req.query.type) : undefined
   const q = String(req.query.q || '').trim()
   const take = Math.min(Number(req.query.take) || 300, 500)
+  const scope = assignedClientsFilter(req)
 
   const transactions = await prisma.transaction.findMany({
     where: {
-      user: { role: 'USER' },
+      user: { role: 'USER', ...scope },
       ...(status ? { status: status as 'pending' | 'approved' | 'rejected' | 'completed' } : {}),
       ...(type
         ? {
@@ -69,13 +70,14 @@ crmRouter.get('/transactions', async (req, res) => {
 crmRouter.get('/clients', async (req, res) => {
   const q = String(req.query.q || '').trim()
   const assignedToId = req.query.assignedToId ? String(req.query.assignedToId) : undefined
-  const mine = req.query.mine === '1'
+  // CRM staff always see only their own assigned clients
+  const mine = isCrmStaff(req.user?.role) || req.query.mine === '1'
 
   const clients = await prisma.user.findMany({
     where: {
       role: 'USER',
       ...(mine ? { assignedToId: req.user!.id } : {}),
-      ...(assignedToId ? { assignedToId } : {}),
+      ...(!mine && assignedToId ? { assignedToId } : {}),
       ...(q
         ? {
             OR: [
@@ -131,8 +133,13 @@ crmRouter.get('/clients', async (req, res) => {
 
 /** Single client desk: trades, txs, contacts, controls */
 crmRouter.get('/clients/:id', async (req, res) => {
+  const clientId = String(req.params.id)
+  if (!(await assertAssignedClient(req, clientId))) {
+    return res.status(403).json({ error: 'Not your client' })
+  }
+
   const client = await prisma.user.findFirst({
-    where: { id: req.params.id, role: 'USER' },
+    where: { id: clientId, role: 'USER' },
     include: {
       assignedTo: { select: { id: true, name: true, email: true } },
       accounts: true,
@@ -165,7 +172,7 @@ crmRouter.get('/clients/:id', async (req, res) => {
   })
 })
 
-crmRouter.patch('/clients/:id/assign', async (req, res) => {
+crmRouter.patch('/clients/:id/assign', adminRequired, async (req, res) => {
   const schema = z.object({ assignedToId: z.string().nullable() })
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
@@ -178,7 +185,7 @@ crmRouter.patch('/clients/:id/assign', async (req, res) => {
   }
 
   const client = await prisma.user.update({
-    where: { id: req.params.id },
+    where: { id: String(req.params.id) },
     data: { assignedToId: parsed.data.assignedToId },
     select: {
       id: true,
@@ -197,6 +204,10 @@ crmRouter.post('/contacts', async (req, res) => {
   })
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
+
+  if (!(await assertAssignedClient(req, parsed.data.clientId))) {
+    return res.status(403).json({ error: 'Not your client' })
+  }
 
   const client = await prisma.user.findFirst({ where: { id: parsed.data.clientId, role: 'USER' } })
   if (!client) return res.status(404).json({ error: 'Client not found' })
@@ -219,10 +230,17 @@ crmRouter.post('/contacts', async (req, res) => {
 crmRouter.get('/contacts', async (req, res) => {
   const clientId = req.query.clientId ? String(req.query.clientId) : undefined
   const staffId = req.query.staffId ? String(req.query.staffId) : undefined
+  if (clientId && !(await assertAssignedClient(req, clientId))) {
+    return res.status(403).json({ error: 'Not your client' })
+  }
   const contacts = await prisma.contactLog.findMany({
     where: {
       ...(clientId ? { clientId } : {}),
-      ...(staffId ? { staffId } : {}),
+      ...(isCrmStaff(req.user?.role)
+        ? { client: { assignedToId: req.user!.id } }
+        : staffId
+          ? { staffId }
+          : {}),
     },
     include: {
       client: { select: { id: true, name: true, email: true } },
@@ -235,10 +253,11 @@ crmRouter.get('/contacts', async (req, res) => {
 })
 
 /** Who is connected (online) right now */
-crmRouter.get('/online', async (_req, res) => {
+crmRouter.get('/online', async (req, res) => {
   const since = new Date(Date.now() - ONLINE_MS)
+  const scope = assignedClientsFilter(req)
   const users = await prisma.user.findMany({
-    where: { role: 'USER', lastSeenAt: { gte: since } },
+    where: { role: 'USER', lastSeenAt: { gte: since }, ...scope },
     select: {
       id: true,
       name: true,
@@ -270,8 +289,9 @@ crmRouter.get('/online', async (_req, res) => {
 /** Significant winners / losers */
 crmRouter.get('/performance', async (req, res) => {
   const threshold = Number(req.query.threshold) || 100
+  const scope = assignedClientsFilter(req)
   const clients = await prisma.user.findMany({
-    where: { role: 'USER' },
+    where: { role: 'USER', ...scope },
     select: {
       id: true,
       name: true,
@@ -283,10 +303,13 @@ crmRouter.get('/performance', async (req, res) => {
     },
   })
 
-  const openTrades = await prisma.trade.findMany({ where: { status: 'open' } })
+  const clientIds = clients.map((c) => c.id)
+  const openTrades = await prisma.trade.findMany({
+    where: { status: 'open', userId: { in: clientIds } },
+  })
   const closed = await prisma.trade.groupBy({
     by: ['userId'],
-    where: { status: 'closed' },
+    where: { status: 'closed', userId: { in: clientIds } },
     _sum: { realizedPnl: true },
     _count: true,
   })
@@ -324,7 +347,7 @@ crmRouter.get('/performance', async (req, res) => {
   })
 })
 
-crmRouter.get('/staff', async (_req, res) => {
+crmRouter.get('/staff', adminRequired, async (_req, res) => {
   const staff = await prisma.user.findMany({
     where: { role: { in: ['ADMIN', 'MANAGER', 'EMPLOYEE'] } },
     select: {
@@ -431,8 +454,8 @@ crmRouter.patch('/staff/:id', adminRequired, async (req, res) => {
   return res.json({ user })
 })
 
-/** Market price overrides */
-crmRouter.get('/prices', async (_req, res) => {
+/** Market price overrides — admin only (platform-wide) */
+crmRouter.get('/prices', adminRequired, async (_req, res) => {
   const { quotes } = await fetchQuotes()
   const overrides = await prisma.priceOverride.findMany({ orderBy: { symbol: 'asc' } })
   return res.json({
@@ -442,7 +465,7 @@ crmRouter.get('/prices', async (_req, res) => {
   })
 })
 
-crmRouter.put('/prices/:symbol', managerRequired, async (req, res) => {
+crmRouter.put('/prices/:symbol', adminRequired, async (req, res) => {
   const schema = z.object({
     price: z.number().positive(),
     bid: z.number().positive().optional(),
@@ -488,20 +511,26 @@ crmRouter.put('/prices/:symbol', managerRequired, async (req, res) => {
   return res.json({ override })
 })
 
-crmRouter.delete('/prices/:symbol', managerRequired, async (req, res) => {
+crmRouter.delete('/prices/:symbol', adminRequired, async (req, res) => {
   const symbol = String(req.params.symbol).toUpperCase()
   await prisma.priceOverride.deleteMany({ where: { symbol } })
   return res.json({ ok: true })
 })
 
 /** Close trade with optional forced exit price */
-crmRouter.post('/trades/:id/close', managerRequired, async (req, res) => {
+crmRouter.post('/trades/:id/close', async (req, res) => {
   const schema = z.object({ exitPrice: z.number().positive().optional() })
   const parsed = schema.safeParse(req.body ?? {})
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
 
-  const trade = await prisma.trade.findUnique({ where: { id: String(req.params.id) } })
+  const trade = await prisma.trade.findUnique({
+    where: { id: String(req.params.id) },
+    include: { user: { select: { assignedToId: true } } },
+  })
   if (!trade || trade.status !== 'open') return res.status(404).json({ error: 'Open trade not found' })
+  if (!(await assertAssignedClient(req, trade.userId))) {
+    return res.status(403).json({ error: 'Not your client trade' })
+  }
 
   let exit = parsed.data.exitPrice
   if (exit == null) {
@@ -514,14 +543,17 @@ crmRouter.post('/trades/:id/close', managerRequired, async (req, res) => {
   return res.json({ ok: true, ...result })
 })
 
-/** Set live mark price on an open trade (manager) */
-crmRouter.patch('/trades/:id/price', managerRequired, async (req, res) => {
+/** Set live mark price on an open trade */
+crmRouter.patch('/trades/:id/price', async (req, res) => {
   const schema = z.object({ currentPrice: z.number().positive() })
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
 
   const trade = await prisma.trade.findUnique({ where: { id: String(req.params.id) } })
   if (!trade || trade.status !== 'open') return res.status(404).json({ error: 'Open trade not found' })
+  if (!(await assertAssignedClient(req, trade.userId))) {
+    return res.status(403).json({ error: 'Not your client trade' })
+  }
 
   const updated = await prisma.trade.update({
     where: { id: trade.id },
@@ -531,7 +563,7 @@ crmRouter.patch('/trades/:id/price', managerRequired, async (req, res) => {
 })
 
 /** Award bonus / add amount to client account */
-crmRouter.post('/bonus', managerRequired, async (req, res) => {
+crmRouter.post('/bonus', async (req, res) => {
   const schema = z.object({
     accountId: z.string(),
     amount: z.number().positive(),
@@ -542,6 +574,9 @@ crmRouter.post('/bonus', managerRequired, async (req, res) => {
 
   const account = await prisma.account.findUnique({ where: { id: parsed.data.accountId } })
   if (!account) return res.status(404).json({ error: 'Account not found' })
+  if (!(await assertAssignedClient(req, account.userId))) {
+    return res.status(403).json({ error: 'Not your client' })
+  }
   const sym = currencySymbol(await getCurrencyCode())
 
   await prisma.$transaction([
@@ -577,7 +612,7 @@ crmRouter.post('/bonus', managerRequired, async (req, res) => {
 })
 
 /** Add / remove amount (credit or debit) */
-crmRouter.post('/adjust', managerRequired, async (req, res) => {
+crmRouter.post('/adjust', async (req, res) => {
   const schema = z.object({
     accountId: z.string(),
     amount: z.number(),
@@ -589,6 +624,9 @@ crmRouter.post('/adjust', managerRequired, async (req, res) => {
 
   const account = await prisma.account.findUnique({ where: { id: parsed.data.accountId } })
   if (!account) return res.status(404).json({ error: 'Account not found' })
+  if (!(await assertAssignedClient(req, account.userId))) {
+    return res.status(403).json({ error: 'Not your client' })
+  }
   const sym = currencySymbol(await getCurrencyCode())
 
   await prisma.$transaction([

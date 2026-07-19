@@ -32,6 +32,31 @@ export function isManager(role?: string) {
   return MANAGERS.includes(role as StaffRole)
 }
 
+export function isAdmin(role?: string) {
+  return role === 'ADMIN'
+}
+
+/** Manager / employee — desk staff with assigned-client scope only */
+export function isCrmStaff(role?: string) {
+  return role === 'MANAGER' || role === 'EMPLOYEE'
+}
+
+/** Prisma filter: CRM staff only see their assigned clients */
+export function assignedClientsFilter(req: { user?: AuthUser }) {
+  if (!req.user || isAdmin(req.user.role)) return {}
+  return { assignedToId: req.user.id }
+}
+
+export async function assertAssignedClient(req: { user?: AuthUser }, clientId: string) {
+  if (!req.user) return false
+  if (isAdmin(req.user.role)) return true
+  const client = await prisma.user.findFirst({
+    where: { id: clientId, role: 'USER', assignedToId: req.user.id },
+    select: { id: true },
+  })
+  return Boolean(client)
+}
+
 export function signToken(user: AuthUser) {
   return jwt.sign(user, secret(), { expiresIn: '7d' })
 }
