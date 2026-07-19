@@ -64,7 +64,7 @@ export function UserAvatar({ photoUrl, name, size = 40, className, ring, plain }
   return (
     <span
       className={clsx(
-        'inline-flex shrink-0 items-center justify-center rounded-full text-text-secondary',
+        'inline-flex shrink-0 items-center justify-center rounded-full border border-[aliceblue] text-text-secondary',
         !plain && 'bg-muted',
         ring && !plain && 'ring-2 ring-border/60',
         className,

@@ -77,12 +77,12 @@ export function BankAccountsPage() {
         subtitle="Bank details shown to clients on the deposit page. Update anytime — accounts may change frequently."
       />
       {!canEdit ? (
-        <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <p className="mb-4 rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-sm text-accent">
           View only — managers and admins can edit bank accounts.
         </p>
       ) : null}
-      {msg ? <p className="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-buy">{msg}</p> : null}
-      {error ? <p className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-sell">{error}</p> : null}
+      {msg ? <p className="mb-4 rounded-lg border border-buy/30 bg-buy/15 px-3 py-2 text-sm text-buy">{msg}</p> : null}
+      {error ? <p className="mb-4 rounded-lg border border-sell/30 bg-sell/15 px-3 py-2 text-sm text-sell">{error}</p> : null}
 
       <div className="space-y-4">
         {accounts.map((row) => {
@@ -110,7 +110,7 @@ export function BankAccountsPage() {
                       <button
                         type="button"
                         disabled={saving}
-                        className="h-9 rounded-md bg-brand px-4 text-sm font-semibold text-white disabled:opacity-60"
+                        className="h-9 rounded-md bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30] disabled:opacity-60"
                         onClick={() => void save()}
                       >
                         {saving ? 'Saving…' : 'Save'}
@@ -213,7 +213,7 @@ export function BankAccountsPage() {
                   <div className="pt-1">
                     <span
                       className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                        row.active ? 'bg-emerald-50 text-buy' : 'bg-slate-100 text-secondary'
+                        row.active ? 'bg-buy/15 text-buy' : 'bg-muted text-secondary'
                       }`}
                     >
                       {row.active ? 'Active' : 'Hidden'}

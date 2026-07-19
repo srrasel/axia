@@ -10,8 +10,9 @@ import {
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../context/AppContext'
-import { calcPnl, contractSize, formatMoney } from '../../data/mock'
+import { calcPnl, contractSize, formatMoney, formatPrice } from '../../data/mock'
 import { parseTradeDate } from './tradeDates'
+import { SymbolLogo } from '../SymbolLogo'
 import type { Trade } from '../../types'
 
 type Tab = 'open' | 'pending' | 'closed'
@@ -89,12 +90,112 @@ function tradePnl(t: Trade) {
 }
 
 function volumeLabel(t: Trade) {
+  if (t.category === 'crypto') return `${t.volume} Token(s)`
   if (t.category === 'forex') {
     const base = t.symbol.slice(0, 3)
     const units = t.volume * contractSize(t.category, t.symbol)
     return `${units.toLocaleString('en-US')} ${base}`
   }
   return `${t.volume} Lot`
+}
+
+function historyAmountLabel(t: Trade) {
+  if (t.category === 'crypto') return `${t.volume} Token(s)`
+  if (t.category === 'forex') return `${t.volume} Lot`
+  return `${t.volume} Lot`
+}
+
+function DetailRow({
+  label,
+  value,
+  valueClass,
+}: {
+  label: string
+  value: string
+  valueClass?: string
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-2.5">
+      <span className="shrink-0 text-[13px] text-text-secondary">{label}</span>
+      <span className={clsx('min-w-0 text-right text-[13px] font-medium tabular-nums text-text', valueClass)}>
+        {value}
+      </span>
+    </div>
+  )
+}
+
+function HistoryTradeCard({
+  trade,
+  expanded,
+  onToggle,
+}: {
+  trade: Trade
+  expanded: boolean
+  onToggle: () => void
+}) {
+  const pnl = trade.realizedPnl ?? 0
+  const isBuy = trade.side === 'buy'
+  const tp = trade.takeProfit != null ? formatPrice(trade.takeProfit, trade.symbol) : '—'
+  const sl = trade.stopLoss != null ? formatPrice(trade.stopLoss, trade.symbol) : '—'
+  const orderId = trade.id.replace(/\D/g, '').slice(-9) || trade.id.slice(0, 9)
+  const ticket = trade.id.replace(/\D/g, '').slice(-9) || trade.id.slice(-9)
+
+  return (
+    <div className="overflow-hidden rounded-2xl bg-muted">
+      <button type="button" onClick={onToggle} className="flex w-full items-center gap-3 px-3.5 py-3.5 text-left">
+        <SymbolLogo symbol={trade.symbol} size={40} />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[15px] font-semibold text-text">{trade.symbol}</div>
+          <div className="mt-0.5 flex items-center gap-1 text-[12px] text-text-secondary">
+            {isBuy ? (
+              <MoveUpRight size={13} className="shrink-0 text-buy" />
+            ) : (
+              <MoveDownRight size={13} className="shrink-0 text-sell" />
+            )}
+            <span className="truncate tabular-nums">{historyAmountLabel(trade)}</span>
+          </div>
+        </div>
+        <div
+          className={clsx(
+            'shrink-0 text-[15px] font-semibold tabular-nums',
+            pnl >= 0 ? 'positive' : 'negative',
+          )}
+        >
+          {formatMoney(pnl)}
+        </div>
+      </button>
+
+      {expanded ? (
+        <div className="border-t border-border/50 px-3.5 pb-3.5 pt-1">
+          <DetailRow label="Order ID" value={orderId} />
+          <DetailRow label="Ticket" value={ticket} />
+          <DetailRow label="Instrument" value={trade.symbol} />
+          <DetailRow
+            label="Direction"
+            value={trade.side.toUpperCase()}
+            valueClass={isBuy ? 'text-buy' : 'text-sell'}
+          />
+          <DetailRow label="Amount" value={historyAmountLabel(trade)} />
+          <DetailRow label="Open Price" value={formatPrice(trade.openPrice, trade.symbol)} />
+          <DetailRow
+            label="Close Price"
+            value={formatPrice(trade.closePrice ?? trade.currentPrice, trade.symbol)}
+          />
+          <DetailRow label="Close Reason" value="Manual" />
+          <DetailRow
+            label="Profit/Loss"
+            value={formatMoney(pnl)}
+            valueClass={pnl >= 0 ? 'positive' : 'negative'}
+          />
+          <DetailRow label="Swaps" value={formatMoney(trade.swap ?? 0)} />
+          <DetailRow label="Type" value="MARKET" />
+          <DetailRow label="Take Profit/Stop Loss" value={`${tp}/${sl}`} />
+          <DetailRow label="Time Opened" value={trade.openTime} />
+          <DetailRow label="Time Closed" value={trade.closeTime || '—'} />
+        </div>
+      ) : null}
+    </div>
+  )
 }
 
 type SymbolGroup = {
@@ -182,12 +283,23 @@ export function MobileTrades({
 
   const groups = useMemo(() => groupBySymbol(filtered), [filtered])
 
+  const historyTrades = useMemo(() => {
+    if (tab !== 'closed') return []
+    return [...filtered].sort((a, b) => {
+      const da = parseTradeDate(a.closeTime ?? a.openTime)?.getTime() ?? 0
+      const db = parseTradeDate(b.closeTime ?? b.openTime)?.getTime() ?? 0
+      return db - da
+    })
+  }, [filtered, tab])
+
   const totalPnl = useMemo(() => {
     if (tab === 'closed') {
       return filtered.reduce((s, t) => s + (t.realizedPnl ?? 0), 0)
     }
     return filtered.reduce((s, t) => s + calcPnl(t), 0)
   }, [filtered, tab])
+
+  const listEmpty = tab === 'closed' ? historyTrades.length === 0 : groups.length === 0
 
   const tabs: Array<{ key: Tab; label: string; count?: number }> = [
     { key: 'open', label: 'Open Positions', count: openCount },
@@ -406,7 +518,7 @@ export function MobileTrades({
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4 [-webkit-overflow-scrolling:touch]">
-        {groups.length === 0 ? (
+        {listEmpty ? (
           <div className="flex min-h-[min(52vh,28rem)] flex-col items-center justify-center px-4 text-center">
             <p className="text-[14px] text-text-secondary">Nothing here yet!</p>
             <button
@@ -416,6 +528,17 @@ export function MobileTrades({
             >
               Open a position
             </button>
+          </div>
+        ) : tab === 'closed' ? (
+          <div className="space-y-2.5">
+            {historyTrades.map((t) => (
+              <HistoryTradeCard
+                key={t.id}
+                trade={t}
+                expanded={expanded === t.id}
+                onToggle={() => setExpanded(expanded === t.id ? null : t.id)}
+              />
+            ))}
           </div>
         ) : (
           <div className="space-y-2.5">
@@ -466,27 +589,23 @@ export function MobileTrades({
 
                   {isOpen ? (
                     <div className="border-t border-border/50 px-3 pb-3 pt-3">
-                      {tab === 'closed' ? null : (
-                        <div className="space-y-2">
-                          <button
-                            type="button"
-                            onClick={() => void closeGroup(g)}
-                            className="flex h-12 w-full items-center justify-center rounded-xl bg-[#e5484d] text-sm font-semibold text-white transition-colors hover:bg-[#c93d42]"
-                          >
-                            {tab === 'pending' ? 'Cancel All Orders' : 'Close All Trades'}:{' '}
-                            <span className="ml-1 text-white">
-                              {formatMoney(g.pnl)}
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => showChart(g.symbol)}
-                            className="flex h-12 w-full items-center justify-center rounded-xl border border-[#404752] bg-transparent text-sm font-semibold text-text transition-colors hover:bg-muted/40"
-                          >
-                            Show Chart
-                          </button>
-                        </div>
-                      )}
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => void closeGroup(g)}
+                          className="flex h-12 w-full items-center justify-center rounded-xl bg-[#e5484d] text-sm font-semibold text-white transition-colors hover:bg-[#c93d42]"
+                        >
+                          {tab === 'pending' ? 'Cancel All Orders' : 'Close All Trades'}:{' '}
+                          <span className="ml-1 text-white">{formatMoney(g.pnl)}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => showChart(g.symbol)}
+                          className="flex h-12 w-full items-center justify-center rounded-xl border border-[#404752] bg-transparent text-sm font-semibold text-text transition-colors hover:bg-muted/40"
+                        >
+                          Show Chart
+                        </button>
+                      </div>
 
                       <div className="mt-1">
                         {g.trades.map((t) => {

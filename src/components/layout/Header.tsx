@@ -327,7 +327,7 @@ export function Header() {
                 name={user?.name}
                 size={32}
                 plain
-                className="border border-[#28303c]"
+                className="border border-[aliceblue]"
               />
             </span>
             <span className="hidden sm:inline-flex">
@@ -336,7 +336,7 @@ export function Header() {
                 name={user?.name}
                 size={32}
                 plain
-                className="border border-[#28303c]"
+                className="border border-[aliceblue]"
               />
             </span>
           </button>

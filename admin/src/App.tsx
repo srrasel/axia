@@ -30,7 +30,7 @@ function Login() {
   return (
     <div className="flex min-h-full items-center justify-center p-6">
       <form
-        className="w-full max-w-md rounded-2xl border border-border bg-panel/95 p-8 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur"
+        className="w-full max-w-md rounded-2xl border border-border bg-panel p-8 shadow-[0_20px_50px_rgba(0,0,0,0.45)]"
         onSubmit={async (e: FormEvent) => {
           e.preventDefault()
           setError(null)
@@ -54,7 +54,7 @@ function Login() {
       >
         <div className="mb-6 text-center">
           <div className="flex flex-col items-center gap-2">
-            <BrandLogo variant="light" className="h-12" />
+            <BrandLogo variant="dark" className="h-12" />
             <span className="text-xs font-semibold uppercase tracking-wide text-secondary">CRM</span>
         </div>
           <p className="mt-2 text-sm text-secondary">
@@ -95,7 +95,7 @@ function Login() {
             />
           </label>
         )}
-        <button type="submit" className="h-11 w-full rounded-md bg-brand text-sm font-semibold text-white">
+        <button type="submit" className="h-11 w-full rounded-lg bg-[#fcd535] text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]">
           {tempToken ? 'Verify & sign in' : 'Sign in'}
         </button>
         {tempToken ? (
@@ -208,7 +208,7 @@ function EarningsPage() {
         <div className="text-sm font-semibold w-full mb-1">Record manual earning</div>
         <input type="number" className="h-10 w-28 rounded border border-border px-2" value={manual.amount} onChange={(e) => setManual({ ...manual, amount: Number(e.target.value) })} />
         <input className="h-10 flex-1 rounded border border-border px-2" value={manual.description} onChange={(e) => setManual({ ...manual, description: e.target.value })} />
-        <button type="submit" className="h-10 rounded bg-brand px-4 text-sm font-semibold text-white">Add</button>
+        <button type="submit" className="h-10 rounded bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]">Add</button>
       </form>
 
       <div className="overflow-auto rounded-xl border border-border bg-panel">
@@ -253,7 +253,7 @@ function UsersPage() {
       <PageHeader title="Users">
         <div className="flex gap-2">
           <input className="h-10 rounded-md border border-border px-3 text-sm" placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} />
-          <button type="button" className="h-10 rounded-md bg-brand px-4 text-sm font-semibold text-white" onClick={() => setShowCreate(true)}>
+          <button type="button" className="h-10 rounded-md bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]" onClick={() => setShowCreate(true)}>
             Create user
           </button>
         </div>
@@ -272,7 +272,7 @@ function UsersPage() {
           <input className="h-10 rounded border border-border px-2" placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           <input className="h-10 rounded border border-border px-2" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
           <input className="h-10 rounded border border-border px-2" placeholder="Password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
-          <button type="submit" className="h-10 rounded bg-brand text-sm font-semibold text-white">Save</button>
+          <button type="submit" className="h-10 rounded bg-[#fcd535] text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]">Save</button>
         </form>
       ) : null}
       <div className="overflow-auto rounded-xl border border-border bg-panel">
@@ -345,7 +345,7 @@ function UserDetail() {
           </select>
           <input type="number" className="h-10 w-28 rounded border border-border px-2" value={adjust.amount} onChange={(e) => setAdjust({ ...adjust, amount: Number(e.target.value) })} />
           <input className="h-10 flex-1 rounded border border-border px-2" placeholder="Note" value={adjust.note} onChange={(e) => setAdjust({ ...adjust, note: e.target.value })} />
-          <button type="button" className="h-10 rounded bg-brand px-4 text-sm font-semibold text-white" onClick={async () => { await api(`/api/admin/accounts/${adjust.accountId}/adjust`, { method: 'POST', body: JSON.stringify({ amount: adjust.amount, note: adjust.note }) }); load() }}>
+          <button type="button" className="h-10 rounded bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]" onClick={async () => { await api(`/api/admin/accounts/${adjust.accountId}/adjust`, { method: 'POST', body: JSON.stringify({ amount: adjust.amount, note: adjust.note }) }); load() }}>
             Apply
           </button>
         </div>
@@ -652,7 +652,7 @@ function SettingsPage() {
           <button
             type="button"
             disabled={saving}
-            className="h-10 rounded-md bg-brand px-4 text-sm font-semibold text-white disabled:opacity-60"
+            className="h-10 rounded-md bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30] disabled:opacity-60"
             onClick={async () => {
               setSaving(true)
               setMsg(null)
