@@ -29,7 +29,9 @@ docker compose up --build
 | App | Email | Password |
 |-----|-------|----------|
 | Trading | `mohammed.naser@example.com` | `demo123` |
-| Admin | `admin@seekapa.com` | `admin123` |
+| Admin | `admin@nitajfx.online` | `admin123` |
+| Manager | `manager@nitajfx.online` | `manager123` |
+| Employee | `employee@nitajfx.online` | `employee123` |
 
 ## Local development (without Docker for frontends)
 

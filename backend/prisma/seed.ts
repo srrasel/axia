@@ -5,8 +5,13 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  const adminEmail = 'admin@seekapa.com'
+  const adminEmail = 'admin@nitajfx.online'
   const demoEmail = 'mohammed.naser@example.com'
+
+  // Migrate legacy seekapa.com staff emails if present
+  await renameEmailIfExists('admin@seekapa.com', adminEmail)
+  await renameEmailIfExists('manager@seekapa.com', 'manager@nitajfx.online')
+  await renameEmailIfExists('employee@seekapa.com', 'employee@nitajfx.online')
 
   const admin = await prisma.user.upsert({
     where: { email: adminEmail },
@@ -194,17 +199,25 @@ async function main() {
 
   console.log('Seed complete')
   console.log(`Admin:    ${admin.email} / admin123`)
-  console.log(`Manager:  manager@seekapa.com / manager123`)
-  console.log(`Employee: employee@seekapa.com / employee123`)
+  console.log(`Manager:  manager@nitajfx.online / manager123`)
+  console.log(`Employee: employee@nitajfx.online / employee123`)
   console.log(`User:     ${demo.email} / demo123`)
+}
+
+async function renameEmailIfExists(from: string, to: string) {
+  const existing = await prisma.user.findUnique({ where: { email: from } })
+  if (!existing) return
+  const taken = await prisma.user.findUnique({ where: { email: to } })
+  if (taken) return
+  await prisma.user.update({ where: { email: from }, data: { email: to } })
 }
 
 async function seedStaff() {
   const manager = await prisma.user.upsert({
-    where: { email: 'manager@seekapa.com' },
+    where: { email: 'manager@nitajfx.online' },
     update: { role: 'MANAGER' },
     create: {
-      email: 'manager@seekapa.com',
+      email: 'manager@nitajfx.online',
       name: 'CRM Manager',
       initials: 'CM',
       passwordHash: await bcrypt.hash('manager123', 10),
@@ -218,10 +231,10 @@ async function seedStaff() {
   })
 
   await prisma.user.upsert({
-    where: { email: 'employee@seekapa.com' },
+    where: { email: 'employee@nitajfx.online' },
     update: { role: 'EMPLOYEE' },
     create: {
-      email: 'employee@seekapa.com',
+      email: 'employee@nitajfx.online',
       name: 'CRM Employee',
       initials: 'CE',
       passwordHash: await bcrypt.hash('employee123', 10),

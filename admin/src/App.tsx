@@ -3,7 +3,7 @@ import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } fr
 import { api } from './api'
 import { AuthProvider, useAuth } from './auth'
 import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination, canAccessPath, isCrmStaffRole } from './layout'
-import { setActiveCurrency, useCurrency } from './currency'
+import { setActiveCurrency } from './currency'
 import { BrandLogo } from './BrandLogo'
 import { Dashboard } from './dashboard'
 import {
@@ -16,11 +16,12 @@ import {
   CrmTransactionsPage,
 } from './crm'
 import { BankAccountsPage } from './bank-accounts'
+import { SettingsPage } from './settings'
 
 function Login() {
   const { login, verify2fa, user, loading } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState('admin@seekapa.com')
+  const [email, setEmail] = useState('admin@nitajfx.online')
   const [password, setPassword] = useState('admin123')
   const [code, setCode] = useState('')
   const [tempToken, setTempToken] = useState<string | null>(null)
@@ -166,7 +167,7 @@ function EarningsPage() {
       >
         <div className="flex items-center gap-2">
           <span className="rounded bg-muted px-2 py-1 text-xs font-semibold">{data.currency || 'USD'}</span>
-          <select className="h-10 rounded border border-border px-2 text-sm" value={type} onChange={(e) => setType(e.target.value)}>
+          <select className="h-10 rounded-xl border border-border bg-panel px-2 text-sm outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]" value={type} onChange={(e) => setType(e.target.value)}>
           <option value="">All types</option>
           <option value="trading_fee">Trading fee</option>
           <option value="deposit_fee">Deposit fee</option>
@@ -225,9 +226,18 @@ function EarningsPage() {
         }}
       >
         <div className="text-sm font-semibold w-full mb-1">Record manual earning</div>
-        <input type="number" className="h-10 w-28 rounded border border-border px-2" value={manual.amount} onChange={(e) => setManual({ ...manual, amount: Number(e.target.value) })} />
-        <input className="h-10 flex-1 rounded border border-border px-2" value={manual.description} onChange={(e) => setManual({ ...manual, description: e.target.value })} />
-        <button type="submit" className="h-10 rounded bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]">Add</button>
+        <input
+          type="number"
+          className="h-10 w-28 rounded-xl border border-border bg-panel px-3 text-sm outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
+          value={manual.amount}
+          onChange={(e) => setManual({ ...manual, amount: Number(e.target.value) })}
+        />
+        <input
+          className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-panel px-3 text-sm outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
+          value={manual.description}
+          onChange={(e) => setManual({ ...manual, description: e.target.value })}
+        />
+        <button type="submit" className="h-10 rounded-xl bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]">Add</button>
       </form>
       ) : null}
 
@@ -642,254 +652,6 @@ function KycPage() {
           </table>
         </div>
         <TablePagination page={pager.page} totalPages={pager.totalPages} total={pager.total} from={pager.from} to={pager.to} onPageChange={pager.setPage} />
-      </div>
-    </div>
-  )
-}
-
-type SettingDef = {
-  key: string
-  label: string
-  description: string
-  type: 'text' | 'number' | 'percent' | 'boolean' | 'select' | 'secret'
-  group: string
-  options?: string[]
-  defaultValue: string
-}
-
-function SettingsPage() {
-  const { refresh } = useCurrency()
-  const [defs, setDefs] = useState<SettingDef[]>([])
-  const [values, setValues] = useState<Record<string, string>>({})
-  const [fx, setFx] = useState<any>(null)
-  const [convertOnSave, setConvertOnSave] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [testingNow, setTestingNow] = useState(false)
-  const [msg, setMsg] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [originalCurrency, setOriginalCurrency] = useState('EUR')
-
-  const load = () =>
-    void api<{ definitions: SettingDef[]; values: Record<string, string>; fx: any }>('/api/admin/settings')
-      .then((r) => {
-        setDefs(r.definitions || [])
-        setValues(r.values || {})
-        setFx(r.fx || null)
-        const cur = r.values?.currency || 'USD'
-        setOriginalCurrency(cur)
-        setActiveCurrency(cur)
-      })
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'))
-
-  useEffect(() => {
-    load()
-  }, [])
-
-  const groups = Array.from(new Set(defs.map((d) => d.group)))
-
-  const setVal = (key: string, value: string) => setValues((prev) => ({ ...prev, [key]: value }))
-
-  if (error) return <p className="text-sell">{error}</p>
-  if (!defs.length) return <p className="text-secondary">Loading settings…</p>
-
-  const nextCur = values.currency || 'USD'
-  const ratePreview =
-    fx?.matrix?.[originalCurrency]?.[nextCur] != null ? Number(fx.matrix[originalCurrency][nextCur]) : null
-
-  return (
-    <div>
-      <PageHeader title="Settings">
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled={testingNow}
-            className="h-10 rounded-md border border-border px-4 text-sm font-semibold hover:bg-muted disabled:opacity-60"
-            onClick={async () => {
-              setTestingNow(true)
-              setMsg(null)
-              try {
-                const r = await api<{
-                  ok: boolean
-                  sandbox?: boolean
-                  apiStatus?: string
-                  error?: string
-                  sampleMinBtcUsd?: number
-                }>('/api/admin/payments/nowpayments/test', { method: 'POST' })
-                setMsg(
-                  r.ok
-                    ? `NOWPayments OK${r.sandbox ? ' (sandbox)' : ''} · ${r.apiStatus || 'connected'}${r.sampleMinBtcUsd != null ? ` · min BTC→USD ${r.sampleMinBtcUsd}` : ''}`
-                    : `NOWPayments failed: ${r.error || 'unknown'}`,
-                )
-              } catch (e) {
-                setMsg(e instanceof Error ? e.message : 'NOWPayments test failed')
-              } finally {
-                setTestingNow(false)
-              }
-            }}
-          >
-            {testingNow ? 'Testing…' : 'Test NOWPayments'}
-          </button>
-          <button
-            type="button"
-            disabled={saving}
-            className="h-10 rounded-md bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30] disabled:opacity-60"
-            onClick={async () => {
-              setSaving(true)
-              setMsg(null)
-              try {
-                const r = await api<{ conversion?: any; values?: { currency?: string } }>(
-                  '/api/admin/settings',
-                  {
-                    method: 'PUT',
-                    body: JSON.stringify({ settings: values, convertCurrency: convertOnSave }),
-                  },
-                )
-                const savedCurrency = r.values?.currency || values.currency || 'USD'
-                setActiveCurrency(savedCurrency)
-                await refresh()
-                if (r.conversion && r.conversion.rate !== 1) {
-                  setMsg(
-                    `Converted ${r.conversion.from} → ${r.conversion.to} at rate ${r.conversion.rate.toFixed(6)} (${r.conversion.source}, ${r.conversion.date}). Updated ${r.conversion.accounts} accounts, ${r.conversion.earnings} earnings, ${r.conversion.transactions} transactions.`,
-                  )
-                } else {
-                  setMsg(`All settings saved · currency ${savedCurrency}`)
-                }
-                load()
-              } catch (e) {
-                setMsg(e instanceof Error ? e.message : 'Save failed')
-              } finally {
-                setSaving(false)
-              }
-            }}
-          >
-            {saving ? 'Saving…' : 'Save all'}
-          </button>
-        </div>
-      </PageHeader>
-      <p className="mb-4 text-sm text-secondary">
-        Change currency to convert all balances, earnings, fees and limits using live ECB FX rates (USD / EUR / GBP).
-      </p>
-      {msg ? <p className="mb-4 rounded-md bg-muted px-3 py-2 text-sm">{msg}</p> : null}
-
-      {fx ? (
-        <section className="mb-6 rounded-xl border border-border bg-panel p-4">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-base font-semibold">Live FX rates (real price)</h2>
-            <span className="text-xs text-secondary">
-              {fx.source} · {fx.date}
-              <button
-                type="button"
-                className="ml-2 text-link"
-                onClick={() => void api('/api/admin/fx').then(setFx)}
-              >
-                Refresh
-              </button>
-            </span>
-          </div>
-          <div className="overflow-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-muted text-xs text-secondary">
-                <tr>
-                  <th className="px-3 py-2">From \\ To</th>
-                  {['USD', 'EUR', 'GBP'].map((c) => (
-                    <th key={c} className="px-3 py-2">
-                      {c}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {['USD', 'EUR', 'GBP'].map((from) => (
-                  <tr key={from} className="border-t">
-                    <td className="px-3 py-2 font-medium">{from}</td>
-                    {['USD', 'EUR', 'GBP'].map((to) => (
-                      <td key={to} className="px-3 py-2 tabular-nums">
-                        {Number(fx.matrix?.[from]?.[to] ?? 0).toFixed(4)}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={convertOnSave} onChange={(e) => setConvertOnSave(e.target.checked)} />
-              Convert balances with real FX when currency changes
-            </label>
-            {nextCur !== originalCurrency && ratePreview != null ? (
-              <span className="rounded bg-buy/10 px-2 py-1 text-buy">
-                Preview: 1 {originalCurrency} = {ratePreview.toFixed(4)} {nextCur}
-              </span>
-            ) : null}
-        </div>
-      </section>
-      ) : null}
-
-      <div className="space-y-6">
-        {groups.map((group) => (
-          <section key={group} className="rounded-xl border border-border bg-panel p-4">
-            <h2 className="mb-4 text-base font-semibold">{group}</h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              {defs
-                .filter((d) => d.group === group)
-                .map((d) => {
-                  const v = values[d.key] ?? d.defaultValue
-                  return (
-                    <label key={d.key} className="block rounded-lg border border-border/60 bg-muted/30 p-3">
-                      <div className="mb-1 flex items-center justify-between gap-2">
-                        <span className="text-sm font-medium">{d.label}</span>
-                        <span className="text-[10px] uppercase text-secondary">{d.key}</span>
-                      </div>
-                      <p className="mb-2 text-xs text-secondary">{d.description}</p>
-                      {d.type === 'boolean' ? (
-                        <select
-                          className="h-10 w-full rounded-md border border-border bg-panel px-2 text-sm"
-                          value={v === 'true' ? 'true' : 'false'}
-                          onChange={(e) => setVal(d.key, e.target.value)}
-                        >
-                          <option value="true">Enabled (true)</option>
-                          <option value="false">Disabled (false)</option>
-                        </select>
-                      ) : d.type === 'select' && d.options ? (
-                        <select
-                          className="h-10 w-full rounded-md border border-border bg-panel px-2 text-sm"
-                          value={v}
-                          onChange={(e) => setVal(d.key, e.target.value)}
-                        >
-                          {d.options.map((o) => (
-                            <option key={o} value={o}>
-                              {o}
-                            </option>
-                          ))}
-                        </select>
-                      ) : d.type === 'secret' ? (
-                        <input
-                          type="password"
-                          autoComplete="new-password"
-                          className="h-10 w-full rounded-md border border-border bg-panel px-3 text-sm font-mono"
-                          value={v}
-                          placeholder="Paste API key / secret"
-                          onChange={(e) => setVal(d.key, e.target.value)}
-                          onFocus={() => {
-                            if (v === '••••••••') setVal(d.key, '')
-                          }}
-                        />
-                      ) : (
-                        <input
-                          type={d.type === 'number' || d.type === 'percent' ? 'number' : 'text'}
-                          step={d.type === 'percent' ? '0.01' : undefined}
-                          className="h-10 w-full rounded-md border border-border bg-panel px-3 text-sm"
-                          value={v}
-                          onChange={(e) => setVal(d.key, e.target.value)}
-                        />
-                      )}
-                    </label>
-                  )
-                })}
-            </div>
-          </section>
-        ))}
       </div>
     </div>
   )

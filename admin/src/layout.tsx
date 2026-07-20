@@ -392,7 +392,7 @@ export function StatusBadge({ status }: { status: string }) {
 export const btnPrimary =
   'h-10 shrink-0 rounded-xl bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]'
 export const inputClass =
-  'h-10 w-full min-w-0 rounded-xl border border-border bg-panel px-3 text-sm text-text outline-none transition-colors placeholder:text-secondary hover:border-white/40 focus:border-accent sm:w-auto'
+  'h-10 w-full min-w-0 rounded-xl border border-border bg-panel px-3 text-sm text-text outline-none transition-colors placeholder:text-secondary hover:border-[#fcd535]/70 focus:border-[#fcd535] sm:w-auto'
 
 export const PAGE_SIZE = 10
 
