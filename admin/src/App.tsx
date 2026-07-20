@@ -21,8 +21,8 @@ import { SettingsPage } from './settings'
 function Login() {
   const { login, verify2fa, user, loading } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState('admin@nitajfx.online')
-  const [password, setPassword] = useState('admin123')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
   const [tempToken, setTempToken] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -33,6 +33,7 @@ function Login() {
     <div className="flex min-h-full items-center justify-center p-6">
       <form
         className="w-full max-w-md rounded-2xl border border-border bg-panel p-8 shadow-[0_20px_50px_rgba(0,0,0,0.45)]"
+        autoComplete="on"
         onSubmit={async (e: FormEvent) => {
           e.preventDefault()
           setError(null)
@@ -69,6 +70,10 @@ function Login() {
             <label className="mb-3 block text-sm">
               Email
               <input
+                type="email"
+                name="email"
+                autoComplete="username"
+                placeholder="Email"
                 className="mt-1 h-11 w-full rounded-md border border-border bg-panel px-3 text-text outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -78,6 +83,9 @@ function Login() {
               Password
               <input
                 type="password"
+                name="password"
+                autoComplete="current-password"
+                placeholder="Password"
                 className="mt-1 h-11 w-full rounded-md border border-border bg-panel px-3 text-text outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
