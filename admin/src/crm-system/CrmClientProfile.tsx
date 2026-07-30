@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+﻿import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   MessageCircle,
@@ -332,7 +332,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
     return (
       <div className="space-y-3">
         <Link to="/crm/clients" className="text-sm text-accent">
-          ← Clients
+          â† Clients
         </Link>
         <p className="text-sell">{error}</p>
       </div>
@@ -354,7 +354,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
     void saveProfile({ [editKey]: editVal || null })
   }
 
-  const editableValue = (key: string, display: ReactNode, raw: string) => {
+  const editableValue = (key: string, display: ReactNode) => {
     if (editKey === key) {
       return (
         <span className="flex items-center gap-1">
@@ -420,7 +420,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
             to="/crm/clients"
             className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-secondary hover:text-text"
           >
-            ← Clients
+            â† Clients
           </Link>
         </div>
 
@@ -558,13 +558,13 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                 <div>
                   <InfoRow
                     label="First Name"
-                    value={editableValue('name', first, c.name)}
+                    value={editableValue('name', first)}
                     editable
                     onEdit={() => startEdit('name', c.name)}
                   />
                   <InfoRow
                     label="Mobile"
-                    value={editableValue('phone', c.phone || '—', c.phone || '')}
+                    value={editableValue('phone', c.phone || '—')}
                     editable
                     onEdit={() => startEdit('phone', c.phone || '')}
                   />
@@ -575,7 +575,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                   <InfoRow label="Withdrawals Count" value={c.withdrawalCount ?? 0} />
                   <InfoRow
                     label="Campaign Name"
-                    value={editableValue('campaign', c.campaign || '—', c.campaign || '')}
+                    value={editableValue('campaign', c.campaign || '—')}
                     editable
                     onEdit={() => startEdit('campaign', c.campaign || '')}
                   />
@@ -589,7 +589,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                   <InfoRow label="CRM ID" value={c.crmNumber ?? '—'} />
                   <InfoRow
                     label="Citizenship"
-                    value={editableValue('nationality', c.nationality || '—', c.nationality || '')}
+                    value={editableValue('nationality', c.nationality || '—')}
                     editable
                     onEdit={() => startEdit('nationality', c.nationality || '')}
                   />
@@ -618,7 +618,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                   />
                   <InfoRow
                     label="UI Language"
-                    value={editableValue('language', c.language || '—', c.language || '')}
+                    value={editableValue('language', c.language || '—')}
                     editable
                     onEdit={() => startEdit('language', c.language || '')}
                   />
@@ -636,13 +636,13 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                 <div>
                   <InfoRow
                     label="Phone"
-                    value={editableValue('phone', c.phone || '—', c.phone || '')}
+                    value={editableValue('phone', c.phone || '—')}
                     editable
                     onEdit={() => startEdit('phone', c.phone || '')}
                   />
                   <InfoRow
                     label="Country"
-                    value={editableValue('country', c.country || '—', c.country || '')}
+                    value={editableValue('country', c.country || '—')}
                     editable
                     onEdit={() => startEdit('country', c.country || '')}
                   />
@@ -651,7 +651,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                   <InfoRow label="Last Login Date" value={fmt(c.lastSeenAt)} />
                   <InfoRow
                     label="Client Source"
-                    value={editableValue('clientSource', c.clientSource || '—', c.clientSource || '')}
+                    value={editableValue('clientSource', c.clientSource || '—')}
                     editable
                     onEdit={() => startEdit('clientSource', c.clientSource || '')}
                   />
@@ -777,7 +777,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                       {d.kind} / {d.docType}
                     </div>
                     <div className="text-secondary">
-                      {d.status} · {fmt(d.createdAt)}
+                      {d.status} Â· {fmt(d.createdAt)}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -855,7 +855,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                 .map((x: any) => (
                   <div key={x.id} className="rounded-lg border border-border px-3 py-2 text-[12px]">
                     <div className="text-[10px] text-secondary">
-                      {x.channel} · {x.staff?.name} · {fmt(x.createdAt)}
+                      {x.channel} Â· {x.staff?.name} Â· {fmt(x.createdAt)}
                     </div>
                     <div>{x.note}</div>
                   </div>
@@ -928,7 +928,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                   <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] text-secondary">
                     <span>
                       {n.staff?.name || 'Staff'}
-                      {me.role ? ` · ${me.role}` : ''}
+                      {me.role ? ` Â· ${me.role}` : ''}
                     </span>
                     <span className="flex items-center gap-2">
                       {fmt(n.createdAt)}
