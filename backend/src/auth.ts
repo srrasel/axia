@@ -1,8 +1,9 @@
 import type { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import { prisma } from './prisma.js'
+import { ALL_STAFF_ROLES, hasPermission, type Permission } from './permissions.js'
 
-export type StaffRole = 'ADMIN' | 'MANAGER' | 'EMPLOYEE'
+export type StaffRole = (typeof ALL_STAFF_ROLES)[number]
 export type AuthRole = 'USER' | StaffRole
 
 export type AuthUser = {
@@ -21,24 +22,24 @@ declare global {
 
 const secret = () => process.env.JWT_SECRET || 'seekapa-dev-secret'
 
-const STAFF: StaffRole[] = ['ADMIN', 'MANAGER', 'EMPLOYEE']
-const MANAGERS: StaffRole[] = ['ADMIN', 'MANAGER']
+const STAFF = new Set<string>(ALL_STAFF_ROLES)
+const MANAGERS = new Set(['ADMIN', 'MANAGER', 'TEAM_LEADER'])
 
 export function isStaff(role?: string): role is StaffRole {
-  return STAFF.includes(role as StaffRole)
+  return Boolean(role && STAFF.has(role))
 }
 
 export function isManager(role?: string) {
-  return MANAGERS.includes(role as StaffRole)
+  return Boolean(role && MANAGERS.has(role))
 }
 
 export function isAdmin(role?: string) {
   return role === 'ADMIN'
 }
 
-/** Manager / employee — desk staff with assigned-client scope only */
+/** Desk staff with assigned-client scope (everyone except ADMIN / USER) */
 export function isCrmStaff(role?: string) {
-  return role === 'MANAGER' || role === 'EMPLOYEE'
+  return isStaff(role) && role !== 'ADMIN'
 }
 
 /** Prisma filter: CRM staff only see their assigned clients */
@@ -74,7 +75,6 @@ export function authRequired(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-/** Legacy name — full platform admin only */
 export function adminRequired(req: Request, res: Response, next: NextFunction) {
   if (!req.user || req.user.role !== 'ADMIN') {
     return res.status(403).json({ error: 'Admin only' })
@@ -82,7 +82,6 @@ export function adminRequired(req: Request, res: Response, next: NextFunction) {
   next()
 }
 
-/** CRM desk staff: admin, manager, employee */
 export function staffRequired(req: Request, res: Response, next: NextFunction) {
   if (!req.user || !isStaff(req.user.role)) {
     return res.status(403).json({ error: 'Staff only' })
@@ -90,12 +89,26 @@ export function staffRequired(req: Request, res: Response, next: NextFunction) {
   next()
 }
 
-/** Manager powers: bonuses, price control, balance add */
 export function managerRequired(req: Request, res: Response, next: NextFunction) {
   if (!req.user || !isManager(req.user.role)) {
     return res.status(403).json({ error: 'Manager or admin only' })
   }
   next()
+}
+
+export function requirePermission(permission: Permission) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' })
+    if (req.user.role === 'ADMIN') return next()
+    const dbUser = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { role: true, permissionsJson: true },
+    })
+    if (!dbUser || !hasPermission(dbUser, permission)) {
+      return res.status(403).json({ error: 'Permission denied' })
+    }
+    next()
+  }
 }
 
 export async function loadUser(id: string) {
@@ -130,4 +143,16 @@ export function verify2faToken(token: string) {
   const payload = jwt.verify(token, secret()) as AuthUser & { purpose?: string }
   if (payload.purpose !== '2fa') throw new Error('Invalid 2FA token')
   return payload
+}
+
+export function clientIp(req: Request) {
+  return (
+    (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+    req.socket.remoteAddress ||
+    null
+  )
+}
+
+export function clientDevice(req: Request) {
+  return req.headers['user-agent']?.toString().slice(0, 180) || null
 }

@@ -338,6 +338,22 @@ export async function getSettingBool(key: string, fallback = false) {
   return v === 'true' || v === '1' || v === 'yes'
 }
 
+export async function getSetting(key: string) {
+  const settings = await loadSettings()
+  return settings[key] ?? null
+}
+
+export async function setSetting(key: string, value: string) {
+  await prisma.setting.upsert({
+    where: { key },
+    update: { value },
+    create: { key, value },
+  })
+  loadedAt = 0
+  await loadSettings(true)
+}
+
+
 export async function getPremiumThreshold() {
   return getSettingNumber('premium_threshold', 5000)
 }

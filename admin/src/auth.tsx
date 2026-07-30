@@ -5,11 +5,33 @@ export type AdminUser = {
   id: string
   email: string
   name: string
-  role: 'USER' | 'ADMIN' | 'MANAGER' | 'EMPLOYEE'
+  role:
+    | 'USER'
+    | 'ADMIN'
+    | 'MANAGER'
+    | 'EMPLOYEE'
+    | 'TEAM_LEADER'
+    | 'SALES'
+    | 'RETENTION'
+    | 'COMPLIANCE'
+    | 'FINANCE'
+    | 'SUPPORT'
+    | 'MARKETING'
   totpEnabled?: boolean
 }
 
-const STAFF = new Set(['ADMIN', 'MANAGER', 'EMPLOYEE'])
+const STAFF = new Set([
+  'ADMIN',
+  'MANAGER',
+  'EMPLOYEE',
+  'TEAM_LEADER',
+  'SALES',
+  'RETENTION',
+  'COMPLIANCE',
+  'FINANCE',
+  'SUPPORT',
+  'MARKETING',
+])
 
 type AuthState = {
   user: AdminUser | null

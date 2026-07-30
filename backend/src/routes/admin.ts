@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { prisma } from '../prisma.js'
 import { authRequired, isAdmin, isCrmStaff, isManager, managerRequired, publicUser, staffRequired, assignedClientsFilter, adminRequired } from '../auth.js'
-import { initialsFromName, referralCode } from '../trading.js'
+import { initialsFromName, referralCode, calcPnl } from '../trading.js'
 import { settleTradeClose } from '../settle.js'
 import { recordEarning } from '../earnings.js'
 import {
@@ -421,6 +421,35 @@ adminRouter.get('/trades', async (req, res) => {
     take: 200,
   })
   return res.json({ trades })
+})
+
+/** Admin: set open / mark price on an open trade in real time */
+adminRouter.patch('/trades/:id/price', adminRequired, async (req, res) => {
+  const schema = z.object({
+    openPrice: z.number().positive().optional(),
+    currentPrice: z.number().positive().optional(),
+    lockMark: z.boolean().optional(),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
+  if (parsed.data.openPrice == null && parsed.data.currentPrice == null) {
+    return res.status(400).json({ error: 'Provide openPrice and/or currentPrice' })
+  }
+
+  const trade = await prisma.trade.findUnique({ where: { id: String(req.params.id) } })
+  if (!trade || !['open', 'pending'].includes(trade.status)) {
+    return res.status(404).json({ error: 'Open trade not found' })
+  }
+
+  const data: Record<string, unknown> = {}
+  if (parsed.data.openPrice != null) data.openPrice = parsed.data.openPrice
+  if (parsed.data.currentPrice != null) {
+    data.currentPrice = parsed.data.currentPrice
+    data.markLocked = parsed.data.lockMark ?? true
+  }
+
+  const updated = await prisma.trade.update({ where: { id: trade.id }, data })
+  return res.json({ trade: updated, floatingPnl: calcPnl(updated, updated.currentPrice) })
 })
 
 adminRouter.post('/trades/:id/close', async (req, res) => {

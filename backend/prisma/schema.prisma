@@ -12,6 +12,13 @@ enum Role {
   ADMIN
   MANAGER
   EMPLOYEE
+  TEAM_LEADER
+  SALES
+  RETENTION
+  COMPLIANCE
+  FINANCE
+  SUPPORT
+  MARKETING
 }
 
 enum AccountType {
@@ -68,6 +75,29 @@ enum KycStatus {
   rejected
 }
 
+enum CrmCategory {
+  BAD
+  CONVERSION
+  FTD
+  NEW
+  ONLINE
+  ONLINE_FTD
+  POTENTIAL
+  PRACTICE
+  RETENTION
+  TEST
+}
+
+enum CrmClientStatus {
+  NEW
+  ACTIVE
+  INACTIVE
+  POTENTIAL
+  BAD
+  RETENTION
+  BLOCKED
+}
+
 enum EarningType {
   trading_fee
   deposit_fee
@@ -79,45 +109,89 @@ enum EarningType {
 }
 
 model User {
-  id                 String         @id @default(cuid())
-  email              String         @unique
+  id                 String          @id @default(cuid())
+  email              String          @unique
   passwordHash       String
   name               String
   initials           String
-  nationality        String         @default("Saudi Arabia")
-  role               Role           @default(USER)
-  verified           Boolean        @default(false)
-  funded             Boolean        @default(false)
-  totalDeposited     Float          @default(0)
-  questionnaireDone  Boolean        @default(false)
-  referralCode       String         @unique
+  phone              String?
+  nationality        String          @default("Saudi Arabia")
+  country            String          @default("Saudi Arabia")
+  language           String          @default("en")
+  role               Role            @default(USER)
+  verified           Boolean         @default(false)
+  funded             Boolean         @default(false)
+  totalDeposited     Float           @default(0)
+  questionnaireDone  Boolean         @default(false)
+  referralCode       String          @unique
   referredById       String?
-  referredBy         User?          @relation("Referrals", fields: [referredById], references: [id])
-  referrals          User[]         @relation("Referrals")
+  referredBy         User?           @relation("Referrals", fields: [referredById], references: [id])
+  referrals          User[]          @relation("Referrals")
   assignedToId       String?
-  assignedTo         User?          @relation("ClientAssignment", fields: [assignedToId], references: [id])
-  assignedClients    User[]         @relation("ClientAssignment")
+  assignedTo         User?           @relation("ClientAssignment", fields: [assignedToId], references: [id])
+  assignedClients    User[]          @relation("ClientAssignment")
   lastSeenAt         DateTime?
-  kycStatus          KycStatus      @default(none)
-  active             Boolean        @default(true)
-  totpEnabled        Boolean        @default(false)
+  lastInteractionAt  DateTime?
+  kycStatus          KycStatus       @default(none)
+  emailVerified      Boolean         @default(false)
+  phoneVerified      Boolean         @default(false)
+  addressVerified    Boolean         @default(false)
+  identityVerified   Boolean         @default(false)
+  amlStatus          KycStatus       @default(none)
+  tradingRestricted  Boolean         @default(false)
+  active             Boolean         @default(true)
+  crmNumber          Int?            @unique
+  crmCategory        CrmCategory     @default(NEW)
+  crmStatus          CrmClientStatus @default(NEW)
+  clientSource       String?
+  /// Marketing attribution
+  campaign           String?
+  campaignId         String?
+  campaignType       String?
+  mediaSource        String?
+  adGroup            String?
+  creative           String?
+  keyword            String?
+  landingPage        String?
+  utmSource          String?
+  utmMedium          String?
+  utmCampaign        String?
+  utmContent         String?
+  utmTerm            String?
+  clickId            String?
+  address            String?
+  dateOfBirth        String?
+  totpEnabled        Boolean         @default(false)
   totpSecret         String?
   totpTempSecret     String?
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
   accounts           Account[]
   trades             Trade[]
   transactions       Transaction[]
   notifications      Notification[]
   kycDocuments       KycDocument[]
   earnings           PlatformEarning[]
-  contactsAsClient   ContactLog[]   @relation("ContactClient")
-  contactsAsStaff    ContactLog[]   @relation("ContactStaff")
+  contactsAsClient   ContactLog[]    @relation("ContactClient")
+  contactsAsStaff    ContactLog[]    @relation("ContactStaff")
   priceOverrides     PriceOverride[]
+  crmComments        CrmComment[]    @relation("CrmCommentClient")
+  crmCommentsAuthored CrmComment[]   @relation("CrmCommentStaff")
+  crmActivities      CrmActivity[]   @relation("CrmActivityClient")
+  crmActivitiesAuthored CrmActivity[] @relation("CrmActivityStaff")
+  staffNotifications StaffNotification[] @relation("StaffNotifRecipient")
+  loginLogs          LoginLog[]
+  staffSessions      StaffSession[]
+  /// Override default role permissions (JSON string array of permission keys)
+  permissionsJson    String?
 
   @@index([role])
   @@index([lastSeenAt])
   @@index([assignedToId])
+  @@index([crmCategory])
+  @@index([crmStatus])
+  @@index([country])
+  @@index([clientSource])
 }
 
 model Account {
@@ -158,6 +232,8 @@ model Trade {
   realizedPnl  Float?
   commission   Float         @default(0)
   swap         Float         @default(0)
+  /// When true, market tick will not overwrite currentPrice (admin forced mark)
+  markLocked   Boolean       @default(false)
   category     AssetCategory
   source       TradeSource   @default(self)
   userId       String
@@ -268,6 +344,88 @@ model ContactLog {
 
   @@index([clientId])
   @@index([staffId])
+}
+
+/** CRM internal comments */
+model CrmComment {
+  id          String   @id @default(cuid())
+  body        String
+  attachment  String?
+  clientId    String
+  staffId     String
+  client      User     @relation("CrmCommentClient", fields: [clientId], references: [id], onDelete: Cascade)
+  staff       User     @relation("CrmCommentStaff", fields: [staffId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([clientId])
+}
+
+/** CRM activity / audit log */
+model CrmActivity {
+  id        String   @id @default(cuid())
+  action    String
+  detail    String?
+  ip        String?
+  device    String?
+  clientId  String
+  staffId   String?
+  client    User     @relation("CrmActivityClient", fields: [clientId], references: [id], onDelete: Cascade)
+  staff     User?    @relation("CrmActivityStaff", fields: [staffId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([clientId])
+  @@index([createdAt])
+}
+
+/** CRM staff inbox notifications */
+model StaffNotification {
+  id          String   @id @default(cuid())
+  type        String
+  title       String
+  body        String
+  clientId    String?
+  recipientId String?
+  recipient   User?    @relation("StaffNotifRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([recipientId, read])
+  @@index([createdAt])
+  @@index([type])
+}
+
+/** Security: login attempts / history */
+model LoginLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  email     String?
+  ip        String?
+  device    String?
+  success   Boolean  @default(false)
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([ip])
+}
+
+/** Security: active staff sessions */
+model StaffSession {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash    String
+  ip           String?
+  device       String?
+  lastActiveAt DateTime @default(now())
+  revoked      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([userId, revoked])
+  @@index([tokenHash])
 }
 
 /** Per-country bank transfer details (managed from admin panel) */

@@ -1353,7 +1353,12 @@ export function CrmStaffPage() {
   const isAdmin = user?.role === 'ADMIN'
   const [staff, setStaff] = useState<any[]>([])
   const [showCreate, setShowCreate] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', password: 'crm123456', role: 'EMPLOYEE' as 'MANAGER' | 'EMPLOYEE' })
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: 'crm123456',
+    role: 'SALES' as string,
+  })
   const [error, setError] = useState<string | null>(null)
   const [msg, setMsg] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
@@ -1378,7 +1383,7 @@ export function CrmStaffPage() {
       await api('/api/admin/crm/staff', { method: 'POST', body: JSON.stringify(form) })
       setMsg(`Created ${form.role.toLowerCase()} ${form.name}`)
       setShowCreate(false)
-      setForm({ name: '', email: '', password: 'crm123456', role: 'EMPLOYEE' })
+      setForm({ name: '', email: '', password: 'crm123456', role: 'SALES' })
       load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Create failed')
@@ -1452,10 +1457,23 @@ export function CrmStaffPage() {
           <select
             className={inputClass}
             value={form.role}
-            onChange={(e) => setForm({ ...form, role: e.target.value as 'MANAGER' | 'EMPLOYEE' })}
+            onChange={(e) => setForm({ ...form, role: e.target.value })}
           >
-            <option value="EMPLOYEE">Employee</option>
-            <option value="MANAGER">Manager</option>
+            {[
+              'MANAGER',
+              'TEAM_LEADER',
+              'SALES',
+              'RETENTION',
+              'COMPLIANCE',
+              'FINANCE',
+              'SUPPORT',
+              'MARKETING',
+              'EMPLOYEE',
+            ].map((r) => (
+              <option key={r} value={r}>
+                {r.replaceAll('_', ' ')}
+              </option>
+            ))}
           </select>
           <button type="submit" disabled={busy === 'create'} className={`${btnPrimary} disabled:opacity-60`}>
             {busy === 'create' ? 'Creating…' : 'Save'}
@@ -1491,8 +1509,21 @@ export function CrmStaffPage() {
                           disabled={busy === s.id}
                           onChange={(e) => void patchStaff(s.id, { role: e.target.value })}
                         >
-                          <option value="EMPLOYEE">Employee</option>
-                          <option value="MANAGER">Manager</option>
+                          {[
+                            'MANAGER',
+                            'TEAM_LEADER',
+                            'SALES',
+                            'RETENTION',
+                            'COMPLIANCE',
+                            'FINANCE',
+                            'SUPPORT',
+                            'MARKETING',
+                            'EMPLOYEE',
+                          ].map((r) => (
+                            <option key={r} value={r}>
+                              {r.replaceAll('_', ' ')}
+                            </option>
+                          ))}
                         </select>
                       ) : (
                         <StatusBadge status={s.role} />

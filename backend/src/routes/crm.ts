@@ -179,7 +179,23 @@ crmRouter.patch('/clients/:id/assign', adminRequired, async (req, res) => {
 
   if (parsed.data.assignedToId) {
     const staff = await prisma.user.findFirst({
-      where: { id: parsed.data.assignedToId, role: { in: ['ADMIN', 'MANAGER', 'EMPLOYEE'] } },
+      where: {
+        id: parsed.data.assignedToId,
+        role: {
+          in: [
+            'ADMIN',
+            'MANAGER',
+            'EMPLOYEE',
+            'TEAM_LEADER',
+            'SALES',
+            'RETENTION',
+            'COMPLIANCE',
+            'FINANCE',
+            'SUPPORT',
+            'MARKETING',
+          ],
+        },
+      },
     })
     if (!staff) return res.status(400).json({ error: 'Staff member not found' })
   }
@@ -349,7 +365,22 @@ crmRouter.get('/performance', async (req, res) => {
 
 crmRouter.get('/staff', adminRequired, async (_req, res) => {
   const staff = await prisma.user.findMany({
-    where: { role: { in: ['ADMIN', 'MANAGER', 'EMPLOYEE'] } },
+    where: {
+      role: {
+        in: [
+          'ADMIN',
+          'MANAGER',
+          'EMPLOYEE',
+          'TEAM_LEADER',
+          'SALES',
+          'RETENTION',
+          'COMPLIANCE',
+          'FINANCE',
+          'SUPPORT',
+          'MARKETING',
+        ],
+      },
+    },
     select: {
       id: true,
       name: true,
@@ -371,7 +402,17 @@ crmRouter.post('/staff', adminRequired, async (req, res) => {
     name: z.string().min(2),
     email: z.string().email(),
     password: z.string().min(6),
-    role: z.enum(['MANAGER', 'EMPLOYEE']),
+    role: z.enum([
+      'MANAGER',
+      'EMPLOYEE',
+      'TEAM_LEADER',
+      'SALES',
+      'RETENTION',
+      'COMPLIANCE',
+      'FINANCE',
+      'SUPPORT',
+      'MARKETING',
+    ]),
   })
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
@@ -411,7 +452,19 @@ crmRouter.post('/staff', adminRequired, async (req, res) => {
 crmRouter.patch('/staff/:id', adminRequired, async (req, res) => {
   const schema = z.object({
     name: z.string().min(2).optional(),
-    role: z.enum(['MANAGER', 'EMPLOYEE']).optional(),
+    role: z
+      .enum([
+        'MANAGER',
+        'EMPLOYEE',
+        'TEAM_LEADER',
+        'SALES',
+        'RETENTION',
+        'COMPLIANCE',
+        'FINANCE',
+        'SUPPORT',
+        'MARKETING',
+      ])
+      .optional(),
     active: z.boolean().optional(),
     password: z.string().min(6).optional(),
   })
@@ -419,7 +472,23 @@ crmRouter.patch('/staff/:id', adminRequired, async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
 
   const target = await prisma.user.findFirst({
-    where: { id: String(req.params.id), role: { in: ['MANAGER', 'EMPLOYEE', 'ADMIN'] } },
+    where: {
+      id: String(req.params.id),
+      role: {
+        in: [
+          'MANAGER',
+          'EMPLOYEE',
+          'ADMIN',
+          'TEAM_LEADER',
+          'SALES',
+          'RETENTION',
+          'COMPLIANCE',
+          'FINANCE',
+          'SUPPORT',
+          'MARKETING',
+        ],
+      },
+    },
   })
   if (!target) return res.status(404).json({ error: 'Staff member not found' })
   if (target.role === 'ADMIN') {
@@ -543,23 +612,62 @@ crmRouter.post('/trades/:id/close', async (req, res) => {
   return res.json({ ok: true, ...result })
 })
 
-/** Set live mark price on an open trade */
+/** Set live open and/or mark price on an open trade (real-time CRM control) */
 crmRouter.patch('/trades/:id/price', async (req, res) => {
-  const schema = z.object({ currentPrice: z.number().positive() })
+  const schema = z.object({
+    openPrice: z.number().positive().optional(),
+    currentPrice: z.number().positive().optional(),
+    /** Keep mark from being overwritten by market tick */
+    lockMark: z.boolean().optional(),
+  })
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
+  if (parsed.data.openPrice == null && parsed.data.currentPrice == null && parsed.data.lockMark == null) {
+    return res.status(400).json({ error: 'Provide openPrice and/or currentPrice' })
+  }
 
   const trade = await prisma.trade.findUnique({ where: { id: String(req.params.id) } })
-  if (!trade || trade.status !== 'open') return res.status(404).json({ error: 'Open trade not found' })
+  if (!trade || !['open', 'pending'].includes(trade.status)) {
+    return res.status(404).json({ error: 'Open trade not found' })
+  }
   if (!(await assertAssignedClient(req, trade.userId))) {
     return res.status(403).json({ error: 'Not your client trade' })
   }
 
+  const data: Record<string, unknown> = {}
+  if (parsed.data.openPrice != null) data.openPrice = parsed.data.openPrice
+  if (parsed.data.currentPrice != null) {
+    data.currentPrice = parsed.data.currentPrice
+    data.markLocked = parsed.data.lockMark ?? true
+  }
+  if (parsed.data.lockMark != null && parsed.data.currentPrice == null) {
+    data.markLocked = parsed.data.lockMark
+  }
+
   const updated = await prisma.trade.update({
     where: { id: trade.id },
-    data: { currentPrice: parsed.data.currentPrice },
+    data,
   })
-  return res.json({ trade: updated, floatingPnl: calcPnl(updated, updated.currentPrice) })
+
+  await prisma.crmActivity.create({
+    data: {
+      clientId: trade.userId,
+      staffId: req.user!.id,
+      action: 'Trade price updated',
+      detail: [
+        parsed.data.openPrice != null ? `open=${parsed.data.openPrice}` : null,
+        parsed.data.currentPrice != null ? `mark=${parsed.data.currentPrice}` : null,
+        data.markLocked ? 'markLocked' : null,
+      ]
+        .filter(Boolean)
+        .join(', '),
+    },
+  }).catch(() => undefined)
+
+  return res.json({
+    trade: updated,
+    floatingPnl: calcPnl(updated, updated.currentPrice),
+  })
 })
 
 /** Award bonus / add amount to client account */

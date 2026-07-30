@@ -6,17 +6,36 @@ import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination, c
 import { setActiveCurrency } from './currency'
 import { BrandLogo } from './BrandLogo'
 import { Dashboard } from './dashboard'
+import { CrmPricesPage, CrmStaffPage } from './crm'
 import {
-  CrmClientDetailPage,
-  CrmDeskPage,
-  CrmOnlinePage,
-  CrmPerformancePage,
-  CrmPricesPage,
-  CrmStaffPage,
-  CrmTransactionsPage,
-} from './crm'
+  CrmClientProfilePage,
+  CrmClientsPage,
+  CrmDashboardPage,
+  CrmRolesPage,
+  CrmNotificationsPage,
+  CrmAnalyticsPage,
+  CrmSecurityPage,
+  CrmSystemSettingsPage,
+} from './crm-system'
 import { BankAccountsPage } from './bank-accounts'
 import { SettingsPage } from './settings'
+
+function CrmClientsRoute() {
+  const { user } = useAuth()
+  if (!user) return null
+  return <CrmClientsPage me={user} />
+}
+
+function CrmClientProfileRoute() {
+  const { user } = useAuth()
+  if (!user) return null
+  return <CrmClientProfilePage me={user} />
+}
+
+function CrmDeskRedirect() {
+  const { id } = useParams()
+  return <Navigate to={id ? `/crm/clients/${id}` : '/crm/clients'} replace />
+}
 
 function Login() {
   const { login, verify2fa, user, loading } = useAuth()
@@ -136,8 +155,13 @@ function Protected({ children }: { children: ReactNode }) {
 function RoleGate({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const location = useLocation()
-  if (user && isCrmStaffRole(user.role) && !canAccessPath(user.role, location.pathname)) {
-    return <Navigate to="/" replace />
+  if (user && isCrmStaffRole(user.role)) {
+    if (location.pathname === '/' || location.pathname === '') {
+      return <Navigate to="/crm" replace />
+    }
+    if (!canAccessPath(user.role, location.pathname)) {
+      return <Navigate to="/crm" replace />
+    }
   }
   return children
 }
@@ -470,13 +494,53 @@ function AccountsPage() {
 
 function TradesPage() {
   const [trades, setTrades] = useState<any[]>([])
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useState('open')
+  const [edits, setEdits] = useState<Record<string, { openPrice: string; currentPrice: string }>>({})
+  const [busy, setBusy] = useState<string | null>(null)
+  const [msg, setMsg] = useState<string | null>(null)
   const pager = usePagination(trades)
-  const load = () => void api<{ trades: any[] }>(`/api/admin/trades${status ? `?status=${status}` : ''}`).then((r) => setTrades(r.trades))
-  useEffect(() => { load() }, [status])
+  const load = () =>
+    void api<{ trades: any[] }>(`/api/admin/trades${status ? `?status=${status}` : ''}`).then((r) => {
+      setTrades(r.trades)
+      const next: Record<string, { openPrice: string; currentPrice: string }> = {}
+      for (const t of r.trades) {
+        next[t.id] = {
+          openPrice: String(t.openPrice),
+          currentPrice: String(t.currentPrice),
+        }
+      }
+      setEdits(next)
+    })
+  useEffect(() => {
+    load()
+    const t = setInterval(load, 3000)
+    return () => clearInterval(t)
+  }, [status])
+
+  async function savePrice(t: any) {
+    const openPrice = Number(edits[t.id]?.openPrice)
+    const currentPrice = Number(edits[t.id]?.currentPrice)
+    if (!Number.isFinite(openPrice) || openPrice <= 0) return
+    if (!Number.isFinite(currentPrice) || currentPrice <= 0) return
+    setBusy(t.id)
+    setMsg(null)
+    try {
+      await api(`/api/admin/trades/${t.id}/price`, {
+        method: 'PATCH',
+        body: JSON.stringify({ openPrice, currentPrice, lockMark: true }),
+      })
+      setMsg(`Updated ${t.symbol} open=${openPrice} mark=${currentPrice} (locked)`)
+      load()
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Failed')
+    } finally {
+      setBusy(null)
+    }
+  }
+
   return (
     <div>
-      <PageHeader title="Trades">
+      <PageHeader title="Trades" subtitle="Change open (entry) or mark price in real time — client pages refresh live.">
         <select className="h-10 rounded border border-border px-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">All</option>
           <option value="open">Open</option>
@@ -484,28 +548,102 @@ function TradesPage() {
           <option value="closed">Closed</option>
         </select>
       </PageHeader>
+      {msg && <p className="mb-3 text-sm text-accent">{msg}</p>}
       <div className="overflow-hidden rounded-xl border border-border bg-panel">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2">User</th><th className="px-3 py-2">Symbol</th><th className="px-3 py-2">Side</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Vol</th><th className="px-3 py-2">Open</th><th className="px-3 py-2">Current</th><th className="px-3 py-2">Action</th></tr></thead>
+            <thead className="bg-muted text-xs text-secondary">
+              <tr>
+                <th className="px-3 py-2">User</th>
+                <th className="px-3 py-2">Symbol</th>
+                <th className="px-3 py-2">Side</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Vol</th>
+                <th className="px-3 py-2">Open (entry)</th>
+                <th className="px-3 py-2">Current (mark)</th>
+                <th className="px-3 py-2">Action</th>
+              </tr>
+            </thead>
             <tbody>
               {pager.pageItems.map((t) => (
                 <tr key={t.id} className="border-t border-border">
                   <td className="px-3 py-2">{t.user.name}</td>
-                  <td className="px-3 py-2">{t.symbol}</td>
+                  <td className="px-3 py-2 font-medium">{t.symbol}</td>
                   <td className="px-3 py-2">{t.side}</td>
-                  <td className="px-3 py-2">{t.status}</td>
-                  <td className="px-3 py-2">{t.volume}</td>
-                  <td className="px-3 py-2">{t.openPrice}</td>
-                  <td className="px-3 py-2">{t.currentPrice}</td>
                   <td className="px-3 py-2">
-                    {t.status === 'open' ? (
-                      <button type="button" className="text-link" onClick={async () => { await api(`/api/admin/trades/${t.id}/close`, { method: 'POST' }); load() }}>Force close</button>
-                    ) : '—'}
+                    {t.status}
+                    {t.markLocked ? <span className="ml-1 text-[10px] text-accent">locked</span> : null}
+                  </td>
+                  <td className="px-3 py-2">{t.volume}</td>
+                  <td className="px-3 py-2">
+                    {t.status === 'open' || t.status === 'pending' ? (
+                      <input
+                        className="h-8 w-28 rounded border border-border bg-muted/30 px-2 text-xs tabular-nums outline-none hover:border-[#fcd535]/70 focus:border-[#fcd535]"
+                        value={edits[t.id]?.openPrice ?? ''}
+                        onChange={(e) =>
+                          setEdits((s) => ({
+                            ...s,
+                            [t.id]: { ...(s[t.id] || { openPrice: '', currentPrice: '' }), openPrice: e.target.value },
+                          }))
+                        }
+                      />
+                    ) : (
+                      t.openPrice
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
+                    {t.status === 'open' || t.status === 'pending' ? (
+                      <input
+                        className="h-8 w-28 rounded border border-border bg-muted/30 px-2 text-xs tabular-nums outline-none hover:border-[#fcd535]/70 focus:border-[#fcd535]"
+                        value={edits[t.id]?.currentPrice ?? ''}
+                        onChange={(e) =>
+                          setEdits((s) => ({
+                            ...s,
+                            [t.id]: { ...(s[t.id] || { openPrice: '', currentPrice: '' }), currentPrice: e.target.value },
+                          }))
+                        }
+                      />
+                    ) : (
+                      t.currentPrice
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
+                    {t.status === 'open' || t.status === 'pending' ? (
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          disabled={busy === t.id}
+                          className="text-xs font-semibold text-[#fcd535] disabled:opacity-50"
+                          onClick={() => void savePrice(t)}
+                        >
+                          Apply price
+                        </button>
+                        {t.status === 'open' ? (
+                          <button
+                            type="button"
+                            className="text-xs text-link"
+                            onClick={async () => {
+                              await api(`/api/admin/trades/${t.id}/close`, { method: 'POST' })
+                              load()
+                            }}
+                          >
+                            Force close
+                          </button>
+                        ) : null}
+                      </div>
+                    ) : (
+                      '—'
+                    )}
                   </td>
                 </tr>
               ))}
-              {pager.total === 0 ? <tr><td colSpan={8} className="px-3 py-8 text-center text-secondary">No trades</td></tr> : null}
+              {pager.total === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-3 py-8 text-center text-secondary">
+                    No trades
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>
@@ -681,11 +819,19 @@ export default function App() {
         >
           <Route path="/" element={<Dashboard />} />
           <Route path="/earnings" element={<EarningsPage />} />
-          <Route path="/crm/transactions" element={<CrmTransactionsPage />} />
-          <Route path="/crm/desk" element={<CrmDeskPage />} />
-          <Route path="/crm/desk/:id" element={<CrmClientDetailPage />} />
-          <Route path="/crm/online" element={<CrmOnlinePage />} />
-          <Route path="/crm/performance" element={<CrmPerformancePage />} />
+          <Route path="/crm" element={<CrmDashboardPage />} />
+          <Route path="/crm/clients" element={<CrmClientsRoute />} />
+          <Route path="/crm/clients/:id" element={<CrmClientProfileRoute />} />
+          <Route path="/crm/notifications" element={<CrmNotificationsPage />} />
+          <Route path="/crm/analytics" element={<CrmAnalyticsPage />} />
+          <Route path="/crm/security" element={<CrmSecurityPage />} />
+          <Route path="/crm/roles" element={<CrmRolesPage />} />
+          <Route path="/crm/system" element={<CrmSystemSettingsPage />} />
+          <Route path="/crm/transactions" element={<Navigate to="/crm/clients" replace />} />
+          <Route path="/crm/desk" element={<Navigate to="/crm/clients" replace />} />
+          <Route path="/crm/desk/:id" element={<CrmDeskRedirect />} />
+          <Route path="/crm/online" element={<Navigate to="/crm/clients?category=ONLINE" replace />} />
+          <Route path="/crm/performance" element={<Navigate to="/crm" replace />} />
           <Route path="/crm/prices" element={<CrmPricesPage />} />
           <Route path="/crm/staff" element={<CrmStaffPage />} />
           <Route path="/users" element={<UsersPage />} />

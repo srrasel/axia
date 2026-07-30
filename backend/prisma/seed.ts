@@ -256,6 +256,31 @@ async function seedStaff() {
     })
   }
 
+  // Backfill CRM numbers / defaults for existing clients
+  const clientsMissingCrm = await prisma.user.findMany({
+    where: { role: 'USER', crmNumber: null },
+    orderBy: { createdAt: 'asc' },
+    select: { id: true },
+  })
+  let nextCrm = 10001
+  const lastCrm = await prisma.user.findFirst({
+    where: { crmNumber: { not: null } },
+    orderBy: { crmNumber: 'desc' },
+    select: { crmNumber: true },
+  })
+  if (lastCrm?.crmNumber) nextCrm = lastCrm.crmNumber + 1
+  for (const c of clientsMissingCrm) {
+    await prisma.user.update({
+      where: { id: c.id },
+      data: {
+        crmNumber: nextCrm++,
+        crmCategory: 'NEW',
+        crmStatus: 'NEW',
+        lastInteractionAt: new Date(),
+      },
+    })
+  }
+
   // Seed country bank accounts (inline — Docker image has no /src)
   const bankCountries = [
     { countryCode: 'SA', label: 'Saudi Arabia', sortOrder: 1, contactOnly: false },

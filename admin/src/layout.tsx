@@ -9,11 +9,7 @@ import {
   ArrowLeftRight,
   Landmark,
   Coins,
-  Headset,
-  Wifi,
-  TrendingUp,
-  Receipt,
-  Gauge,
+  Contact,
   Building2,
   Menu,
   X,
@@ -22,6 +18,11 @@ import {
   ChevronsLeft,
   ChevronsRight,
   UserCog,
+  Bell,
+  BarChart3,
+  Shield,
+  SlidersHorizontal,
+  Gauge,
   type LucideIcon,
 } from 'lucide-react'
 import clsx from 'clsx'
@@ -37,18 +38,32 @@ export function isAdminRole(role?: string) {
 }
 
 export function isCrmStaffRole(role?: string) {
-  return role === 'MANAGER' || role === 'EMPLOYEE'
+  return Boolean(
+    role &&
+      role !== 'USER' &&
+      role !== 'ADMIN' &&
+      [
+        'MANAGER',
+        'EMPLOYEE',
+        'TEAM_LEADER',
+        'SALES',
+        'RETENTION',
+        'COMPLIANCE',
+        'FINANCE',
+        'SUPPORT',
+        'MARKETING',
+      ].includes(role),
+  )
 }
 
-/** Paths CRM staff (manager/employee) are allowed to open */
+/** Paths CRM staff are allowed to open */
 export const CRM_STAFF_PATHS = [
   '/',
-  '/earnings',
-  '/trades',
-  '/crm/transactions',
-  '/crm/desk',
-  '/crm/online',
-  '/crm/performance',
+  '/crm',
+  '/crm/clients',
+  '/crm/notifications',
+  '/crm/analytics',
+  '/crm/security',
 ] as const
 
 export function canAccessPath(role: string | undefined, pathname: string) {
@@ -56,29 +71,42 @@ export function canAccessPath(role: string | undefined, pathname: string) {
   if (isAdminRole(role)) return true
   if (!isCrmStaffRole(role)) return false
   if (pathname === '/' || pathname === '') return true
-  if (CRM_STAFF_PATHS.some((p) => p !== '/' && (pathname === p || pathname.startsWith(p + '/')))) return true
+  if (pathname === '/crm' || pathname.startsWith('/crm/clients')) return true
+  if (pathname.startsWith('/crm/notifications')) return true
+  if (pathname.startsWith('/crm/analytics')) return true
+  if (pathname.startsWith('/crm/security')) return true
   return false
 }
 
-type NavItem = { to: string; icon: LucideIcon; label: string; end?: boolean; adminOnly?: boolean; crmAllowed?: boolean }
+type NavItem = {
+  to: string
+  icon: LucideIcon
+  label: string
+  end?: boolean
+  adminOnly?: boolean
+  crmAllowed?: boolean
+}
 
 const navGroups: { title: string; items: NavItem[] }[] = [
   {
     title: 'Overview',
     items: [
-      { to: '/', icon: LayoutDashboard, label: 'Dashboard', end: true, crmAllowed: true },
-      { to: '/earnings', icon: Coins, label: 'Earnings', crmAllowed: true },
+      { to: '/', icon: LayoutDashboard, label: 'Dashboard', end: true, adminOnly: true },
+      { to: '/earnings', icon: Coins, label: 'Earnings', adminOnly: true },
     ],
   },
   {
     title: 'CRM',
     items: [
-      { to: '/crm/transactions', icon: Receipt, label: 'Transactions', crmAllowed: true },
-      { to: '/crm/desk', icon: Headset, label: 'Client desk', crmAllowed: true },
-      { to: '/crm/online', icon: Wifi, label: 'Online now', crmAllowed: true },
-      { to: '/crm/performance', icon: TrendingUp, label: 'Winners / losers', crmAllowed: true },
+      { to: '/crm', icon: LayoutDashboard, label: 'CRM Dashboard', end: true, crmAllowed: true },
+      { to: '/crm/clients', icon: Contact, label: 'Clients', crmAllowed: true },
+      { to: '/crm/notifications', icon: Bell, label: 'Notifications', crmAllowed: true },
+      { to: '/crm/analytics', icon: BarChart3, label: 'Analytics', crmAllowed: true },
+      { to: '/crm/security', icon: Shield, label: 'Security', crmAllowed: true },
+      { to: '/crm/roles', icon: UserCog, label: 'Roles', adminOnly: true },
+      { to: '/crm/system', icon: SlidersHorizontal, label: 'CRM Settings', adminOnly: true },
       { to: '/crm/prices', icon: Gauge, label: 'Market prices', adminOnly: true },
-      { to: '/crm/staff', icon: UserCog, label: 'CRM users', adminOnly: true },
+      { to: '/crm/staff', icon: Users, label: 'CRM users', adminOnly: true },
     ],
   },
   {
@@ -86,7 +114,7 @@ const navGroups: { title: string; items: NavItem[] }[] = [
     items: [
       { to: '/users', icon: Users, label: 'Users', adminOnly: true },
       { to: '/accounts', icon: Landmark, label: 'Accounts', adminOnly: true },
-      { to: '/trades', icon: CandlestickChart, label: 'Trades', crmAllowed: true },
+      { to: '/trades', icon: CandlestickChart, label: 'Trades', adminOnly: true },
       { to: '/transactions', icon: ArrowLeftRight, label: 'Money ops', adminOnly: true },
       { to: '/bank-accounts', icon: Building2, label: 'Bank accounts', adminOnly: true },
       { to: '/kyc', icon: BadgeCheck, label: 'KYC', adminOnly: true },
@@ -130,8 +158,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             </div>
             <div className="space-y-0.5">
               {group.items.map(({ to, icon: Icon, label, end }) => {
-                const displayLabel =
-                  to === '/crm/desk' && isCrmStaffRole(user?.role) ? 'My clients' : label
+                const displayLabel = label
                 return (
                 <NavLink
                   key={to}

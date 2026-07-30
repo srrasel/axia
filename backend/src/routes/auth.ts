@@ -9,9 +9,15 @@ import {
   sign2faToken,
   verify2faToken,
   loadUser,
+  clientIp,
+  clientDevice,
+  isStaff,
 } from '../auth.js'
 import { initialsFromName, referralCode } from '../trading.js'
 import { generateTotpSecret, totpAuthUrl, totpQrDataUrl, verifyTotp } from '../totp.js'
+import { nextCrmNumber } from '../crmHelpers.js'
+import { notifyStaff } from '../crmNotify.js'
+import { createHash } from 'crypto'
 
 export const authRouter = Router()
 
@@ -43,6 +49,11 @@ authRouter.post('/register', async (req, res) => {
       initials: initialsFromName(name),
       referralCode: referralCode(name),
       referredById,
+      crmNumber: await nextCrmNumber(),
+      crmCategory: 'NEW',
+      crmStatus: 'NEW',
+      clientSource: ref ? 'Referral' : 'Direct',
+      lastInteractionAt: new Date(),
       accounts: {
         create: [
           {
@@ -69,9 +80,48 @@ authRouter.post('/register', async (req, res) => {
     include: { accounts: true },
   })
 
+  await notifyStaff({
+    type: 'new_lead',
+    title: 'New lead',
+    body: `${user.name} (${user.email}) registered`,
+    clientId: user.id,
+    recipientId: null,
+  })
+
   const token = signToken({ id: user.id, email: user.email, role: user.role })
   return res.json({ token, user: publicUser(user) })
 })
+
+async function recordLogin(req: any, opts: {
+  userId?: string | null
+  email?: string
+  success: boolean
+  reason?: string
+  token?: string
+}) {
+  const ip = clientIp(req)
+  const device = clientDevice(req)
+  await prisma.loginLog.create({
+    data: {
+      userId: opts.userId || null,
+      email: opts.email || null,
+      ip,
+      device,
+      success: opts.success,
+      reason: opts.reason,
+    },
+  })
+  if (opts.success && opts.userId && opts.token && isStaff((await prisma.user.findUnique({ where: { id: opts.userId }, select: { role: true } }))?.role)) {
+    await prisma.staffSession.create({
+      data: {
+        userId: opts.userId,
+        tokenHash: createHash('sha256').update(opts.token).digest('hex'),
+        ip,
+        device,
+      },
+    })
+  }
+}
 
 authRouter.post('/login', async (req, res) => {
   const schema = z.object({
@@ -81,13 +131,20 @@ authRouter.post('/login', async (req, res) => {
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) return res.status(400).json({ error: 'Invalid credentials' })
 
+  const email = parsed.data.email.toLowerCase()
   const user = await prisma.user.findUnique({
-    where: { email: parsed.data.email.toLowerCase() },
+    where: { email },
     include: { accounts: true, kycDocuments: true },
   })
-  if (!user || !user.active) return res.status(401).json({ error: 'Invalid email or password' })
+  if (!user || !user.active) {
+    await recordLogin(req, { email, success: false, reason: 'invalid_user' })
+    return res.status(401).json({ error: 'Invalid email or password' })
+  }
   const ok = await bcrypt.compare(parsed.data.password, user.passwordHash)
-  if (!ok) return res.status(401).json({ error: 'Invalid email or password' })
+  if (!ok) {
+    await recordLogin(req, { userId: user.id, email, success: false, reason: 'bad_password' })
+    return res.status(401).json({ error: 'Invalid email or password' })
+  }
 
   if (user.totpEnabled && user.totpSecret) {
     const tempToken = sign2faToken(user.id, user.email, user.role)
@@ -100,6 +157,15 @@ authRouter.post('/login', async (req, res) => {
   }
 
   const token = signToken({ id: user.id, email: user.email, role: user.role })
+  await recordLogin(req, { userId: user.id, email, success: true, token })
+  if (isStaff(user.role)) {
+    await notifyStaff({
+      type: 'login_alert',
+      title: 'Staff login',
+      body: `${user.name} signed in`,
+      recipientId: user.id,
+    })
+  }
   return res.json({ token, user: publicUser(user) })
 })
 
@@ -123,13 +189,16 @@ authRouter.post('/login/2fa', async (req, res) => {
     include: { accounts: true, kycDocuments: true },
   })
   if (!user || !user.active || !user.totpEnabled || !user.totpSecret) {
+    await recordLogin(req, { userId: payload.id, email: payload.email, success: false, reason: '2fa_invalid_session' })
     return res.status(401).json({ error: 'Invalid 2FA session' })
   }
   if (!verifyTotp(user.totpSecret, parsed.data.code)) {
+    await recordLogin(req, { userId: user.id, email: user.email, success: false, reason: '2fa_bad_code' })
     return res.status(401).json({ error: 'Invalid authenticator code' })
   }
 
   const token = signToken({ id: user.id, email: user.email, role: user.role })
+  await recordLogin(req, { userId: user.id, email: user.email, success: true, token })
   return res.json({ token, user: publicUser(user) })
 })
 

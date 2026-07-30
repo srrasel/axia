@@ -349,7 +349,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) return
-    const id = window.setInterval(() => void refreshQuotes(), 4000)
+    const id = window.setInterval(() => void refreshQuotes(), 2000)
     return () => window.clearInterval(id)
   }, [user, refreshQuotes])
 

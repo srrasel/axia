@@ -5,6 +5,8 @@ import { authRouter } from './routes/auth.js'
 import { userRouter } from './routes/user.js'
 import { adminRouter } from './routes/admin.js'
 import { crmRouter } from './routes/crm.js'
+import { crmV2Router } from './routes/crmV2.js'
+import { crmOpsRouter } from './routes/crmOps.js'
 import { paymentsRouter } from './routes/payments.js'
 import { runMarketTick } from './tick.js'
 import { ensureDefaultSettings } from './settings.js'
@@ -37,6 +39,8 @@ async function main() {
   app.use('/api', userRouter)
   app.use('/api/admin', adminRouter)
   app.use('/api/admin/crm', crmRouter)
+  app.use('/api/admin/crm', crmV2Router)
+  app.use('/api/admin/crm', crmOpsRouter)
 
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err)

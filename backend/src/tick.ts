@@ -31,7 +31,7 @@ export async function runMarketTick() {
       if (hit) {
         const exit = hit === 'sl' ? trade.stopLoss! : trade.takeProfit!
         await settleTradeClose(trade, exit, `${hit.toUpperCase()} #${trade.id.slice(-8)}`)
-      } else {
+      } else if (!trade.markLocked) {
         await prisma.trade.update({
           where: { id: trade.id },
           data: { currentPrice: quote.price },
