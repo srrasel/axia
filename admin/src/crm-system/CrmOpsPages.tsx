@@ -1,7 +1,23 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import clsx from 'clsx'
+import {
+  Globe2,
+  Languages,
+  Coins,
+  Mail,
+  MessageSquare,
+  Phone,
+  Webhook,
+  FileText,
+  Save,
+  Plus,
+  X,
+  Shield,
+  type LucideIcon,
+} from 'lucide-react'
 import { api } from '../api'
-import { btnPrimary, inputClass, money } from '../layout'
+import { btnPrimary, money, PageHeader } from '../layout'
 
 function fmt(iso?: string) {
   if (!iso) return '—'
@@ -411,12 +427,146 @@ export function CrmSecurityPage() {
   )
 }
 
-/** 21. System settings — Admin only */
+/** 21. System settings — Admin only (professional layout) */
+const fieldClass =
+  'h-10 w-full rounded-xl border border-border bg-[#12151a] px-3 text-sm text-text outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]'
+
+type CrmSettingsTab = 'locale' | 'channels' | 'api' | 'templates'
+
+const CRM_SETTINGS_TABS: { id: CrmSettingsTab; label: string; icon: LucideIcon; blurb: string }[] = [
+  { id: 'locale', label: 'Locale', icon: Globe2, blurb: 'Countries, currencies, and languages' },
+  { id: 'channels', label: 'Channels', icon: MessageSquare, blurb: 'Email, SMS, and WhatsApp' },
+  { id: 'api', label: 'APIs', icon: Webhook, blurb: 'Webhooks and external integrations' },
+  { id: 'templates', label: 'Templates', icon: FileText, blurb: 'CRM message and email templates' },
+]
+
+function ToggleCard({
+  title,
+  description,
+  enabled,
+  onToggle,
+  icon: Icon,
+}: {
+  title: string
+  description: string
+  enabled: boolean
+  onToggle: () => void
+  icon: LucideIcon
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 rounded-2xl border border-border/80 bg-muted/20 p-4 transition-colors hover:border-accent/25 hover:bg-muted/35">
+      <div className="flex min-w-0 gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+          <Icon size={18} />
+        </span>
+        <div className="min-w-0">
+          <div className="text-sm font-semibold text-text">{title}</div>
+          <p className="mt-1 text-xs leading-relaxed text-secondary">{description}</p>
+        </div>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={enabled}
+        onClick={onToggle}
+        className={clsx(
+          'relative h-6 w-11 shrink-0 rounded-full transition-colors',
+          enabled ? 'bg-[#fcd535]' : 'bg-muted',
+        )}
+      >
+        <span
+          className={clsx(
+            'absolute top-0.5 h-5 w-5 rounded-full bg-[#12151a] shadow transition-transform',
+            enabled ? 'translate-x-5' : 'translate-x-0.5',
+          )}
+        />
+      </button>
+    </div>
+  )
+}
+
+function TagEditor({
+  label,
+  hint,
+  values,
+  onChange,
+  placeholder,
+}: {
+  label: string
+  hint: string
+  values: string[]
+  onChange: (next: string[]) => void
+  placeholder: string
+}) {
+  const [draft, setDraft] = useState('')
+
+  function addTag() {
+    const v = draft.trim()
+    if (!v) return
+    if (values.some((x) => x.toLowerCase() === v.toLowerCase())) {
+      setDraft('')
+      return
+    }
+    onChange([...values, v])
+    setDraft('')
+  }
+
+  return (
+    <div className="rounded-2xl border border-border/80 bg-muted/20 p-4">
+      <div className="text-sm font-semibold text-text">{label}</div>
+      <p className="mt-1 text-xs text-secondary">{hint}</p>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {values.length === 0 && (
+          <span className="text-xs text-secondary">No items yet</span>
+        )}
+        {values.map((v) => (
+          <span
+            key={v}
+            className="inline-flex items-center gap-1 rounded-lg border border-border bg-[#12151a] px-2 py-1 text-xs font-medium text-text"
+          >
+            {v}
+            <button
+              type="button"
+              className="text-secondary hover:text-sell"
+              onClick={() => onChange(values.filter((x) => x !== v))}
+              aria-label={`Remove ${v}`}
+            >
+              <X size={12} />
+            </button>
+          </span>
+        ))}
+      </div>
+      <div className="mt-3 flex gap-2">
+        <input
+          className={fieldClass}
+          value={draft}
+          placeholder={placeholder}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              addTag()
+            }
+          }}
+        />
+        <button
+          type="button"
+          onClick={addTag}
+          className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-border px-3 text-xs font-semibold text-secondary hover:border-accent/40 hover:text-accent"
+        >
+          <Plus size={14} /> Add
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function CrmSystemSettingsPage() {
   const [settings, setSettings] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [msg, setMsg] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [tab, setTab] = useState<CrmSettingsTab>('locale')
 
   useEffect(() => {
     api<{ settings: any }>('/api/admin/crm/system-settings')
@@ -427,13 +577,14 @@ export function CrmSystemSettingsPage() {
   async function save() {
     setBusy(true)
     setMsg(null)
+    setError(null)
     try {
       const r = await api<{ settings: any }>('/api/admin/crm/system-settings', {
         method: 'PUT',
         body: JSON.stringify({ settings }),
       })
       setSettings(r.settings)
-      setMsg('Saved')
+      setMsg('CRM system settings saved')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed')
     } finally {
@@ -441,121 +592,362 @@ export function CrmSystemSettingsPage() {
     }
   }
 
-  if (error) return <p className="text-sell">{error}</p>
-  if (!settings) return <p className="text-secondary">Loading…</p>
+  if (error && !settings) {
+    return (
+      <div className="rounded-2xl border border-sell/30 bg-sell/10 px-4 py-3 text-sm text-sell">
+        {error}
+      </div>
+    )
+  }
+  if (!settings) {
+    return <p className="text-secondary">Loading CRM settings…</p>
+  }
+
+  const active = CRM_SETTINGS_TABS.find((t) => t.id === tab)!
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-bold">System Settings</h1>
-          <p className="text-sm text-secondary">
-            Admin only · Countries, currencies, languages, templates, APIs, email / SMS / WhatsApp
-          </p>
-        </div>
-        <button type="button" className={btnPrimary} disabled={busy} onClick={() => void save()}>
-          Save settings
+    <div className="space-y-5">
+      <PageHeader
+        title="CRM System Settings"
+        subtitle="Admin only · Locale, messaging channels, APIs, and templates for the CRM desk."
+      >
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void save()}
+          className={`${btnPrimary} inline-flex items-center gap-2 disabled:opacity-50`}
+        >
+          <Save size={15} />
+          {busy ? 'Saving…' : 'Save changes'}
         </button>
-      </div>
-      {msg && <p className="text-sm text-accent">{msg}</p>}
+      </PageHeader>
 
-      <div className="grid gap-3 lg:grid-cols-2">
-        <label className="block rounded-xl border border-border bg-[#161a21] p-3 text-xs text-secondary">
-          Countries (comma-separated)
-          <textarea
-            className={`${inputClass} mt-1 min-h-[80px]`}
-            value={(settings.countries || []).join(', ')}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                countries: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean),
-              })
-            }
-          />
-        </label>
-        <label className="block rounded-xl border border-border bg-[#161a21] p-3 text-xs text-secondary">
-          Currencies
-          <input
-            className={`${inputClass} mt-1`}
-            value={(settings.currencies || []).join(', ')}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                currencies: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean),
-              })
-            }
-          />
-        </label>
-        <label className="block rounded-xl border border-border bg-[#161a21] p-3 text-xs text-secondary">
-          Languages
-          <input
-            className={`${inputClass} mt-1`}
-            value={(settings.languages || []).join(', ')}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                languages: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean),
-              })
-            }
-          />
-        </label>
-        <label className="block rounded-xl border border-border bg-[#161a21] p-3 text-xs text-secondary">
-          Webhook URL
-          <input
-            className={`${inputClass} mt-1`}
-            value={settings.apis?.webhookUrl || ''}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                apis: { ...settings.apis, webhookUrl: e.target.value, webhooksEnabled: Boolean(e.target.value) },
-              })
-            }
-          />
-        </label>
-      </div>
+      {(msg || error) && (
+        <div
+          className={clsx(
+            'rounded-xl border px-4 py-2.5 text-sm',
+            error
+              ? 'border-sell/30 bg-sell/10 text-sell'
+              : 'border-accent/30 bg-accent/10 text-accent',
+          )}
+        >
+          {error || msg}
+        </div>
+      )}
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        {[
-          ['email', 'Email integration'],
-          ['sms', 'SMS integration'],
-          ['whatsapp', 'WhatsApp integration'],
-        ].map(([key, label]) => (
-          <label
-            key={key}
-            className="flex items-center justify-between rounded-xl border border-border bg-[#161a21] px-3 py-3 text-sm"
-          >
-            <span>{label}</span>
-            <input
-              type="checkbox"
-              checked={Boolean(settings[key]?.enabled)}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  [key]: { ...settings[key], enabled: e.target.checked },
-                })
-              }
-            />
-          </label>
-        ))}
-      </div>
+      <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
+        {/* Sidebar */}
+        <aside className="h-fit rounded-2xl border border-border bg-[#161a21] p-2 lg:sticky lg:top-3">
+          <div className="mb-2 px-2 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-secondary">
+            Categories
+          </div>
+          <div className="space-y-0.5">
+            {CRM_SETTINGS_TABS.map(({ id, label, icon: Icon, blurb }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setTab(id)}
+                className={clsx(
+                  'flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-colors',
+                  tab === id
+                    ? 'bg-accent/10 text-text'
+                    : 'text-secondary hover:bg-muted hover:text-text',
+                )}
+              >
+                <span
+                  className={clsx(
+                    'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
+                    tab === id ? 'bg-accent/20 text-accent' : 'bg-muted text-secondary',
+                  )}
+                >
+                  <Icon size={15} />
+                </span>
+                <span className="min-w-0">
+                  <span className={clsx('block text-sm font-semibold', tab === id && 'text-accent')}>
+                    {label}
+                  </span>
+                  <span className="mt-0.5 block text-[11px] leading-snug text-secondary">{blurb}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="mt-3 flex items-start gap-2 rounded-xl border border-border/60 bg-[#12151a]/80 px-3 py-2.5">
+            <Shield size={14} className="mt-0.5 shrink-0 text-accent" />
+            <p className="text-[11px] leading-relaxed text-secondary">
+              These settings apply across the CRM. Staff roles and permissions are managed under{' '}
+              <span className="text-text">Roles</span>.
+            </p>
+          </div>
+        </aside>
 
-      <div className="rounded-xl border border-border bg-[#161a21] p-3 space-y-2">
-        <div className="text-xs font-bold uppercase text-secondary">Templates</div>
-        {Object.keys(settings.templates || {}).map((k) => (
-          <label key={k} className="block text-xs text-secondary">
-            {k}
-            <input
-              className={`${inputClass} mt-1`}
-              value={settings.templates[k]}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  templates: { ...settings.templates, [k]: e.target.value },
-                })
-              }
-            />
-          </label>
-        ))}
+        {/* Content */}
+        <section className="min-w-0 space-y-4">
+          <div className="rounded-2xl border border-border bg-[#161a21] px-4 py-3">
+            <div className="flex items-center gap-2">
+              <active.icon size={16} className="text-accent" />
+              <h2 className="text-sm font-bold text-text">{active.label}</h2>
+            </div>
+            <p className="mt-1 text-xs text-secondary">{active.blurb}</p>
+          </div>
+
+          {tab === 'locale' && (
+            <div className="grid gap-3 lg:grid-cols-1 xl:grid-cols-1">
+              <TagEditor
+                label="Countries"
+                hint="Used in client filters, registration, and CRM country reports."
+                values={settings.countries || []}
+                onChange={(countries) => setSettings({ ...settings, countries })}
+                placeholder="e.g. Saudi Arabia"
+              />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <TagEditor
+                  label="Currencies"
+                  hint="Available account and reporting currencies."
+                  values={settings.currencies || []}
+                  onChange={(currencies) => setSettings({ ...settings, currencies })}
+                  placeholder="e.g. USD"
+                />
+                <TagEditor
+                  label="Languages"
+                  hint="UI / client language codes for the CRM desk."
+                  values={settings.languages || []}
+                  onChange={(languages) => setSettings({ ...settings, languages })}
+                  placeholder="e.g. en"
+                />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-border/80 bg-muted/20 px-4 py-3">
+                  <div className="flex items-center gap-2 text-xs text-secondary">
+                    <Globe2 size={14} /> Countries
+                  </div>
+                  <div className="mt-1 text-2xl font-bold tabular-nums text-text">
+                    {(settings.countries || []).length}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-border/80 bg-muted/20 px-4 py-3">
+                  <div className="flex items-center gap-2 text-xs text-secondary">
+                    <Coins size={14} /> Currencies
+                  </div>
+                  <div className="mt-1 text-2xl font-bold tabular-nums text-text">
+                    {(settings.currencies || []).length}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-border/80 bg-muted/20 px-4 py-3">
+                  <div className="flex items-center gap-2 text-xs text-secondary">
+                    <Languages size={14} /> Languages
+                  </div>
+                  <div className="mt-1 text-2xl font-bold tabular-nums text-text">
+                    {(settings.languages || []).length}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'channels' && (
+            <div className="space-y-3">
+              <ToggleCard
+                icon={Mail}
+                title="Email"
+                description="Send CRM emails and notifications from the desk. Configure provider under APIs when enabled."
+                enabled={Boolean(settings.email?.enabled)}
+                onToggle={() =>
+                  setSettings({
+                    ...settings,
+                    email: { ...settings.email, enabled: !settings.email?.enabled },
+                  })
+                }
+              />
+              {settings.email?.enabled && (
+                <div className="rounded-2xl border border-border bg-[#161a21] p-4">
+                  <label className="block text-xs font-medium text-secondary">
+                    From address
+                    <input
+                      className={`${fieldClass} mt-1.5`}
+                      value={settings.email?.from || ''}
+                      placeholder="crm@nitajfx.online"
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          email: { ...settings.email, from: e.target.value },
+                        })
+                      }
+                    />
+                  </label>
+                  <label className="mt-3 block text-xs font-medium text-secondary">
+                    Provider
+                    <select
+                      className={`${fieldClass} mt-1.5`}
+                      value={settings.email?.provider || 'smtp'}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          email: { ...settings.email, provider: e.target.value },
+                        })
+                      }
+                    >
+                      <option value="smtp">SMTP</option>
+                      <option value="sendgrid">SendGrid</option>
+                      <option value="mailgun">Mailgun</option>
+                    </select>
+                  </label>
+                </div>
+              )}
+
+              <ToggleCard
+                icon={Phone}
+                title="SMS"
+                description="Log and send SMS from client communication tools."
+                enabled={Boolean(settings.sms?.enabled)}
+                onToggle={() =>
+                  setSettings({
+                    ...settings,
+                    sms: { ...settings.sms, enabled: !settings.sms?.enabled },
+                  })
+                }
+              />
+              {settings.sms?.enabled && (
+                <div className="rounded-2xl border border-border bg-[#161a21] p-4">
+                  <label className="block text-xs font-medium text-secondary">
+                    SMS provider
+                    <input
+                      className={`${fieldClass} mt-1.5`}
+                      value={settings.sms?.provider || ''}
+                      placeholder="twilio / messagebird / …"
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          sms: { ...settings.sms, provider: e.target.value },
+                        })
+                      }
+                    />
+                  </label>
+                </div>
+              )}
+
+              <ToggleCard
+                icon={MessageSquare}
+                title="WhatsApp"
+                description="Enable WhatsApp actions and communication logs in the CRM."
+                enabled={Boolean(settings.whatsapp?.enabled)}
+                onToggle={() =>
+                  setSettings({
+                    ...settings,
+                    whatsapp: { ...settings.whatsapp, enabled: !settings.whatsapp?.enabled },
+                  })
+                }
+              />
+              {settings.whatsapp?.enabled && (
+                <div className="rounded-2xl border border-border bg-[#161a21] p-4">
+                  <label className="block text-xs font-medium text-secondary">
+                    WhatsApp provider
+                    <input
+                      className={`${fieldClass} mt-1.5`}
+                      value={settings.whatsapp?.provider || ''}
+                      placeholder="meta / twilio / …"
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          whatsapp: { ...settings.whatsapp, provider: e.target.value },
+                        })
+                      }
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab === 'api' && (
+            <div className="space-y-3">
+              <ToggleCard
+                icon={Webhook}
+                title="Webhooks"
+                description="Push CRM events (new lead, FTD, KYC) to an external endpoint."
+                enabled={Boolean(settings.apis?.webhooksEnabled)}
+                onToggle={() =>
+                  setSettings({
+                    ...settings,
+                    apis: {
+                      ...settings.apis,
+                      webhooksEnabled: !settings.apis?.webhooksEnabled,
+                    },
+                  })
+                }
+              />
+              <div className="rounded-2xl border border-border bg-[#161a21] p-4">
+                <label className="block text-xs font-medium text-secondary">
+                  Webhook URL
+                  <input
+                    className={`${fieldClass} mt-1.5 font-mono text-[13px]`}
+                    value={settings.apis?.webhookUrl || ''}
+                    placeholder="https://hooks.example.com/crm"
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        apis: {
+                          ...settings.apis,
+                          webhookUrl: e.target.value,
+                          webhooksEnabled:
+                            settings.apis?.webhooksEnabled || Boolean(e.target.value.trim()),
+                        },
+                      })
+                    }
+                  />
+                </label>
+                <p className="mt-2 text-[11px] text-secondary">
+                  Events are sent as JSON POST requests. Keep this URL private.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {tab === 'templates' && (
+            <div className="space-y-3">
+              {Object.keys(settings.templates || {}).length === 0 && (
+                <p className="text-sm text-secondary">No templates configured yet.</p>
+              )}
+              {Object.entries(settings.templates || {}).map(([key, value]) => (
+                <div
+                  key={key}
+                  className="rounded-2xl border border-border/80 bg-muted/20 p-4 transition-colors hover:border-accent/20"
+                >
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <div className="text-sm font-semibold capitalize text-text">
+                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                    </div>
+                    <code className="rounded-md border border-border bg-[#12151a] px-1.5 py-0.5 text-[10px] text-secondary">
+                      {key}
+                    </code>
+                  </div>
+                  <textarea
+                    rows={3}
+                    className="w-full rounded-xl border border-border bg-[#12151a] px-3 py-2 text-sm outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
+                    value={String(value ?? '')}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        templates: { ...settings.templates, [key]: e.target.value },
+                      })
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex justify-end border-t border-border/60 pt-3">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void save()}
+              className={`${btnPrimary} inline-flex items-center gap-2 disabled:opacity-50`}
+            >
+              <Save size={15} />
+              {busy ? 'Saving…' : 'Save changes'}
+            </button>
+          </div>
+        </section>
       </div>
     </div>
   )
