@@ -22,6 +22,7 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/prisma.config.ts ./
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
 EXPOSE 4000
-# Seed is best-effort so a seed error never blocks API health
-CMD ["sh", "-c", "npx prisma db push && (npx tsx prisma/seed.ts || echo 'seed warning') && node dist/index.js"]
+CMD ["./docker-entrypoint.sh"]
