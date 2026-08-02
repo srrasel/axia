@@ -571,23 +571,23 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <td className="px-3 py-3.5">
                   <Link
                     to={`/crm/clients/${c.id}`}
-                    className="text-base font-bold text-text hover:text-accent sm:text-lg"
+                    className="text-[20px] font-bold text-text hover:text-accent"
                   >
                     {c.name}
                   </Link>
-                  <div className="mt-0.5 text-sm text-secondary">
+                  <div className="mt-0.5 text-[12px] text-secondary">
                     #{c.crmNumber ?? '—'} · {c.email}
                   </div>
                 </td>
                 <td className="px-3 py-3.5 font-medium text-secondary">{c.country || '—'}</td>
                 <td className="px-3 py-3.5">
-                  <span className="rounded-lg border border-border bg-[#12151a] px-2.5 py-1 text-sm font-medium">
-                    {c.crmStatus}
+                  <span className="rounded-lg border border-border bg-[#12151a] px-2.5 py-1 text-sm font-medium capitalize">
+                    {c.crmStatus?.replaceAll('_', ' ').toLowerCase()}
                   </span>
                 </td>
-                <td className="px-3 py-3.5 text-sm text-secondary">{fmt(c.firstDepositAt)}</td>
-                <td className="px-3 py-3.5 text-sm text-secondary">{fmt(c.lastSeenAt)}</td>
-                <td className="px-3 py-3.5 text-sm text-secondary">{fmt(c.lastInteractionAt)}</td>
+                <td className="px-3 py-3.5 text-[12px] text-secondary">{fmt(c.firstDepositAt)}</td>
+                <td className="px-3 py-3.5 text-[12px] text-secondary">{fmt(c.lastSeenAt)}</td>
+                <td className="px-3 py-3.5 text-[12px] text-secondary">{fmt(c.lastInteractionAt)}</td>
                 <td className="px-3 py-3.5 text-right text-base font-bold tabular-nums">
                   {money(c.balance ?? c.totalDeposits)}
                 </td>
