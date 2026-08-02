@@ -32,6 +32,28 @@ type Dash = {
   categoryCounts: Record<string, number>
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  ALL: 'All',
+  BAD: 'Bad',
+  CONVERSION: 'Conversion',
+  FTD: 'FTD',
+  NEW: 'New',
+  ONLINE: 'Online',
+  ONLINE_FTD: 'Online + FTD',
+  POTENTIAL: 'Potential',
+  PRACTICE: 'Practice',
+  RETENTION: 'Retention',
+  TEST: 'Test',
+}
+
+function formatCategoryLabel(cat: string) {
+  if (CATEGORY_LABELS[cat]) return CATEGORY_LABELS[cat]
+  return cat
+    .replaceAll('_', ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
 function BigKpi({
   title,
   value,
@@ -54,15 +76,15 @@ function BigKpi({
   }
   return (
     <div className="rounded-2xl border border-border bg-[#161a21] p-5 transition-colors hover:border-accent/30 sm:p-6">
-      <div className="flex items-start justify-between gap-3">
-        <div className="text-xs font-semibold capitalize tracking-[0.14em] text-secondary sm:text-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-[16px] font-semibold capitalize tracking-[0.14em] text-secondary">
           {title}
         </div>
         <span className={clsx('flex h-11 w-11 items-center justify-center rounded-xl', toneMap[tone])}>
           <Icon size={20} />
         </span>
       </div>
-      <div className="mt-4 text-2xl font-bold tracking-tight tabular-nums text-text sm:text-3xl">
+      <div className="mt-4 text-[28px] font-bold tracking-tight tabular-nums text-text">
         {value}
       </div>
       {sub ? <div className="mt-2 text-sm text-secondary">{sub}</div> : null}
@@ -117,8 +139,8 @@ export function CrmDashboardPage() {
 
       <div className="grid gap-4 lg:grid-cols-3 lg:gap-5">
         <section className="rounded-2xl border border-border bg-[#161a21] p-5 sm:p-6">
-          <h2 className="text-lg font-semibold text-text">Client categories</h2>
-          <p className="mt-1 text-sm text-secondary">Quick counts by CRM category</p>
+          <h2 className="text-lg font-semibold capitalize text-text">Client Categories</h2>
+          <p className="mt-1 text-sm capitalize text-secondary">Quick counts by CRM category</p>
           <div className="mt-4 grid grid-cols-2 gap-2.5">
             {Object.entries(data.categoryCounts).map(([cat, count]) => (
               <Link
@@ -126,9 +148,7 @@ export function CrmDashboardPage() {
                 to={`/crm/clients?category=${cat}`}
                 className="flex items-center justify-between rounded-xl border border-border bg-muted/20 px-3.5 py-3 text-sm transition-colors hover:border-accent/40 sm:text-base"
               >
-                <span className="font-medium capitalize text-secondary">
-                  {cat.replaceAll('_', ' + ').toLowerCase()}
-                </span>
+                <span className="font-medium text-secondary">{formatCategoryLabel(cat)}</span>
                 <span className="text-base font-bold tabular-nums text-text">{count}</span>
               </Link>
             ))}
@@ -136,18 +156,19 @@ export function CrmDashboardPage() {
         </section>
 
         <section className="rounded-2xl border border-border bg-[#161a21] p-5 sm:p-6">
-          <h2 className="text-lg font-semibold text-text">Country statistics</h2>
-          <p className="mt-1 text-sm text-secondary">Top countries</p>
+          <h2 className="text-lg font-semibold capitalize text-text">Country statistics</h2>
+          <p className="mt-1 text-sm capitalize text-secondary">Top countries</p>
           <div className="mt-4 space-y-3">
             {data.byCountry.length === 0 ? (
               <p className="text-base text-secondary">No data</p>
             ) : (
               data.byCountry.map((r) => (
-                <div key={r.country} className="flex items-center justify-between text-base">
-                  <span className="inline-flex items-center gap-2.5 font-medium text-secondary">
-                    <Globe2 size={18} /> {r.country}
+                <div key={r.country} className="flex items-center justify-between gap-3 text-base">
+                  <span className="inline-flex min-w-0 items-center gap-2.5 font-medium capitalize text-secondary">
+                    <Globe2 size={18} className="shrink-0" />
+                    <span className="truncate">{r.country}</span>
                   </span>
-                  <span className="text-lg font-bold tabular-nums text-text">{r.count}</span>
+                  <span className="shrink-0 text-lg font-bold tabular-nums text-text">{r.count}</span>
                 </div>
               ))
             )}
@@ -155,18 +176,19 @@ export function CrmDashboardPage() {
         </section>
 
         <section className="rounded-2xl border border-border bg-[#161a21] p-5 sm:p-6">
-          <h2 className="text-lg font-semibold text-text">Marketing sources</h2>
-          <p className="mt-1 text-sm text-secondary">Client acquisition</p>
+          <h2 className="text-lg font-semibold capitalize text-text">Marketing sources</h2>
+          <p className="mt-1 text-sm capitalize text-secondary">Client acquisition</p>
           <div className="mt-4 space-y-3">
             {data.bySource.length === 0 ? (
               <p className="text-base text-secondary">No data</p>
             ) : (
               data.bySource.map((r) => (
-                <div key={r.source} className="flex items-center justify-between text-base">
-                  <span className="inline-flex items-center gap-2.5 font-medium text-secondary">
-                    <Megaphone size={18} /> {r.source}
+                <div key={r.source} className="flex items-center justify-between gap-3 text-base">
+                  <span className="inline-flex min-w-0 items-center gap-2.5 font-medium capitalize text-secondary">
+                    <Megaphone size={18} className="shrink-0" />
+                    <span className="truncate">{r.source}</span>
                   </span>
-                  <span className="text-lg font-bold tabular-nums text-text">{r.count}</span>
+                  <span className="shrink-0 text-lg font-bold tabular-nums text-text">{r.count}</span>
                 </div>
               ))
             )}
