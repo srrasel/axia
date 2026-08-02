@@ -7,6 +7,7 @@ import {
   Pencil,
   Lock,
   ChevronRight,
+  ArrowLeft,
 } from 'lucide-react'
 import { api } from '../api'
 import { btnPrimary, inputClass, money } from '../layout'
@@ -308,6 +309,67 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
     }
   }
 
+  async function contactClient(kind: 'call' | 'email' | 'chat') {
+    const client = data?.client
+    if (!client || !id) return
+    setBusy(true)
+    setMsg(null)
+    try {
+      if (kind === 'call') {
+        await api(`/api/admin/crm/clients-v2/${id}/comms`, {
+          method: 'POST',
+          body: JSON.stringify({
+            channel: 'call',
+            note: client.phone
+              ? `Outbound call to ${client.phone}`
+              : 'Outbound call attempted (no phone on file)',
+          }),
+        })
+        setTab('calls')
+        if (client.phone) {
+          window.location.href = `tel:${String(client.phone).replace(/[^\d+]/g, '')}`
+          setMsg(`Calling ${client.name}…`)
+        } else {
+          setMsg('No phone number on file — logged under Calls')
+        }
+      } else if (kind === 'email') {
+        await api(`/api/admin/crm/clients-v2/${id}/comms`, {
+          method: 'POST',
+          body: JSON.stringify({
+            channel: 'email',
+            note: `Email opened to ${client.email}`,
+          }),
+        })
+        setTab('emails')
+        window.location.href = `mailto:${encodeURIComponent(client.email)}?subject=${encodeURIComponent(`NitajFX — ${client.name}`)}`
+        setMsg(`Opening email to ${client.email}`)
+      } else {
+        await api(`/api/admin/crm/clients-v2/${id}/comms`, {
+          method: 'POST',
+          body: JSON.stringify({
+            channel: 'im',
+            note: client.phone
+              ? `Chat / WhatsApp to ${client.phone}`
+              : 'Chat started (no phone on file)',
+          }),
+        })
+        setTab('chat')
+        if (client.phone) {
+          const digits = String(client.phone).replace(/\D/g, '')
+          window.open(`https://wa.me/${digits}`, '_blank', 'noopener,noreferrer')
+          setMsg('Opening WhatsApp chat…')
+        } else {
+          setMsg('No phone for WhatsApp — opened Chat log')
+        }
+      }
+      await load()
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Contact action failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const dayBars = useMemo(() => {
     const days: { key: string; label: string; active: boolean; deposit: boolean; trade: boolean }[] = []
     const now = new Date()
@@ -331,8 +393,8 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
   if (error) {
     return (
       <div className="space-y-3">
-        <Link to="/crm/clients" className="text-sm text-accent">
-          â† Clients
+        <Link to="/crm/clients" className="inline-flex items-center gap-1.5 text-sm text-accent">
+          <ArrowLeft size={14} /> Clients
         </Link>
         <p className="text-sell">{error}</p>
       </div>
@@ -400,16 +462,20 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
               <span>{c.email}</span>
             </div>
             <div className="mt-2 flex gap-2">
-              {[
-                { icon: Phone, title: 'Call' },
-                { icon: Mail, title: 'Email' },
-                { icon: MessageCircle, title: 'Chat' },
-              ].map(({ icon: Icon, title }) => (
+              {(
+                [
+                  { icon: Phone, title: 'Call', kind: 'call' as const },
+                  { icon: Mail, title: 'Email', kind: 'email' as const },
+                  { icon: MessageCircle, title: 'Chat', kind: 'chat' as const },
+                ] as const
+              ).map(({ icon: Icon, title, kind }) => (
                 <button
                   key={title}
                   type="button"
                   title={title}
-                  className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-secondary hover:border-accent/50 hover:text-accent"
+                  disabled={busy}
+                  onClick={() => void contactClient(kind)}
+                  className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-secondary hover:border-accent/50 hover:text-accent disabled:opacity-40"
                 >
                   <Icon size={13} />
                 </button>
@@ -418,9 +484,9 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
           </div>
           <Link
             to="/crm/clients"
-            className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-secondary hover:text-text"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-secondary hover:text-text"
           >
-            â† Clients
+            <ArrowLeft size={14} /> Clients
           </Link>
         </div>
 
@@ -777,7 +843,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                       {d.kind} / {d.docType}
                     </div>
                     <div className="text-secondary">
-                      {d.status} Â· {fmt(d.createdAt)}
+                      {d.status} · {fmt(d.createdAt)}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -855,7 +921,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                 .map((x: any) => (
                   <div key={x.id} className="rounded-lg border border-border px-3 py-2 text-[12px]">
                     <div className="text-[10px] text-secondary">
-                      {x.channel} Â· {x.staff?.name} Â· {fmt(x.createdAt)}
+                      {x.channel} · {x.staff?.name} · {fmt(x.createdAt)}
                     </div>
                     <div>{x.note}</div>
                   </div>
@@ -928,7 +994,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                   <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px] text-secondary">
                     <span>
                       {n.staff?.name || 'Staff'}
-                      {me.role ? ` Â· ${me.role}` : ''}
+                      {me.role ? ` · ${me.role}` : ''}
                     </span>
                     <span className="flex items-center gap-2">
                       {fmt(n.createdAt)}

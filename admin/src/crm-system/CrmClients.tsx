@@ -124,6 +124,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
   const canCreate = CREATE_ROLES.has(me.role)
   const [showCreate, setShowCreate] = useState(false)
   const [createMsg, setCreateMsg] = useState<string | null>(null)
+  const [toolbarMsg, setToolbarMsg] = useState<string | null>(null)
   const [createForm, setCreateForm] = useState({
     name: '',
     email: '',
@@ -215,6 +216,102 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
       setError(e instanceof Error ? e.message : 'Bulk failed')
     } finally {
       setBusy(false)
+    }
+  }
+
+  function selectedRows() {
+    return clients.filter((c) => selected.has(c.id))
+  }
+
+  function needSelection(min = 1) {
+    if (selected.size < min) {
+      setToolbarMsg(min === 1 ? 'Select at least one client first' : `Select ${min} clients first`)
+      setError(null)
+      return false
+    }
+    setToolbarMsg(null)
+    return true
+  }
+
+  async function flagSelected() {
+    if (!needSelection()) return
+    setBusy(true)
+    setError(null)
+    try {
+      await api('/api/admin/crm/clients-v2/bulk', {
+        method: 'POST',
+        body: JSON.stringify({
+          ids: [...selected],
+          action: 'category',
+          crmCategory: 'POTENTIAL',
+        }),
+      })
+      setToolbarMsg(`Flagged ${selected.size} client(s) as Potential`)
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Flag failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function callSelected() {
+    if (!needSelection()) return
+    const rows = selectedRows()
+    if (rows.length !== 1) {
+      setToolbarMsg('Select exactly one client to call')
+      return
+    }
+    const c = rows[0]
+    setBusy(true)
+    setError(null)
+    try {
+      await api(`/api/admin/crm/clients-v2/${c.id}/comms`, {
+        method: 'POST',
+        body: JSON.stringify({
+          channel: 'call',
+          note: c.phone ? `Outbound call to ${c.phone}` : 'Outbound call attempted (no phone on file)',
+        }),
+      })
+      if (c.phone) {
+        window.location.href = `tel:${c.phone.replace(/[^\d+]/g, '')}`
+        setToolbarMsg(`Calling ${c.name}…`)
+      } else {
+        setToolbarMsg(`No phone for ${c.name} — opened profile`)
+        navigate(`/crm/clients/${c.id}`)
+      }
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Call log failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function viewSelected() {
+    if (!needSelection()) return
+    const rows = selectedRows()
+    navigate(`/crm/clients/${rows[0].id}`)
+  }
+
+  function exportSelected() {
+    const rows = selected.size > 0 ? selectedRows() : clients
+    if (rows.length === 0) {
+      setToolbarMsg('No clients to export')
+      return
+    }
+    exportCsv(rows)
+    setToolbarMsg(`Exported ${rows.length} client(s)`)
+  }
+
+  async function copySelectedIds() {
+    if (!needSelection()) return
+    const ids = selectedRows().map((c) => String(c.crmNumber ?? c.id))
+    try {
+      await navigator.clipboard.writeText(ids.join('\n'))
+      setToolbarMsg(`Copied ${ids.length} CRM ID(s)`)
+    } catch {
+      setToolbarMsg('Could not copy to clipboard')
     }
   }
 
@@ -454,34 +551,54 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2">
         {[
-          { icon: Bookmark, title: 'Flag' },
-          { icon: Phone, title: 'Call' },
-          { icon: Eye, title: 'View' },
-          { icon: Download, title: 'Export', onClick: () => exportCsv(clients) },
+          {
+            icon: Bookmark,
+            title: 'Flag as Potential',
+            onClick: () => void flagSelected(),
+            needsSelection: true,
+          },
+          {
+            icon: Phone,
+            title: 'Call selected',
+            onClick: () => void callSelected(),
+            needsSelection: true,
+          },
+          {
+            icon: Eye,
+            title: 'View profile',
+            onClick: viewSelected,
+            needsSelection: true,
+          },
+          {
+            icon: Download,
+            title: selected.size > 0 ? `Export selected (${selected.size})` : 'Export page',
+            onClick: exportSelected,
+            needsSelection: false,
+          },
           {
             icon: Copy,
-            title: 'Copy IDs',
-            onClick: () => {
-              const ids = clients.filter((c) => selected.has(c.id)).map((c) => c.crmNumber ?? c.id)
-              void navigator.clipboard.writeText(ids.join('\n'))
-            },
+            title: 'Copy CRM IDs',
+            onClick: () => void copySelectedIds(),
+            needsSelection: true,
           },
-        ].map(({ icon: Icon, title, onClick }) => (
+        ].map(({ icon: Icon, title, onClick, needsSelection }) => (
           <button
             key={title}
             type="button"
             title={title}
+            disabled={busy || (needsSelection && selected.size === 0)}
             onClick={onClick}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-[#161a21] text-secondary hover:border-accent/50 hover:text-accent"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-[#161a21] text-secondary hover:border-accent/50 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Icon size={18} />
           </button>
         ))}
         <span className="ml-2 text-sm text-secondary">
-          Tip: use Shift + mouse wheel to scroll horizontally
+          {selected.size > 0 ? `${selected.size} selected` : 'Tip: select clients, then use the icons'}
         </span>
       </div>
 
+      {toolbarMsg ? <p className="text-sm text-buy">{toolbarMsg}</p> : null}
       {error && <p className="text-base text-sell">{error}</p>}
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-[#161a21]">
