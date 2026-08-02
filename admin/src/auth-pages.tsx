@@ -241,7 +241,7 @@ export function LoginPage() {
   }
 
   return (
-    <AuthShell title="Log in" subtitle="Manager · Employee · Admin desk">
+    <AuthShell title="Log in">
       <form onSubmit={onSubmit} className="space-y-5" autoComplete="on">
         {error ? <AuthError message={error} /> : null}
         <Field
