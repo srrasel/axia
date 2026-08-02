@@ -126,7 +126,9 @@ export function CrmDashboardPage() {
                 to={`/crm/clients?category=${cat}`}
                 className="flex items-center justify-between rounded-xl border border-border bg-muted/20 px-3.5 py-3 text-sm transition-colors hover:border-accent/40 sm:text-base"
               >
-                <span className="font-medium text-secondary">{cat.replaceAll('_', ' + ')}</span>
+                <span className="font-medium capitalize text-secondary">
+                  {cat.replaceAll('_', ' + ').toLowerCase()}
+                </span>
                 <span className="text-base font-bold tabular-nums text-text">{count}</span>
               </Link>
             ))}
