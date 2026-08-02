@@ -98,7 +98,7 @@ export function CrmRolesPage() {
 
       <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
         <table className="w-full min-w-[700px] text-left text-sm">
-          <thead className="border-b border-border text-[10px] uppercase text-secondary">
+          <thead className="border-b border-border text-[10px] capitalize text-secondary">
             <tr>
               <th className="px-3 py-2">Name</th>
               <th className="px-3 py-2">Email</th>
@@ -254,7 +254,7 @@ export function CrmAnalyticsPage() {
           ['ROI / deposit', money(r.roi)],
         ].map(([label, value]) => (
           <div key={String(label)} className="rounded-xl border border-border bg-[#161a21] px-3 py-3">
-            <div className="text-[10px] uppercase text-secondary">{label}</div>
+            <div className="text-[10px] capitalize text-secondary">{label}</div>
             <div className="mt-1 text-lg font-bold tabular-nums">{value}</div>
           </div>
         ))}
@@ -262,7 +262,7 @@ export function CrmAnalyticsPage() {
 
       <div className="grid gap-3 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-[#161a21] p-3">
-          <div className="mb-2 text-xs font-bold uppercase text-secondary">By country</div>
+          <div className="mb-2 text-xs font-bold capitalize text-secondary">By country</div>
           {(data.byCountry || []).map((x: any) => (
             <div key={x.country} className="flex justify-between border-b border-border/40 py-1.5 text-sm">
               <span className="text-secondary">{x.country}</span>
@@ -271,7 +271,7 @@ export function CrmAnalyticsPage() {
           ))}
         </div>
         <div className="rounded-xl border border-border bg-[#161a21] p-3">
-          <div className="mb-2 text-xs font-bold uppercase text-secondary">By source</div>
+          <div className="mb-2 text-xs font-bold capitalize text-secondary">By source</div>
           {(data.bySource || []).map((x: any) => (
             <div key={x.source} className="flex justify-between border-b border-border/40 py-1.5 text-sm">
               <span className="text-secondary">{x.source}</span>
@@ -322,11 +322,11 @@ export function CrmSecurityPage() {
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
-        <div className="border-b border-border px-3 py-2 text-xs font-bold uppercase text-secondary">
+        <div className="border-b border-border px-3 py-2 text-xs font-bold capitalize text-secondary">
           Login logs
         </div>
         <table className="w-full min-w-[800px] text-left text-[12px]">
-          <thead className="text-[10px] uppercase text-secondary">
+          <thead className="text-[10px] capitalize text-secondary">
             <tr>
               <th className="px-3 py-2">User</th>
               <th className="px-3 py-2">IP</th>
@@ -352,11 +352,11 @@ export function CrmSecurityPage() {
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
-        <div className="border-b border-border px-3 py-2 text-xs font-bold uppercase text-secondary">
+        <div className="border-b border-border px-3 py-2 text-xs font-bold capitalize text-secondary">
           Active sessions
         </div>
         <table className="w-full min-w-[700px] text-left text-[12px]">
-          <thead className="text-[10px] uppercase text-secondary">
+          <thead className="text-[10px] capitalize text-secondary">
             <tr>
               <th className="px-3 py-2">User</th>
               <th className="px-3 py-2">IP</th>
@@ -392,11 +392,11 @@ export function CrmSecurityPage() {
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
-        <div className="border-b border-border px-3 py-2 text-xs font-bold uppercase text-secondary">
+        <div className="border-b border-border px-3 py-2 text-xs font-bold capitalize text-secondary">
           Audit trail
         </div>
         <table className="w-full min-w-[700px] text-left text-[12px]">
-          <thead className="text-[10px] uppercase text-secondary">
+          <thead className="text-[10px] capitalize text-secondary">
             <tr>
               <th className="px-3 py-2">Staff</th>
               <th className="px-3 py-2">Client</th>
@@ -638,7 +638,7 @@ export function CrmSystemSettingsPage() {
       <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
         {/* Sidebar */}
         <aside className="h-fit rounded-2xl border border-border bg-[#161a21] p-2 lg:sticky lg:top-3">
-          <div className="mb-2 px-2 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-secondary">
+          <div className="mb-2 px-2 py-1.5 text-[10px] font-bold capitalize tracking-[0.14em] text-secondary">
             Categories
           </div>
           <div className="space-y-0.5">

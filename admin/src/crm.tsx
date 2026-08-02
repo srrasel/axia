@@ -146,19 +146,19 @@ export function CrmTransactionsPage() {
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Type</div>
+                <div className="text-[10px] capitalize tracking-wide text-secondary">Type</div>
                 <div className="capitalize">{t.type}</div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Amount</div>
+                <div className="text-[10px] capitalize tracking-wide text-secondary">Amount</div>
                 <div className={`font-semibold ${pnlClass(t.amount)}`}>{money(t.amount)}</div>
               </div>
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Fee</div>
+                <div className="text-[10px] capitalize tracking-wide text-secondary">Fee</div>
                 <div>{money(t.fee || 0)}</div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Assigned</div>
+                <div className="text-[10px] capitalize tracking-wide text-secondary">Assigned</div>
                 <div className="text-secondary">{t.user.assignedTo?.name || '—'}</div>
               </div>
             </div>
@@ -338,19 +338,19 @@ export function CrmDeskPage() {
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Floating</div>
+                <div className="text-[10px] capitalize tracking-wide text-secondary">Floating</div>
                 <div className={`font-semibold ${pnlClass(c.floatingPnl)}`}>{money(c.floatingPnl)}</div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Realized</div>
+                <div className="text-[10px] capitalize tracking-wide text-secondary">Realized</div>
                 <div className={`font-semibold ${pnlClass(c.realizedPnl)}`}>{money(c.realizedPnl)}</div>
               </div>
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Open</div>
+                <div className="text-[10px] capitalize tracking-wide text-secondary">Open</div>
                 <div>{c.openTrades}</div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Assigned</div>
+                <div className="text-[10px] capitalize tracking-wide text-secondary">Assigned</div>
                 <div className="text-secondary">{c.assignedTo?.name || '—'}</div>
               </div>
             </div>
@@ -612,7 +612,7 @@ export function CrmClientDetailPage() {
               return (
                 <tr key={t.id} className="border-t border-border">
                   <td className="px-3 py-2.5 font-medium">{t.symbol}</td>
-                  <td className="px-3 py-2.5 uppercase">{t.side}</td>
+                  <td className="px-3 py-2.5 capitalize">{t.side}</td>
                   <td className="px-3 py-2.5">{t.volume}</td>
                   <td className="px-3 py-2.5">{t.openPrice}</td>
                   <td className="px-3 py-2.5">{t.currentPrice}</td>
@@ -701,7 +701,7 @@ export function CrmClientDetailPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="font-semibold">{t.symbol}</div>
-                  <div className="text-xs uppercase text-secondary">
+                  <div className="text-xs capitalize text-secondary">
                     {t.side} · vol {t.volume}
                   </div>
                 </div>
@@ -709,15 +709,15 @@ export function CrmClientDetailPage() {
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <div className="text-[10px] uppercase tracking-wide text-secondary">Open</div>
+                  <div className="text-[10px] capitalize tracking-wide text-secondary">Open</div>
                   <div>{t.openPrice}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wide text-secondary">Current</div>
+                  <div className="text-[10px] capitalize tracking-wide text-secondary">Current</div>
                   <div>{t.currentPrice}</div>
                 </div>
                 <div className="col-span-2">
-                  <div className="text-[10px] uppercase tracking-wide text-secondary">PnL</div>
+                  <div className="text-[10px] capitalize tracking-wide text-secondary">PnL</div>
                   <div className={`font-semibold ${pnlClass(pnl)}`}>{money(pnl)}</div>
                 </div>
               </div>
@@ -975,19 +975,19 @@ export function CrmOnlinePage() {
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Last seen</div>
+                <div className="text-[10px] capitalize tracking-wide text-secondary">Last seen</div>
                 <div>{u.lastSeenAt ? new Date(u.lastSeenAt).toLocaleTimeString() : '—'}</div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Floating</div>
+                <div className="text-[10px] capitalize tracking-wide text-secondary">Floating</div>
                 <div className={`font-semibold ${pnlClass(u.floatingPnl)}`}>{money(u.floatingPnl)}</div>
               </div>
               <div className="col-span-2">
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Assigned</div>
+                <div className="text-[10px] capitalize tracking-wide text-secondary">Assigned</div>
                 <div className="text-secondary">{u.assignedTo?.name || '—'}</div>
               </div>
               <div className="col-span-2">
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Open trades</div>
+                <div className="text-[10px] capitalize tracking-wide text-secondary">Open trades</div>
                 <div className="text-secondary">
                   {u.trades.map((t: any) => `${t.symbol} ${t.side}`).join(', ') || '—'}
                 </div>
@@ -1084,19 +1084,19 @@ function PerformanceList({ rows, title }: { rows: any[]; title: string }) {
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <div className="text-[10px] uppercase tracking-wide text-secondary">Total PnL</div>
+                  <div className="text-[10px] capitalize tracking-wide text-secondary">Total PnL</div>
                   <div className={`font-semibold ${pnlClass(r.totalPnl)}`}>{money(r.totalPnl)}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wide text-secondary">Staff</div>
+                  <div className="text-[10px] capitalize tracking-wide text-secondary">Staff</div>
                   <div className="text-secondary">{r.assignedTo?.name || '—'}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase tracking-wide text-secondary">Floating</div>
+                  <div className="text-[10px] capitalize tracking-wide text-secondary">Floating</div>
                   <div className={pnlClass(r.floatingPnl)}>{money(r.floatingPnl)}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wide text-secondary">Realized</div>
+                  <div className="text-[10px] capitalize tracking-wide text-secondary">Realized</div>
                   <div className={pnlClass(r.realizedPnl)}>{money(r.realizedPnl)}</div>
                 </div>
               </div>
@@ -1295,11 +1295,11 @@ export function CrmPricesPage() {
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <div className="text-[10px] uppercase tracking-wide text-secondary">Price</div>
+                  <div className="text-[10px] capitalize tracking-wide text-secondary">Price</div>
                   <div className="font-medium tabular-nums">{q.price}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wide text-secondary">Bid / Ask</div>
+                  <div className="text-[10px] capitalize tracking-wide text-secondary">Bid / Ask</div>
                   <div className="tabular-nums text-secondary">
                     {Number(q.bid).toFixed(5)} / {Number(q.ask).toFixed(5)}
                   </div>

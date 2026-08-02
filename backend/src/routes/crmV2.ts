@@ -2,7 +2,15 @@ import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { prisma } from '../prisma.js'
-import { adminRequired, assertAssignedClient, isCrmStaff, staffRequired } from '../auth.js'
+import {
+  adminRequired,
+  assertAssignedClient,
+  isAdmin,
+  isCrmStaff,
+  isManager,
+  publicUser,
+  staffRequired,
+} from '../auth.js'
 import { calcPnl, initialsFromName, referralCode } from '../trading.js'
 import {
   CRM_CATEGORIES,
@@ -14,6 +22,7 @@ import {
   ONLINE_MS,
 } from '../crmHelpers.js'
 import { currencySymbol, getCurrencyCode } from '../settings.js'
+import { notifyStaff } from '../crmNotify.js'
 
 export const crmV2Router = Router()
 crmV2Router.use(staffRequired)
@@ -103,6 +112,105 @@ crmV2Router.get('/dashboard', async (req, res) => {
     categoryCounts,
     currency: await getCurrencyCode(),
   })
+})
+
+/** Create client account (Manager / Team Leader / Admin) — assigned to creator by default */
+crmV2Router.post('/clients-v2', async (req, res) => {
+  if (!isManager(req.user?.role)) {
+    return res.status(403).json({ error: 'Manager or admin only' })
+  }
+
+  const schema = z.object({
+    name: z.string().min(2),
+    email: z.string().email(),
+    password: z.string().min(6),
+    phone: z.string().optional(),
+    country: z.string().optional(),
+    nationality: z.string().optional(),
+    clientSource: z.string().optional(),
+    assignedToId: z.string().nullable().optional(),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0]?.message || 'Invalid payload' })
+
+  const email = parsed.data.email.toLowerCase()
+  const exists = await prisma.user.findUnique({ where: { email } })
+  if (exists) return res.status(400).json({ error: 'An account with this email already exists' })
+
+  let assignedToId: string | null = req.user!.id
+  if (isAdmin(req.user?.role)) {
+    if (parsed.data.assignedToId === null) assignedToId = null
+    else if (parsed.data.assignedToId) {
+      const staff = await prisma.user.findFirst({
+        where: { id: parsed.data.assignedToId, role: { not: 'USER' } },
+      })
+      if (!staff) return res.status(400).json({ error: 'Invalid assignee' })
+      assignedToId = staff.id
+    }
+  }
+
+  const country = parsed.data.country?.trim() || 'Saudi Arabia'
+  const user = await prisma.user.create({
+    data: {
+      name: parsed.data.name.trim(),
+      email,
+      passwordHash: await bcrypt.hash(parsed.data.password, 10),
+      initials: initialsFromName(parsed.data.name),
+      referralCode: referralCode(parsed.data.name),
+      role: 'USER',
+      phone: parsed.data.phone?.trim() || null,
+      country,
+      nationality: parsed.data.nationality?.trim() || country,
+      language: 'en',
+      crmNumber: await nextCrmNumber(),
+      crmCategory: 'NEW',
+      crmStatus: 'NEW',
+      clientSource: parsed.data.clientSource?.trim() || 'CRM',
+      assignedToId,
+      lastInteractionAt: new Date(),
+      accounts: {
+        create: [
+          {
+            number: String(5000000 + Math.floor(Math.random() * 900000)),
+            type: 'live',
+            balance: 0,
+            equity: 0,
+          },
+          {
+            number: String(6000000 + Math.floor(Math.random() * 900000)),
+            type: 'demo',
+            balance: 24767.36,
+            equity: 24767.36,
+          },
+        ],
+      },
+      notifications: {
+        create: {
+          title: 'Welcome to NitajFX',
+          body: 'Your demo and live accounts are ready. Fund your live account to trade real markets.',
+        },
+      },
+    },
+    include: { accounts: true, assignedTo: { select: { id: true, name: true, email: true } } },
+  })
+
+  await logCrmActivity({
+    clientId: user.id,
+    staffId: req.user!.id,
+    action: 'client_created',
+    detail: `Created by CRM desk (${req.user!.email})`,
+    req,
+  })
+
+  await notifyStaff({
+    type: 'new_lead',
+    title: 'Client created',
+    body: `${user.name} (${user.email}) created via CRM`,
+    clientId: user.id,
+    recipientId: assignedToId && assignedToId !== req.user!.id ? assignedToId : null,
+  })
+
+  return res.status(201).json({ client: publicUser(user) })
 })
 
 /** Clients list — filters, categories, pagination */

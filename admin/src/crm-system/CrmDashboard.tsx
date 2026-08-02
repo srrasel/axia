@@ -55,7 +55,7 @@ function BigKpi({
   return (
     <div className="rounded-2xl border border-border bg-[#161a21] p-5 transition-colors hover:border-accent/30 sm:p-6">
       <div className="flex items-start justify-between gap-3">
-        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary sm:text-sm">
+        <div className="text-xs font-semibold capitalize tracking-[0.14em] text-secondary sm:text-sm">
           {title}
         </div>
         <span className={clsx('flex h-11 w-11 items-center justify-center rounded-xl', toneMap[tone])}>

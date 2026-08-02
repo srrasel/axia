@@ -71,7 +71,7 @@ function Kpi({
       title={onEdit ? `Edit ${label}` : undefined}
     >
       <div className="flex items-center justify-between gap-1">
-        <div className="truncate text-[10px] font-medium uppercase tracking-wide text-secondary">{label}</div>
+        <div className="truncate text-[10px] font-medium capitalize tracking-wide text-secondary">{label}</div>
         {onEdit ? <Pencil size={10} className="shrink-0 text-secondary" /> : null}
       </div>
       <div className={`mt-0.5 truncate text-sm font-bold tabular-nums ${color}`}>{value}</div>
@@ -543,7 +543,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
               ['Created Time', fmt(c.createdAt)],
             ].map(([label, value]) => (
               <div key={label} className="rounded-lg border border-border/50 bg-[#161a21]/80 px-2.5 py-2">
-                <div className="text-[9px] font-semibold uppercase tracking-wide text-secondary">{label}</div>
+                <div className="text-[9px] font-semibold capitalize tracking-wide text-secondary">{label}</div>
                 <div className="mt-0.5 text-[12px] font-semibold text-text">{value}</div>
               </div>
             ))}
@@ -551,7 +551,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
 
           {tab === 'tracking' && (
             <div className="rounded-xl border border-border bg-[#161a21] p-3">
-              <div className="mb-2 text-xs font-bold uppercase tracking-wide text-secondary">
+              <div className="mb-2 text-xs font-bold capitalize tracking-wide text-secondary">
                 Client Information
               </div>
               <div className="grid gap-x-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -670,7 +670,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
             <div className="space-y-3">
               <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
                 <table className="w-full min-w-[720px] text-left text-[12px]">
-                  <thead className="border-b border-border text-[10px] uppercase text-secondary">
+                  <thead className="border-b border-border text-[10px] capitalize text-secondary">
                     <tr>
                       <th className="px-3 py-2">Account</th>
                       <th className="px-3 py-2">Type</th>
@@ -698,7 +698,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
               </div>
 
               <div className="rounded-xl border border-border bg-[#161a21] p-3">
-                <div className="mb-2 text-xs font-bold uppercase tracking-wide text-secondary">
+                <div className="mb-2 text-xs font-bold capitalize tracking-wide text-secondary">
                   Open trades — live price control
                 </div>
                 <p className="mb-3 text-[11px] text-secondary">
@@ -706,7 +706,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[800px] text-left text-[12px]">
-                    <thead className="border-b border-border text-[10px] uppercase text-secondary">
+                    <thead className="border-b border-border text-[10px] capitalize text-secondary">
                       <tr>
                         <th className="px-2 py-2">Symbol</th>
                         <th className="px-2 py-2">Side</th>
@@ -740,7 +740,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
           {tab === 'transactions' && (
             <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
               <table className="w-full min-w-[640px] text-left text-[12px]">
-                <thead className="border-b border-border text-[10px] uppercase text-secondary">
+                <thead className="border-b border-border text-[10px] capitalize text-secondary">
                   <tr>
                     <th className="px-3 py-2">Type</th>
                     <th className="px-3 py-2">Amount</th>
@@ -814,7 +814,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
           {(tab === 'activities' || tab === 'activity') && (
             <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
               <table className="w-full min-w-[720px] text-left text-[12px]">
-                <thead className="border-b border-border text-[10px] uppercase text-secondary">
+                <thead className="border-b border-border text-[10px] capitalize text-secondary">
                   <tr>
                     <th className="px-3 py-2">Employee</th>
                     <th className="px-3 py-2">Action</th>
@@ -953,7 +953,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
 
         {/* CRM Actions sidebar */}
         <aside className="h-fit rounded-xl border border-border bg-[#161a21] p-2 xl:sticky xl:top-3">
-          <div className="mb-2 px-1 text-[10px] font-bold uppercase tracking-wide text-secondary">
+          <div className="mb-2 px-1 text-[10px] font-bold capitalize tracking-wide text-secondary">
             CRM Actions
           </div>
           <div className="space-y-1">
@@ -1011,7 +1011,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
 
           {similar && (
             <div className="mt-3 space-y-1 border-t border-border pt-2">
-              <div className="px-1 text-[10px] font-bold uppercase text-secondary">Similar</div>
+              <div className="px-1 text-[10px] font-bold capitalize text-secondary">Similar</div>
               {similar.length === 0 && <p className="px-1 text-[11px] text-secondary">None</p>}
               {similar.map((s) => (
                 <Link

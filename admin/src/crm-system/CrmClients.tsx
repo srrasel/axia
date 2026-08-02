@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Copy,
   Download,
   Eye,
   Phone,
   Bookmark,
+  Plus,
+  UserPlus,
 } from 'lucide-react'
 import { api } from '../api'
 import { TablePagination, money } from '../layout'
@@ -13,7 +15,7 @@ import type { AdminUser } from '../auth'
 
 const CATEGORIES = [
   { id: 'ALL', label: 'All' },
-  { id: 'BAD', label: 'BAD' },
+  { id: 'BAD', label: 'Bad' },
   { id: 'CONVERSION', label: 'Conversion' },
   { id: 'FTD', label: 'FTD' },
   { id: 'NEW', label: 'New' },
@@ -24,6 +26,11 @@ const CATEGORIES = [
   { id: 'RETENTION', label: 'Retention' },
   { id: 'TEST', label: 'Test' },
 ] as const
+
+const CREATE_ROLES = new Set(['ADMIN', 'MANAGER', 'TEAM_LEADER'])
+
+const createInputClass =
+  'h-10 w-full rounded-xl border border-border bg-[#12151a] px-3 text-sm outline-none hover:border-accent/50 focus:border-accent'
 
 type ClientRow = {
   id: string
@@ -103,6 +110,7 @@ const colFilterClass =
   'mt-1.5 h-9 w-full min-w-[110px] rounded-lg border border-border bg-[#12151a] px-2.5 text-sm outline-none hover:border-accent/50 focus:border-accent'
 
 export function CrmClientsPage({ me }: { me: AdminUser }) {
+  const navigate = useNavigate()
   const [params] = useSearchParams()
   const [category, setCategory] = useState(params.get('category') || 'ALL')
   const [data, setData] = useState<ListRes | null>(null)
@@ -113,6 +121,18 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
   const [busy, setBusy] = useState(false)
   const [page, setPage] = useState(1)
   const pageSize = 25
+  const canCreate = CREATE_ROLES.has(me.role)
+  const [showCreate, setShowCreate] = useState(false)
+  const [createMsg, setCreateMsg] = useState<string | null>(null)
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    phone: '',
+    country: 'Saudi Arabia',
+    clientSource: 'CRM',
+    assignedToId: '',
+  })
 
   const [col, setCol] = useState({
     name: '',
@@ -198,11 +218,72 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
     }
   }
 
+  async function createClient(e: FormEvent) {
+    e.preventDefault()
+    if (!canCreate) return
+    setBusy(true)
+    setError(null)
+    setCreateMsg(null)
+    try {
+      const body: Record<string, unknown> = {
+        name: createForm.name.trim(),
+        email: createForm.email.trim(),
+        password: createForm.password,
+        phone: createForm.phone.trim() || undefined,
+        country: createForm.country.trim() || undefined,
+        clientSource: createForm.clientSource.trim() || 'CRM',
+      }
+      if (me.role === 'ADMIN' && createForm.assignedToId) {
+        body.assignedToId = createForm.assignedToId === 'none' ? null : createForm.assignedToId
+      }
+      const res = await api<{ client: { id: string; name: string } }>('/api/admin/crm/clients-v2', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      })
+      setCreateMsg(`Created ${res.client.name}`)
+      setShowCreate(false)
+      setCreateForm({
+        name: '',
+        email: '',
+        password: '',
+        phone: '',
+        country: 'Saudi Arabia',
+        clientSource: 'CRM',
+        assignedToId: '',
+      })
+      await load()
+      navigate(`/crm/clients/${res.client.id}`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Create failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="-mx-1 space-y-4 lg:-mx-2">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight text-text sm:text-3xl">Clients</h1>
         <div className="flex flex-wrap items-center gap-2">
+          {canCreate && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowCreate((v) => !v)
+                setCreateMsg(null)
+              }}
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-[#202630] hover:bg-[#ceaf30]"
+            >
+              {showCreate ? (
+                'Cancel'
+              ) : (
+                <>
+                  <UserPlus size={16} />
+                  Add client
+                </>
+              )}
+            </button>
+          )}
           {me.role === 'ADMIN' && (
             <>
               <select
@@ -222,7 +303,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 type="button"
                 disabled={busy || selected.size === 0 || !bulkAssign}
                 onClick={() => void runBulkAssign()}
-                className="h-10 rounded-xl bg-accent px-4 text-sm font-semibold text-[#202630] hover:bg-[#ceaf30] disabled:opacity-40"
+                className="h-10 rounded-xl border border-border bg-[#161a21] px-4 text-sm font-semibold text-text hover:border-accent/50 disabled:opacity-40"
               >
                 Mass Assign ({selected.size})
               </button>
@@ -230,6 +311,115 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
           )}
         </div>
       </div>
+
+      {createMsg ? (
+        <p className="rounded-xl border border-buy/30 bg-buy/15 px-3 py-2 text-sm text-buy">{createMsg}</p>
+      ) : null}
+
+      {showCreate && canCreate ? (
+        <form
+          onSubmit={(e) => void createClient(e)}
+          className="grid gap-3 rounded-2xl border border-border bg-[#161a21] p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        >
+          <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+            <p className="text-sm font-semibold text-text">New client account</p>
+            <p className="mt-0.5 text-xs text-secondary">
+              {me.role === 'ADMIN'
+                ? 'Creates a trading login with live + demo accounts. Optionally assign to a desk user.'
+                : 'Creates a trading login with live + demo accounts, assigned to you.'}
+            </p>
+          </div>
+          <label className="block text-xs text-secondary">
+            Full name
+            <input
+              className={`${createInputClass} mt-1`}
+              value={createForm.name}
+              onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+              placeholder="Client name"
+              required
+              minLength={2}
+            />
+          </label>
+          <label className="block text-xs text-secondary">
+            Email
+            <input
+              type="email"
+              className={`${createInputClass} mt-1`}
+              value={createForm.email}
+              onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+              placeholder="client@email.com"
+              required
+            />
+          </label>
+          <label className="block text-xs text-secondary">
+            Password
+            <input
+              type="text"
+              className={`${createInputClass} mt-1`}
+              value={createForm.password}
+              onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+              placeholder="Min 6 characters"
+              required
+              minLength={6}
+            />
+          </label>
+          <label className="block text-xs text-secondary">
+            Phone
+            <input
+              className={`${createInputClass} mt-1`}
+              value={createForm.phone}
+              onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
+              placeholder="Optional"
+            />
+          </label>
+          <label className="block text-xs text-secondary">
+            Country
+            <input
+              className={`${createInputClass} mt-1`}
+              value={createForm.country}
+              onChange={(e) => setCreateForm({ ...createForm, country: e.target.value })}
+              placeholder="Country"
+            />
+          </label>
+          <label className="block text-xs text-secondary">
+            Source
+            <input
+              className={`${createInputClass} mt-1`}
+              value={createForm.clientSource}
+              onChange={(e) => setCreateForm({ ...createForm, clientSource: e.target.value })}
+              placeholder="CRM"
+            />
+          </label>
+          {me.role === 'ADMIN' ? (
+            <label className="block text-xs text-secondary">
+              Assign to
+              <select
+                className={`${createInputClass} mt-1`}
+                value={createForm.assignedToId}
+                onChange={(e) => setCreateForm({ ...createForm, assignedToId: e.target.value })}
+              >
+                <option value="">Me (admin)</option>
+                <option value="none">Unassigned</option>
+                {staff.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          <div className="flex items-end">
+            <button
+              type="submit"
+              disabled={busy}
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-[#202630] hover:bg-[#ceaf30] disabled:opacity-60"
+            >
+              <Plus size={16} />
+              {busy ? 'Creating…' : 'Create client'}
+            </button>
+          </div>
+        </form>
+      ) : null}
 
       {/* Category tabs */}
       <div className="overflow-x-auto rounded-2xl border border-border bg-[#161a21]">
@@ -297,7 +487,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
       <div className="overflow-x-auto rounded-2xl border border-border bg-[#161a21]">
         <table className="w-full min-w-[1280px] text-left text-sm sm:text-base">
           <thead>
-            <tr className="border-b border-border bg-[#12151a]/80 text-xs font-semibold uppercase tracking-wide text-secondary">
+            <tr className="border-b border-border bg-[#12151a]/80 text-xs font-semibold capitalize tracking-wide text-secondary">
               <th className="w-10 px-3 py-3">
                 <input type="checkbox" className="h-4 w-4" checked={allSelected} onChange={toggleAll} />
               </th>

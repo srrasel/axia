@@ -1,10 +1,10 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useState, type ReactNode } from 'react'
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { api } from './api'
 import { AuthProvider, useAuth } from './auth'
+import { LoginPage, ForgotPasswordPage } from './auth-pages'
 import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination, canAccessPath, isCrmStaffRole } from './layout'
 import { setActiveCurrency } from './currency'
-import { BrandLogo } from './BrandLogo'
 import { Dashboard } from './dashboard'
 import { CrmPricesPage, CrmStaffPage } from './crm'
 import {
@@ -35,114 +35,6 @@ function CrmClientProfileRoute() {
 function CrmDeskRedirect() {
   const { id } = useParams()
   return <Navigate to={id ? `/crm/clients/${id}` : '/crm/clients'} replace />
-}
-
-function Login() {
-  const { login, verify2fa, user, loading } = useAuth()
-  const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [code, setCode] = useState('')
-  const [tempToken, setTempToken] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  if (!loading && user) return <Navigate to="/" replace />
-
-  return (
-    <div className="flex min-h-full items-center justify-center p-6">
-      <form
-        className="w-full max-w-md rounded-2xl border border-border bg-panel p-8 shadow-[0_20px_50px_rgba(0,0,0,0.45)]"
-        autoComplete="on"
-        onSubmit={async (e: FormEvent) => {
-          e.preventDefault()
-          setError(null)
-          if (tempToken) {
-            const err = await verify2fa(tempToken, code)
-            if (err) setError(err)
-            else navigate('/')
-            return
-          }
-          const result = await login(email, password)
-          if (!result) {
-            navigate('/')
-            return
-          }
-          if (result.requires2fa && result.tempToken) {
-            setTempToken(result.tempToken)
-            return
-          }
-          setError(result.error || 'Login failed')
-        }}
-      >
-        <div className="mb-6 text-center">
-          <div className="flex flex-col items-center gap-2">
-            <BrandLogo variant="dark" className="h-12" />
-            <span className="text-xs font-semibold uppercase tracking-wide text-secondary">CRM</span>
-        </div>
-          <p className="mt-2 text-sm text-secondary">
-            {tempToken ? 'Enter Google Authenticator code' : 'Manager · Employee · Admin desk'}
-          </p>
-        </div>
-        {error ? <p className="mb-3 rounded bg-sell/10 px-3 py-2 text-sm text-sell">{error}</p> : null}
-        {!tempToken ? (
-          <>
-            <label className="mb-3 block text-sm">
-              Email
-              <input
-                type="email"
-                name="email"
-                autoComplete="username"
-                placeholder="Email"
-                className="mt-1 h-11 w-full rounded-md border border-border bg-panel px-3 text-text outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </label>
-            <label className="mb-4 block text-sm">
-              Password
-              <input
-                type="password"
-                name="password"
-                autoComplete="current-password"
-                placeholder="Password"
-                className="mt-1 h-11 w-full rounded-md border border-border bg-panel px-3 text-text outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </label>
-          </>
-        ) : (
-          <label className="mb-4 block text-sm">
-            Authenticator code
-            <input
-              className="mt-1 h-11 w-full rounded-md border border-border bg-panel px-3 tracking-widest text-text outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              inputMode="numeric"
-              placeholder="000000"
-              autoFocus
-            />
-          </label>
-        )}
-        <button type="submit" className="h-11 w-full rounded-lg bg-[#fcd535] text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]">
-          {tempToken ? 'Verify & sign in' : 'Sign in'}
-        </button>
-        {tempToken ? (
-        <button
-          type="button"
-            className="mt-3 h-9 w-full text-sm text-secondary"
-            onClick={() => {
-              setTempToken(null)
-              setCode('')
-              setError(null)
-            }}
-          >
-            ← Back
-          </button>
-        ) : null}
-      </form>
-    </div>
-  )
 }
 
 function Protected({ children }: { children: ReactNode }) {
@@ -807,7 +699,8 @@ export default function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route
           element={
             <Protected>
