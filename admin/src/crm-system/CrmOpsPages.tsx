@@ -393,7 +393,7 @@ export function CrmSecurityPage() {
           Login logs
         </div>
         <table className="w-full min-w-[800px] text-left text-[12px]">
-          <thead className="text-[10px] capitalize text-secondary">
+          <thead className="text-[14px] capitalize text-secondary">
             <tr>
               <th className="px-3 py-2">User</th>
               <th className="px-3 py-2">IP</th>
@@ -433,7 +433,7 @@ export function CrmSecurityPage() {
           Active sessions
         </div>
         <table className="w-full min-w-[700px] text-left text-[12px]">
-          <thead className="text-[10px] capitalize text-secondary">
+          <thead className="text-[14px] capitalize text-secondary">
             <tr>
               <th className="px-3 py-2">User</th>
               <th className="px-3 py-2">IP</th>
@@ -483,7 +483,7 @@ export function CrmSecurityPage() {
           Audit trail
         </div>
         <table className="w-full min-w-[700px] text-left text-[12px]">
-          <thead className="text-[10px] capitalize text-secondary">
+          <thead className="text-[14px] capitalize text-secondary">
             <tr>
               <th className="px-3 py-2">Staff</th>
               <th className="px-3 py-2">Client</th>

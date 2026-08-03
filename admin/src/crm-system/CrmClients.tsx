@@ -677,7 +677,6 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
             <col className="w-[160px]" />
             <col className="w-[120px]" />
             <col className="w-[150px]" />
-            <col className="w-14" />
           </colgroup>
           <thead>
             <tr className="border-b border-border bg-[#12151a]/80">
@@ -772,10 +771,6 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                   <div className="h-9" />
                 )}
               </th>
-              <th className={`${thClass} text-center`}>
-                <span className={`${thLabelClass} text-center`}>More</span>
-                <div className="h-9" />
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -821,22 +816,12 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <td className={`${tdClass} text-right text-[14px] font-bold tabular-nums`}>
                   {money(c.balance ?? c.totalDeposits)}
                 </td>
-                <td className={`${tdClass} font-medium text-secondary`}>{c.assignedTo?.name || '-'}</td>
-                <td className={`${tdClass} text-center`}>
-                  <span
-                    className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
-                      c.online ? 'bg-buy/25 text-buy' : 'bg-muted text-secondary'
-                    }`}
-                    title={c.online ? 'Online' : 'Offline'}
-                  >
-                    L
-                  </span>
-                </td>
+                <td className={`${tdClass} text-[14px] font-medium text-secondary`}>{c.assignedTo?.name || '-'}</td>
               </tr>
             ))}
             {clients.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-3 py-12 text-center text-base text-secondary">
+                <td colSpan={9} className="px-3 py-12 text-center text-base text-secondary">
                   No clients found
                 </td>
               </tr>
