@@ -147,7 +147,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           <div className="text-xs text-secondary">Control center</div>
         </div>
       </div>
-      <div className="relative px-5 py-3 text-[11px] capitalize tracking-wide text-secondary">
+      <div className="relative px-5 py-3 text-[16px] capitalize tracking-wide text-white">
         {user?.role?.replaceAll('_', ' ').toLowerCase()} · <CurrencyBadge />
       </div>
       <nav className="relative flex-1 space-y-5 overflow-y-auto px-3 pb-4">

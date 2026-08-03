@@ -17,7 +17,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '../api'
-import { btnPrimary, money, PageHeader } from '../layout'
+import { btnPrimary, money, PageHeader, TablePagination, usePagination } from '../layout'
 
 function fmt(iso?: string) {
   if (!iso) return '—'
@@ -153,6 +153,7 @@ export function CrmNotificationsPage() {
   const [items, setItems] = useState<any[]>([])
   const [unread, setUnread] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const pager = usePagination(items, 10)
 
   const load = () =>
     api<{ notifications: any[]; unread: number }>('/api/admin/crm/notifications')
@@ -188,7 +189,7 @@ export function CrmNotificationsPage() {
       {error && <p className="text-sm text-sell">{error}</p>}
       <div className="space-y-2">
         {items.length === 0 && <p className="text-sm text-secondary">No notifications yet</p>}
-        {items.map((n) => (
+        {pager.pageItems.map((n) => (
           <div
             key={n.id}
             className={`rounded-xl border px-3 py-2 ${
@@ -211,6 +212,14 @@ export function CrmNotificationsPage() {
           </div>
         ))}
       </div>
+      <TablePagination
+        page={pager.page}
+        totalPages={pager.totalPages}
+        total={pager.total}
+        from={pager.from}
+        to={pager.to}
+        onPageChange={pager.setPage}
+      />
     </div>
   )
 }
@@ -254,7 +263,7 @@ export function CrmAnalyticsPage() {
           ['ROI / deposit', money(r.roi)],
         ].map(([label, value]) => (
           <div key={String(label)} className="rounded-xl border border-border bg-[#161a21] px-3 py-3">
-            <div className="text-[10px] capitalize text-secondary">{label}</div>
+            <div className="text-[14px] capitalize text-secondary">{label}</div>
             <div className="mt-1 text-lg font-bold tabular-nums">{value}</div>
           </div>
         ))}
@@ -262,7 +271,7 @@ export function CrmAnalyticsPage() {
 
       <div className="grid gap-3 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-[#161a21] p-3">
-          <div className="mb-2 text-xs font-bold capitalize text-secondary">By country</div>
+          <div className="mb-2 text-[14px] font-bold capitalize text-secondary">By country</div>
           {(data.byCountry || []).map((x: any) => (
             <div key={x.country} className="flex justify-between border-b border-border/40 py-1.5 text-sm">
               <span className="text-secondary">{x.country}</span>
@@ -271,7 +280,7 @@ export function CrmAnalyticsPage() {
           ))}
         </div>
         <div className="rounded-xl border border-border bg-[#161a21] p-3">
-          <div className="mb-2 text-xs font-bold capitalize text-secondary">By source</div>
+          <div className="mb-2 text-[14px] font-bold capitalize text-secondary">By source</div>
           {(data.bySource || []).map((x: any) => (
             <div key={x.source} className="flex justify-between border-b border-border/40 py-1.5 text-sm">
               <span className="text-secondary">{x.source}</span>
@@ -288,6 +297,9 @@ export function CrmAnalyticsPage() {
 export function CrmSecurityPage() {
   const [data, setData] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
+  const loginPager = usePagination(data?.loginLogs ?? [], 10)
+  const sessionPager = usePagination(data?.sessions ?? [], 10)
+  const auditPager = usePagination(data?.auditTrail ?? [], 10)
 
   const load = () =>
     api('/api/admin/crm/security/logs')
@@ -322,7 +334,7 @@ export function CrmSecurityPage() {
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
-        <div className="border-b border-border px-3 py-2 text-xs font-bold capitalize text-secondary">
+        <div className="border-b border-border px-3 py-2 text-[16px] font-bold capitalize text-secondary">
           Login logs
         </div>
         <table className="w-full min-w-[800px] text-left text-[12px]">
@@ -336,7 +348,7 @@ export function CrmSecurityPage() {
             </tr>
           </thead>
           <tbody>
-            {(data.loginLogs || []).map((l: any) => (
+            {loginPager.pageItems.map((l: any) => (
               <tr key={l.id} className="border-t border-border/50">
                 <td className="px-3 py-2">{l.user?.email || l.email || '—'}</td>
                 <td className="px-3 py-2 text-secondary">{l.ip || '—'}</td>
@@ -349,10 +361,20 @@ export function CrmSecurityPage() {
             ))}
           </tbody>
         </table>
+        <div className="border-t border-border px-3 py-2">
+          <TablePagination
+            page={loginPager.page}
+            totalPages={loginPager.totalPages}
+            total={loginPager.total}
+            from={loginPager.from}
+            to={loginPager.to}
+            onPageChange={loginPager.setPage}
+          />
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
-        <div className="border-b border-border px-3 py-2 text-xs font-bold capitalize text-secondary">
+        <div className="border-b border-border px-3 py-2 text-[16px] font-bold capitalize text-secondary">
           Active sessions
         </div>
         <table className="w-full min-w-[700px] text-left text-[12px]">
@@ -366,7 +388,7 @@ export function CrmSecurityPage() {
             </tr>
           </thead>
           <tbody>
-            {(data.sessions || []).map((s: any) => (
+            {sessionPager.pageItems.map((s: any) => (
               <tr key={s.id} className="border-t border-border/50">
                 <td className="px-3 py-2">{s.user?.name || '—'}</td>
                 <td className="px-3 py-2 text-secondary">{s.ip || '—'}</td>
@@ -389,10 +411,20 @@ export function CrmSecurityPage() {
             ))}
           </tbody>
         </table>
+        <div className="border-t border-border px-3 py-2">
+          <TablePagination
+            page={sessionPager.page}
+            totalPages={sessionPager.totalPages}
+            total={sessionPager.total}
+            from={sessionPager.from}
+            to={sessionPager.to}
+            onPageChange={sessionPager.setPage}
+          />
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
-        <div className="border-b border-border px-3 py-2 text-xs font-bold capitalize text-secondary">
+        <div className="border-b border-border px-3 py-2 text-[16px] font-bold capitalize text-secondary">
           Audit trail
         </div>
         <table className="w-full min-w-[700px] text-left text-[12px]">
@@ -406,7 +438,7 @@ export function CrmSecurityPage() {
             </tr>
           </thead>
           <tbody>
-            {(data.auditTrail || []).map((a: any) => (
+            {auditPager.pageItems.map((a: any) => (
               <tr key={a.id} className="border-t border-border/50">
                 <td className="px-3 py-2">{a.staff?.name || '—'}</td>
                 <td className="px-3 py-2">
@@ -422,6 +454,16 @@ export function CrmSecurityPage() {
             ))}
           </tbody>
         </table>
+        <div className="border-t border-border px-3 py-2">
+          <TablePagination
+            page={auditPager.page}
+            totalPages={auditPager.totalPages}
+            total={auditPager.total}
+            from={auditPager.from}
+            to={auditPager.to}
+            onPageChange={auditPager.setPage}
+          />
+        </div>
       </div>
     </div>
   )

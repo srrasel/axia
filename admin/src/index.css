@@ -31,6 +31,40 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Hand pointer on all clickable controls */
+a,
+button,
+[role='button'],
+[role='link'],
+[role='tab'],
+[role='menuitem'],
+[role='option'],
+[role='checkbox'],
+[role='radio'],
+[role='switch'],
+label[for],
+summary,
+select,
+input[type='button'],
+input[type='submit'],
+input[type='reset'],
+input[type='checkbox'],
+input[type='radio'],
+input[type='file'],
+input[type='image'],
+.cursor-pointer {
+  cursor: pointer;
+}
+
+a:disabled,
+button:disabled,
+input:disabled,
+select:disabled,
+[aria-disabled='true'],
+.disabled {
+  cursor: not-allowed;
+}
+
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: #3a4250; border-radius: 999px; }
 ::-webkit-scrollbar-track { background: transparent; }

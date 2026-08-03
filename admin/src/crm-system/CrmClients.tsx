@@ -59,10 +59,37 @@ type ListRes = {
   pageSize: number
   totalPages: number
   categoryCounts: Record<string, number>
+  filterMeta?: {
+    countries?: { country: string | null }[]
+    sources?: { clientSource: string | null }[]
+  }
 }
 
+const DEFAULT_COUNTRIES = [
+  'Saudi Arabia',
+  'UAE',
+  'Qatar',
+  'Kuwait',
+  'Bahrain',
+  'Oman',
+  'Jordan',
+  'Egypt',
+  'United States',
+  'United Kingdom',
+  'India',
+  'Pakistan',
+  'Bangladesh',
+  'Turkey',
+  'Morocco',
+  'Tunisia',
+  'Algeria',
+  'Lebanon',
+  'Iraq',
+  'Yemen',
+]
+
 function fmt(iso: string | null | undefined) {
-  if (!iso) return '—'
+  if (!iso) return '-'
   return new Date(iso).toLocaleString()
 }
 
@@ -107,7 +134,10 @@ function exportCsv(rows: ClientRow[]) {
 }
 
 const colFilterClass =
-  'mt-1.5 h-9 w-full min-w-[110px] rounded-lg border border-border bg-[#12151a] px-2.5 text-sm outline-none hover:border-accent/50 focus:border-accent'
+  'h-9 w-full min-w-[110px] rounded-lg border border-border bg-[#12151a] px-2.5 text-sm outline-none hover:border-accent/50 focus:border-accent'
+const thClass = 'align-bottom px-3 py-3 text-left'
+const thLabelClass = 'mb-1.5 block whitespace-nowrap text-xs font-semibold capitalize tracking-wide text-secondary'
+const tdClass = 'align-middle px-3 py-3.5'
 
 export function CrmClientsPage({ me }: { me: AdminUser }) {
   const navigate = useNavigate()
@@ -184,6 +214,13 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1
   const to = Math.min(page * pageSize, total)
   const allSelected = clients.length > 0 && clients.every((c) => selected.has(c.id))
+
+  const countryOptions = useMemo(() => {
+    const fromDb = (data?.filterMeta?.countries || [])
+      .map((c) => c.country)
+      .filter((c): c is string => Boolean(c && c.trim()))
+    return [...new Set([...DEFAULT_COUNTRIES, ...fromDb])].sort((a, b) => a.localeCompare(b))
+  }, [data?.filterMeta?.countries])
 
   function toggleAll() {
     if (allSelected) setSelected(new Set())
@@ -275,9 +312,9 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
       })
       if (c.phone) {
         window.location.href = `tel:${c.phone.replace(/[^\d+]/g, '')}`
-        setToolbarMsg(`Calling ${c.name}…`)
+        setToolbarMsg(`Calling ${c.name}...`)
       } else {
-        setToolbarMsg(`No phone for ${c.name} — opened profile`)
+        setToolbarMsg(`No phone for ${c.name} - opened profile`)
         navigate(`/crm/clients/${c.id}`)
       }
       await load()
@@ -388,7 +425,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 onChange={(e) => setBulkAssign(e.target.value)}
                 className="h-10 rounded-xl border border-border bg-[#161a21] px-3 text-sm outline-none hover:border-accent/50 focus:border-accent"
               >
-                <option value="">Mass Assign…</option>
+                <option value="">Mass Assign...</option>
                 <option value="none">Unassign</option>
                 {staff.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -471,12 +508,18 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
           </label>
           <label className="block text-xs text-secondary">
             Country
-            <input
+            <select
               className={`${createInputClass} mt-1`}
               value={createForm.country}
               onChange={(e) => setCreateForm({ ...createForm, country: e.target.value })}
-              placeholder="Country"
-            />
+              required
+            >
+              {countryOptions.map((country) => (
+                <option key={country} value={country}>
+                  {country}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="block text-xs text-secondary">
             Source
@@ -512,7 +555,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
               className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-[#202630] hover:bg-[#ceaf30] disabled:opacity-60"
             >
               <Plus size={16} />
-              {busy ? 'Creating…' : 'Create client'}
+              {busy ? 'Creating...' : 'Create client'}
             </button>
           </div>
         </form>
@@ -602,17 +645,32 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
       {error && <p className="text-base text-sell">{error}</p>}
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-[#161a21]">
-        <table className="w-full min-w-[1280px] text-left text-sm sm:text-base">
+        <table className="w-full min-w-[1280px] table-fixed text-left text-sm sm:text-base">
+          <colgroup>
+            <col className="w-10" />
+            <col className="w-[220px]" />
+            <col className="w-[150px]" />
+            <col className="w-[150px]" />
+            <col className="w-[160px]" />
+            <col className="w-[160px]" />
+            <col className="w-[160px]" />
+            <col className="w-[120px]" />
+            <col className="w-[150px]" />
+            <col className="w-14" />
+          </colgroup>
           <thead>
-            <tr className="border-b border-border bg-[#12151a]/80 text-xs font-semibold capitalize tracking-wide text-secondary">
-              <th className="w-10 px-3 py-3">
-                <input type="checkbox" className="h-4 w-4" checked={allSelected} onChange={toggleAll} />
+            <tr className="border-b border-border bg-[#12151a]/80">
+              <th className={`${thClass} w-10`}>
+                <span className={thLabelClass}>&nbsp;</span>
+                <div className="flex h-9 items-center">
+                  <input type="checkbox" className="h-4 w-4" checked={allSelected} onChange={toggleAll} />
+                </div>
               </th>
-              <th className="min-w-[200px] px-3 py-3">
-                Client Name
+              <th className={thClass}>
+                <span className={thLabelClass}>Client Name</span>
                 <input
                   className={colFilterClass}
-                  placeholder="Filter name…"
+                  placeholder="Filter name..."
                   value={col.name}
                   onChange={(e) => {
                     setCol((s) => ({ ...s, name: e.target.value }))
@@ -620,23 +678,29 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                   }}
                 />
               </th>
-              <th className="min-w-[140px] px-3 py-3">
-                Country
-                <input
+              <th className={thClass}>
+                <span className={thLabelClass}>Country</span>
+                <select
                   className={colFilterClass}
-                  placeholder="Filter…"
                   value={col.country}
                   onChange={(e) => {
                     setCol((s) => ({ ...s, country: e.target.value }))
                     setPage(1)
                   }}
-                />
+                >
+                  <option value="">All countries</option>
+                  {countryOptions.map((country) => (
+                    <option key={country} value={country}>
+                      {country}
+                    </option>
+                  ))}
+                </select>
               </th>
-              <th className="min-w-[150px] px-3 py-3">
-                Client Status
+              <th className={thClass}>
+                <span className={thLabelClass}>Client Status</span>
                 <input
                   className={colFilterClass}
-                  placeholder="Filter…"
+                  placeholder="Filter status..."
                   value={col.status}
                   onChange={(e) => {
                     setCol((s) => ({ ...s, status: e.target.value }))
@@ -644,12 +708,24 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                   }}
                 />
               </th>
-              <th className="min-w-[160px] px-3 py-3">First Deposit Date</th>
-              <th className="min-w-[160px] px-3 py-3">Last Login Date</th>
-              <th className="min-w-[160px] px-3 py-3">Last Interaction</th>
-              <th className="min-w-[120px] px-3 py-3 text-right">Balance</th>
-              <th className="min-w-[140px] px-3 py-3">
-                Assigned To
+              <th className={thClass}>
+                <span className={thLabelClass}>First Deposit Date</span>
+                <div className="h-9" />
+              </th>
+              <th className={thClass}>
+                <span className={thLabelClass}>Last Login Date</span>
+                <div className="h-9" />
+              </th>
+              <th className={thClass}>
+                <span className={thLabelClass}>Last Interaction</span>
+                <div className="h-9" />
+              </th>
+              <th className={`${thClass} text-right`}>
+                <span className={`${thLabelClass} text-right`}>Balance</span>
+                <div className="h-9" />
+              </th>
+              <th className={thClass}>
+                <span className={thLabelClass}>Assigned To</span>
                 {me.role === 'ADMIN' ? (
                   <select
                     className={colFilterClass}
@@ -666,9 +742,14 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                       </option>
                     ))}
                   </select>
-                ) : null}
+                ) : (
+                  <div className="h-9" />
+                )}
               </th>
-              <th className="w-14 px-3 py-3">More</th>
+              <th className={`${thClass} text-center`}>
+                <span className={`${thLabelClass} text-center`}>More</span>
+                <div className="h-9" />
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -677,7 +758,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 key={c.id}
                 className="border-b border-border/50 hover:bg-[#1c222c]/80"
               >
-                <td className="px-3 py-3.5">
+                <td className={tdClass}>
                   <input
                     type="checkbox"
                     className="h-4 w-4"
@@ -685,31 +766,37 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                     onChange={() => toggleOne(c.id)}
                   />
                 </td>
-                <td className="px-3 py-3.5">
+                <td className={tdClass}>
                   <Link
                     to={`/crm/clients/${c.id}`}
-                    className="text-[20px] font-bold text-text hover:text-accent"
+                    className="block truncate text-[20px] font-bold text-text hover:text-accent"
                   >
                     {c.name}
                   </Link>
-                  <div className="mt-0.5 text-[12px] text-secondary">
-                    #{c.crmNumber ?? '—'} · {c.email}
+                  <div className="mt-0.5 truncate text-[12px] text-secondary">
+                    #{c.crmNumber ?? '-'} · {c.email}
                   </div>
                 </td>
-                <td className="px-3 py-3.5 font-medium text-secondary">{c.country || '—'}</td>
-                <td className="px-3 py-3.5">
-                  <span className="rounded-lg border border-border bg-[#12151a] px-2.5 py-1 text-sm font-medium capitalize">
+                <td className={`${tdClass} text-[14px] font-medium text-secondary`}>{c.country || '-'}</td>
+                <td className={tdClass}>
+                  <span className="inline-flex rounded-lg border border-border bg-[#12151a] px-2.5 py-1 text-sm font-medium capitalize">
                     {c.crmStatus?.replaceAll('_', ' ').toLowerCase()}
                   </span>
                 </td>
-                <td className="px-3 py-3.5 text-[12px] text-secondary">{fmt(c.firstDepositAt)}</td>
-                <td className="px-3 py-3.5 text-[12px] text-secondary">{fmt(c.lastSeenAt)}</td>
-                <td className="px-3 py-3.5 text-[12px] text-secondary">{fmt(c.lastInteractionAt)}</td>
-                <td className="px-3 py-3.5 text-right text-base font-bold tabular-nums">
+                <td className={`${tdClass} whitespace-nowrap text-[12px] text-secondary`}>
+                  {fmt(c.firstDepositAt)}
+                </td>
+                <td className={`${tdClass} whitespace-nowrap text-[12px] text-secondary`}>
+                  {fmt(c.lastSeenAt)}
+                </td>
+                <td className={`${tdClass} whitespace-nowrap text-[12px] text-secondary`}>
+                  {fmt(c.lastInteractionAt)}
+                </td>
+                <td className={`${tdClass} text-right text-[14px] font-bold tabular-nums`}>
                   {money(c.balance ?? c.totalDeposits)}
                 </td>
-                <td className="px-3 py-3.5 font-medium text-secondary">{c.assignedTo?.name || '—'}</td>
-                <td className="px-3 py-3.5">
+                <td className={`${tdClass} font-medium text-secondary`}>{c.assignedTo?.name || '-'}</td>
+                <td className={`${tdClass} text-center`}>
                   <span
                     className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
                       c.online ? 'bg-buy/25 text-buy' : 'bg-muted text-secondary'
