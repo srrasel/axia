@@ -137,7 +137,7 @@ function exportCsv(rows: ClientRow[]) {
 const colFilterClass =
   'h-9 w-full min-w-[110px] rounded-lg border border-border bg-[#12151a] px-2.5 text-sm outline-none hover:border-accent/50 focus:border-accent'
 const colSelectClass =
-  'h-9 w-full min-w-[110px] cursor-pointer appearance-none rounded-lg border border-border px-2.5 pr-9 text-sm outline-none focus:border-border'
+  'h-9 w-full min-w-[110px] cursor-pointer appearance-none rounded-lg border border-border px-2.5 pr-9 text-sm outline-none transition-colors hover:border-[#fcd535] focus:border-[#fcd535]'
 const colSelectStyleBase = {
   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa3b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
   backgroundRepeat: 'no-repeat',
