@@ -32,6 +32,14 @@ const CREATE_ROLES = new Set(['ADMIN', 'MANAGER', 'TEAM_LEADER'])
 
 const createInputClass =
   'h-10 w-full rounded-xl border border-border bg-[#12151a] px-3 text-sm outline-none hover:border-accent/50 focus:border-accent'
+const createSelectClass =
+  'h-10 w-full cursor-pointer appearance-none rounded-xl border border-border bg-[#12151a] px-3 pr-10 text-sm outline-none transition-colors hover:border-[#fcd535] focus:border-[#fcd535]'
+const createSelectStyle = {
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa3b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'right 14px center',
+  backgroundSize: '14px 14px',
+} as const
 
 type ClientRow = {
   id: string
@@ -141,7 +149,7 @@ const colSelectClass =
 const colSelectStyleBase = {
   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa3b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
   backgroundRepeat: 'no-repeat',
-  backgroundPosition: 'right 10px center',
+  backgroundPosition: 'right 14px center',
   backgroundSize: '14px 14px',
 } as const
 const thClass = 'align-bottom px-3 py-3 text-left'
@@ -368,7 +376,9 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
     setCreateMsg(null)
     try {
       const body: Record<string, unknown> = {
-        name: createForm.name.trim(),
+        name: createForm.name
+          .trim()
+          .replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()),
         email: createForm.email.trim(),
         password: createForm.password,
         phone: createForm.phone.trim() || undefined,
@@ -466,20 +476,20 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
           className="grid gap-3 rounded-2xl border border-border bg-[#161a21] p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         >
           <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
-            <p className="text-sm font-semibold text-text">New client account</p>
+            <p className="text-sm font-semibold capitalize text-text">New Client Account</p>
             <p className="mt-0.5 text-xs text-secondary">
               {me.role === 'ADMIN'
                 ? 'Creates a trading login with live + demo accounts. Optionally assign to a desk user.'
                 : 'Creates a trading login with live + demo accounts, assigned to you.'}
             </p>
           </div>
-          <label className="block text-xs text-secondary">
-            Full name
+          <label className="block text-xs capitalize text-secondary">
+            Full Name
             <input
-              className={`${createInputClass} mt-1`}
+              className={`${createInputClass} mt-1 capitalize`}
               value={createForm.name}
               onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-              placeholder="Client name"
+              placeholder="Client Name"
               required
               minLength={2}
             />
@@ -533,10 +543,11 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
               placeholder="Optional"
             />
           </label>
-          <label className="block text-xs text-secondary">
+          <label className="block text-xs capitalize text-secondary">
             Country
             <select
-              className={`${createInputClass} mt-1`}
+              className={`${createSelectClass} mt-1`}
+              style={createSelectStyle}
               value={createForm.country}
               onChange={(e) => setCreateForm({ ...createForm, country: e.target.value })}
               required
@@ -558,10 +569,11 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
             />
           </label>
           {me.role === 'ADMIN' ? (
-            <label className="block text-xs text-secondary">
-              Assign to
+            <label className="block text-xs capitalize text-secondary">
+              Assign To
               <select
-                className={`${createInputClass} mt-1`}
+                className={`${createSelectClass} mt-1`}
+                style={createSelectStyle}
                 value={createForm.assignedToId}
                 onChange={(e) => setCreateForm({ ...createForm, assignedToId: e.target.value })}
               >
@@ -777,7 +789,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <td className={tdClass}>
                   <Link
                     to={`/crm/clients/${c.id}`}
-                    className="block truncate text-[16px] font-bold text-text hover:text-accent"
+                    className="block truncate text-[16px] font-bold capitalize text-text hover:text-accent"
                   >
                     {c.name}
                   </Link>
