@@ -117,7 +117,16 @@ export function buildClientListWhere(
   if (q.status) where.crmStatus = q.status as any
   if (q.source) where.clientSource = q.source
   if (q.campaign) where.campaign = { contains: q.campaign, mode: 'insensitive' }
-  if (q.employeeId) where.assignedToId = q.employeeId
+  if (q.employeeId) {
+    if (q.employeeId === 'none' || q.employeeId === 'unassigned') {
+      where.assignedToId = null
+    } else if (q.employeeId.length > 20 && !q.employeeId.includes(' ')) {
+      // Likely a staff id (cuid)
+      where.assignedToId = q.employeeId
+    } else {
+      where.assignedTo = { name: { contains: q.employeeId, mode: 'insensitive' } }
+    }
+  }
   if (q.depositMin || q.depositMax) {
     where.totalDeposited = {
       ...(q.depositMin ? { gte: Number(q.depositMin) } : {}),

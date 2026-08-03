@@ -825,13 +825,13 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                   }}
                 />
               </th>
-              <th className={`${thClass} text-right`}>
-                <span className={`${thLabelClass} text-right`}>Balance</span>
+              <th className={thClass}>
+                <span className={thLabelClass}>Balance</span>
                 <input
                   type="text"
                   inputMode="decimal"
-                  className={`${colFilterClass} text-right`}
-                  placeholder="Min..."
+                  className={`${colFilterClass} text-left`}
+                  placeholder="Filter balance..."
                   value={col.balanceMin}
                   title="Minimum balance"
                   onChange={(e) => {
@@ -844,10 +844,11 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <span className={thLabelClass}>Assigned To</span>
                 {me.role === 'ADMIN' ? (
                   <select
-                    className={colSelectClass}
+                    className={`${colSelectClass} text-left`}
                     style={{
                       ...colSelectStyleBase,
                       backgroundColor: col.assigned ? '#1c222c' : '#12151a',
+                      textAlign: 'left',
                     }}
                     value={col.assigned}
                     onChange={(e) => {
@@ -855,7 +856,8 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                       setPage(1)
                     }}
                   >
-                    <option value="">All</option>
+                    <option value="">All Staff</option>
+                    <option value="none">Unassigned</option>
                     {staff.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.name}
@@ -863,7 +865,15 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                     ))}
                   </select>
                 ) : (
-                  <div className="h-9" />
+                  <input
+                    className={`${colFilterClass} text-left`}
+                    placeholder="Filter assigned..."
+                    value={col.assigned}
+                    onChange={(e) => {
+                      setCol((s) => ({ ...s, assigned: e.target.value }))
+                      setPage(1)
+                    }}
+                  />
                 )}
               </th>
               <th className={thClass}>
@@ -928,16 +938,17 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <td className={`${tdClass} whitespace-nowrap text-[12px] text-secondary`}>
                   {fmt(c.lastInteractionAt)}
                 </td>
-                <td className={`${tdClass} text-right text-[14px] font-bold tabular-nums`}>
+                <td className={`${tdClass} text-left text-[14px] font-bold tabular-nums`}>
                   {money(c.balance ?? c.totalDeposits)}
                 </td>
-                <td className={tdClass}>
+                <td className={`${tdClass} text-left`}>
                   {me.role === 'ADMIN' ? (
                     <select
-                      className={colSelectClass}
+                      className={`${colSelectClass} text-left`}
                       style={{
                         ...colSelectStyleBase,
                         backgroundColor: '#12151a',
+                        textAlign: 'left',
                       }}
                       disabled={busy}
                       value={c.assignedTo?.id || ''}
@@ -953,7 +964,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                       ))}
                     </select>
                   ) : (
-                    <span className="truncate text-[14px] font-medium capitalize text-secondary">
+                    <span className="block truncate text-left text-[14px] font-medium capitalize text-secondary">
                       {c.assignedTo?.name || '-'}
                     </span>
                   )}
