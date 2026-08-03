@@ -245,12 +245,12 @@ export function AdminLayout() {
               aria-label="Close menu"
               onClick={() => setOpen(false)}
             />
-            <aside className="relative flex h-full w-[min(280px,86vw)] flex-col border-r border-border bg-panel text-text shadow-2xl">
+            <aside className="absolute right-0 top-0 flex h-full w-[min(280px,86vw)] animate-[slideInRight_0.22s_ease-out] flex-col border-l border-border bg-panel text-text shadow-2xl">
               <div
                 className="pointer-events-none absolute inset-0 opacity-50"
                 style={{
                   background:
-                    'radial-gradient(500px 220px at 0% 0%, rgba(252,213,53,0.08), transparent 60%)',
+                    'radial-gradient(500px 220px at 100% 0%, rgba(252,213,53,0.08), transparent 60%)',
                 }}
               />
               <button
@@ -268,19 +268,21 @@ export function AdminLayout() {
 
         <div className="flex min-w-0 flex-1 flex-col bg-surface">
           <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-panel/95 px-4 backdrop-blur md:hidden">
+            <BrandLogo variant="dark" className="h-7" />
+            <span className="text-xs font-semibold capitalize tracking-wide text-accent">Admin</span>
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-border text-text hover:bg-muted"
+              className="ml-auto flex h-10 w-10 items-center justify-center rounded-xl border border-border text-text hover:bg-muted"
               onClick={() => setOpen(true)}
               aria-label="Open menu"
             >
               <Menu size={20} />
             </button>
-            <BrandLogo variant="dark" className="h-7" />
-            <span className="text-xs font-semibold capitalize tracking-wide text-accent">Admin</span>
           </header>
-          <main className="min-w-0 flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
-            <Outlet />
+          <main className="min-w-0 flex-1 overflow-auto p-3 sm:p-4 lg:p-5">
+            <div className="min-h-full rounded-2xl border border-border bg-surface p-4 sm:p-5 lg:p-6">
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>

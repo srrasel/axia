@@ -68,12 +68,12 @@ function Kpi({
       type="button"
       onClick={onEdit}
       disabled={!onEdit}
-      className="min-w-0 rounded-lg border border-border bg-[#161a21] px-2.5 py-2 text-left transition-colors hover:border-accent/50 disabled:cursor-default disabled:hover:border-border"
+      className="flex min-w-0 flex-col justify-start rounded-lg border border-border bg-[#161a21] px-2.5 py-2 text-left transition-colors hover:border-accent/50 disabled:cursor-default disabled:hover:border-border"
       title={onEdit ? `Edit ${label}` : undefined}
     >
-      <div className="flex items-center justify-between gap-1">
-        <div className="truncate text-[10px] font-medium capitalize tracking-wide text-secondary">{label}</div>
-        {onEdit ? <Pencil size={10} className="shrink-0 text-secondary" /> : null}
+      <div className="flex items-start justify-between gap-1">
+        <div className="truncate text-[12px] font-medium capitalize tracking-wide text-secondary">{label}</div>
+        {onEdit ? <Pencil size={10} className="mt-0.5 shrink-0 text-secondary" /> : null}
       </div>
       <div className={`mt-0.5 truncate text-sm font-bold tabular-nums ${color}`}>{value}</div>
       {sub ? <div className="text-[10px] text-secondary">{sub}</div> : null}
@@ -93,9 +93,9 @@ function InfoRow({
   onEdit?: () => void
 }) {
   return (
-    <div className="flex min-h-[28px] items-start gap-1 border-b border-border/40 py-1.5 text-[12px] leading-tight">
-      <span className="w-[42%] shrink-0 text-secondary">{label}</span>
-      <span className="min-w-0 flex-1 break-words font-medium text-text">{value ?? '—'}</span>
+    <div className="flex min-h-[28px] min-w-0 items-start gap-1 overflow-hidden border-b border-border/40 py-1.5 text-[12px] leading-tight">
+      <span className="w-[42%] max-w-[42%] shrink-0 text-secondary">{label}</span>
+      <span className="min-w-0 flex-1 overflow-hidden break-all font-medium text-text">{value ?? '—'}</span>
       {editable ? (
         <button
           type="button"
@@ -490,7 +490,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
           </Link>
         </div>
 
-        <div className="mt-3 grid grid-cols-3 gap-1.5 sm:grid-cols-5 xl:grid-cols-9">
+        <div className="mt-3 grid grid-cols-3 items-start gap-1.5 sm:grid-cols-5 xl:grid-cols-9">
           <Kpi label="Balance" value={money(c.balance)} onEdit={() => openFinanceEdit('balance', c.balance)} />
           <Kpi label="Credit" value={money(c.credit)} onEdit={() => openFinanceEdit('credit', c.credit)} />
           <Kpi label="Equity" value={money(c.equity)} onEdit={() => openFinanceEdit('equity', c.equity)} />
@@ -620,7 +620,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
               <div className="mb-2 text-xs font-bold capitalize tracking-wide text-secondary">
                 Client Information
               </div>
-              <div className="grid gap-x-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-x-4 sm:grid-cols-2 xl:grid-cols-4 [&>div]:min-w-0">
                 <div>
                   <InfoRow
                     label="First Name"
@@ -676,9 +676,9 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                   <InfoRow
                     label="Email"
                     value={
-                      <span className="inline-flex items-center gap-1">
-                        <Lock size={10} className="text-secondary" />
-                        {c.email}
+                      <span className="inline-flex max-w-full min-w-0 items-start gap-1">
+                        <Lock size={10} className="mt-0.5 shrink-0 text-secondary" />
+                        <span className="min-w-0 break-all">{c.email}</span>
                       </span>
                     }
                   />

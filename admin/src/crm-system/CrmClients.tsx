@@ -179,7 +179,6 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
     name: '',
     country: '',
     status: '',
-    assigned: '',
   })
 
   const query = useMemo(() => {
@@ -192,7 +191,6 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
     if (col.name.trim()) q.set('search', col.name.trim())
     if (col.country.trim()) q.set('country', col.country.trim())
     if (col.status.trim()) q.set('status', col.status.trim())
-    if (col.assigned.trim()) q.set('employeeId', col.assigned.trim())
     return q.toString()
   }, [category, col, page])
 
@@ -684,7 +682,6 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
             <col className="w-[160px]" />
             <col className="w-[160px]" />
             <col className="w-[120px]" />
-            <col className="w-[150px]" />
           </colgroup>
           <thead>
             <tr className="border-b border-border bg-[#12151a]/80">
@@ -761,32 +758,6 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <span className={`${thLabelClass} text-right`}>Balance</span>
                 <div className="h-9" />
               </th>
-              <th className={thClass}>
-                <span className={thLabelClass}>Assigned To</span>
-                {me.role === 'ADMIN' ? (
-                  <select
-                    className={colSelectClass}
-                    style={{
-                      ...colSelectStyleBase,
-                      backgroundColor: col.assigned ? '#1c222c' : '#12151a',
-                    }}
-                    value={col.assigned}
-                    onChange={(e) => {
-                      setCol((s) => ({ ...s, assigned: e.target.value }))
-                      setPage(1)
-                    }}
-                  >
-                    <option value="">All</option>
-                    {staff.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <div className="h-9" />
-                )}
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -832,12 +803,11 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <td className={`${tdClass} text-right text-[14px] font-bold tabular-nums`}>
                   {money(c.balance ?? c.totalDeposits)}
                 </td>
-                <td className={`${tdClass} text-[14px] font-medium text-secondary`}>{c.assignedTo?.name || '-'}</td>
               </tr>
             ))}
             {clients.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-3 py-12 text-center text-base text-secondary">
+                <td colSpan={8} className="px-3 py-12 text-center text-base text-secondary">
                   No clients found
                 </td>
               </tr>

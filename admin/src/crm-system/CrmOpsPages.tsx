@@ -19,7 +19,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '../api'
-import { btnPrimary, money, PageHeader, TablePagination, usePagination } from '../layout'
+import { btnPrimary, money, PageHeader, Panel, TablePagination, usePagination } from '../layout'
 
 function fmt(iso?: string) {
   if (!iso) return '—'
@@ -195,32 +195,36 @@ export function CrmNotificationsPage() {
       <PageHeader
         title="Notifications"
         subtitle="New Lead, FTD, Withdrawal, Documents, Login Alert, Missed Call, and KYC Expiry."
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex h-9 items-center rounded-md border border-border bg-panel px-3 text-sm font-medium text-secondary">
-            <Bell size={15} className="mr-2 text-accent" />
-            {unread} Unread
-          </span>
-          <button
-            type="button"
-            className="inline-flex h-9 items-center gap-2 rounded-md bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30] disabled:opacity-60"
-            disabled={busy || unread === 0}
-            onClick={() => void markAllRead()}
-          >
-            <CheckCheck size={15} />
-            Mark All Read
-          </button>
-        </div>
-      </PageHeader>
+      />
 
       {error ? (
         <p className="mb-4 rounded-lg border border-sell/30 bg-sell/15 px-3 py-2 text-sm text-sell">{error}</p>
       ) : null}
 
-      <div className="w-full overflow-hidden rounded-2xl border border-border bg-panel shadow-[0_1px_2px_rgba(0,0,0,0.2)] lg:w-[60%]">
+      <Panel
+        title="Alerts"
+        subtitle={unread > 0 ? `${unread} unread · CRM desk notifications` : 'All caught up · CRM desk notifications'}
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium text-secondary">
+              <Bell size={15} className="mr-2 text-accent" />
+              {unread} Unread
+            </span>
+            <button
+              type="button"
+              className="inline-flex h-9 items-center gap-2 rounded-md bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30] disabled:opacity-60"
+              disabled={busy || unread === 0}
+              onClick={() => void markAllRead()}
+            >
+              <CheckCheck size={15} />
+              Mark All Read
+            </button>
+          </div>
+        }
+      >
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-muted text-secondary">
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-muted text-secondary">
               <Bell size={20} />
             </div>
             <p className="text-sm font-medium text-text">No Notifications Yet</p>
@@ -229,13 +233,13 @@ export function CrmNotificationsPage() {
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-border/60">
+          <div className="space-y-1 text-sm">
             {pager.pageItems.map((n) => (
               <div
                 key={n.id}
                 className={clsx(
-                  'px-4 py-4 sm:px-5',
-                  n.read ? 'bg-transparent' : 'bg-accent/10',
+                  'border-b border-border/60 py-3 last:border-b-0',
+                  !n.read && 'rounded-lg bg-accent/10 px-3',
                 )}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -244,7 +248,7 @@ export function CrmNotificationsPage() {
                       {!n.read ? (
                         <span className="h-2 w-2 shrink-0 rounded-full bg-accent" title="Unread" />
                       ) : null}
-                      <h3 className="text-[14px] font-semibold tracking-tight text-text">{n.title}</h3>
+                      <span className="font-medium text-text">{n.title}</span>
                       <span
                         className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                           n.read ? 'bg-muted text-secondary' : 'bg-accent/15 text-accent'
@@ -253,18 +257,7 @@ export function CrmNotificationsPage() {
                         {formatType(n.type)}
                       </span>
                     </div>
-                    <p className="mt-1.5 text-[12px] text-secondary">{n.body}</p>
-                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-secondary">
-                      <span>{fmt(n.createdAt)}</span>
-                      {n.clientId ? (
-                        <Link
-                          to={`/crm/clients/${n.clientId}`}
-                          className="inline-flex h-8 items-center rounded-md border border-border px-2.5 text-xs font-medium text-text hover:bg-muted"
-                        >
-                          Open Client
-                        </Link>
-                      ) : null}
-                    </div>
+                    <p className="mt-1.5 text-xs text-secondary">{n.body}</p>
                   </div>
                   <span
                     className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
@@ -274,22 +267,35 @@ export function CrmNotificationsPage() {
                     {n.read ? 'Read' : 'Unread'}
                   </span>
                 </div>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+                  <span className="text-xs text-secondary">{fmt(n.createdAt)}</span>
+                  {n.clientId ? (
+                    <Link
+                      to={`/crm/clients/${n.clientId}`}
+                      className="inline-flex h-8 items-center rounded-md border border-border px-2.5 text-xs font-medium text-text hover:bg-muted"
+                    >
+                      Open Client
+                    </Link>
+                  ) : null}
+                </div>
               </div>
             ))}
           </div>
         )}
-      </div>
 
-      <div className="mt-4">
-        <TablePagination
-          page={pager.page}
-          totalPages={pager.totalPages}
-          total={pager.total}
-          from={pager.from}
-          to={pager.to}
-          onPageChange={pager.setPage}
-        />
-      </div>
+        {items.length > 0 ? (
+          <div className="mt-4">
+            <TablePagination
+              page={pager.page}
+              totalPages={pager.totalPages}
+              total={pager.total}
+              from={pager.from}
+              to={pager.to}
+              onPageChange={pager.setPage}
+            />
+          </div>
+        ) : null}
+      </Panel>
     </div>
   )
 }
