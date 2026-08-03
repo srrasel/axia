@@ -144,16 +144,16 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         <BrandLogo variant="dark" className="h-8" />
         <div>
           <div className="text-[11px] font-semibold capitalize tracking-[0.14em] text-accent">Admin</div>
-          <div className="text-xs text-secondary">Control center</div>
+          <div className="text-xs text-secondary">Control Center</div>
         </div>
       </div>
       <div className="relative px-5 py-3 text-[16px] capitalize tracking-wide text-white">
-        {user?.role?.replaceAll('_', ' ').toLowerCase()} · <CurrencyBadge />
+        {user?.role?.replaceAll('_', ' ').toLowerCase()} - <CurrencyBadge />
       </div>
       <nav className="relative flex-1 space-y-5 overflow-y-auto px-3 pb-4">
         {visibleGroups.map((group) => (
           <div key={group.title}>
-            <div className="mb-1.5 px-3 text-[10px] font-semibold capitalize tracking-[0.16em] text-secondary/70">
+            <div className="mb-1.5 px-3 text-[12px] font-semibold capitalize tracking-[0.16em] text-secondary/70">
               {group.title}
             </div>
             <div className="space-y-0.5">
