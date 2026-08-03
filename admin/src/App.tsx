@@ -19,6 +19,7 @@ import {
 } from './crm-system'
 import { BankAccountsPage } from './bank-accounts'
 import { SettingsPage } from './settings'
+import { KycPage } from './kyc'
 
 function CrmClientsRoute() {
   const { user } = useAuth()
@@ -647,46 +648,6 @@ function TransactionsPage() {
                   </td>
                 </tr>
               ) : null}
-            </tbody>
-          </table>
-        </div>
-        <TablePagination page={pager.page} totalPages={pager.totalPages} total={pager.total} from={pager.from} to={pager.to} onPageChange={pager.setPage} />
-      </div>
-    </div>
-  )
-}
-
-function KycPage() {
-  const [documents, setDocuments] = useState<any[]>([])
-  const pager = usePagination(documents)
-  const load = () => void api<{ documents: any[] }>('/api/admin/kyc').then((r) => setDocuments(r.documents))
-  useEffect(() => { load() }, [])
-  return (
-    <div>
-      <PageHeader title="KYC Reviews" />
-      <div className="overflow-hidden rounded-xl border border-border bg-panel">
-        <div className="overflow-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2">User</th><th className="px-3 py-2">Kind</th><th className="px-3 py-2">Doc</th><th className="px-3 py-2">File</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Actions</th></tr></thead>
-            <tbody>
-              {pager.pageItems.map((d) => (
-                <tr key={d.id} className="border-t border-border">
-                  <td className="px-3 py-2">{d.user.name}</td>
-                  <td className="px-3 py-2">{d.kind}</td>
-                  <td className="px-3 py-2">{d.docType}</td>
-                  <td className="px-3 py-2">{d.fileName}</td>
-                  <td className="px-3 py-2 capitalize">{d.status}</td>
-                  <td className="px-3 py-2 space-x-2">
-                    {d.status === 'pending' ? (
-                      <>
-                        <button type="button" className="text-buy" onClick={async () => { await api(`/api/admin/kyc/${d.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'approved' }) }); load() }}>Approve</button>
-                        <button type="button" className="text-sell" onClick={async () => { await api(`/api/admin/kyc/${d.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'rejected', note: 'Please re-upload a clearer document' }) }); load() }}>Reject</button>
-                      </>
-                    ) : '—'}
-                  </td>
-                </tr>
-              ))}
-              {pager.total === 0 ? <tr><td colSpan={6} className="px-3 py-8 text-center text-secondary">No KYC documents</td></tr> : null}
             </tbody>
           </table>
         </div>

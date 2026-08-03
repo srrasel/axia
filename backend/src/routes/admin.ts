@@ -671,7 +671,31 @@ adminRouter.get('/kyc', adminRequired, async (_req, res) => {
     include: { user: { select: { id: true, name: true, email: true, kycStatus: true } } },
     orderBy: { createdAt: 'desc' },
   })
-  return res.json({ documents: docs })
+  return res.json({
+    documents: docs.map(({ fileData, ...rest }) => ({
+      ...rest,
+      hasFile: Boolean(fileData),
+    })),
+  })
+})
+
+adminRouter.get('/kyc/:id/file', adminRequired, async (req, res) => {
+  const doc = await prisma.kycDocument.findUnique({
+    where: { id: String(req.params.id) },
+    select: {
+      id: true,
+      fileName: true,
+      mimeType: true,
+      fileData: true,
+      docType: true,
+      kind: true,
+      status: true,
+      user: { select: { id: true, name: true, email: true } },
+    },
+  })
+  if (!doc) return res.status(404).json({ error: 'Not found' })
+  if (!doc.fileData) return res.status(404).json({ error: 'No file uploaded for this document' })
+  return res.json({ document: doc })
 })
 
 adminRouter.patch('/kyc/:id', adminRequired, async (req, res) => {
@@ -691,12 +715,22 @@ adminRouter.patch('/kyc/:id', adminRequired, async (req, res) => {
   const approved = docs.filter((d) => d.status === 'approved')
   const hasIdentity = approved.some((d) => d.kind === 'identity')
   const hasResidence = approved.some((d) => d.kind === 'residence')
+  const anyRejected = docs.some((d) => d.status === 'rejected')
 
   await prisma.user.update({
     where: { id: doc.userId },
     data: {
-      kycStatus: parsed.data.status === 'rejected' ? 'rejected' : hasIdentity && hasResidence ? 'approved' : 'pending',
+      kycStatus:
+        parsed.data.status === 'rejected'
+          ? 'rejected'
+          : hasIdentity && hasResidence
+            ? 'approved'
+            : anyRejected
+              ? 'rejected'
+              : 'pending',
       verified: hasIdentity && hasResidence,
+      identityVerified: hasIdentity,
+      addressVerified: hasResidence,
     },
   })
 
@@ -704,11 +738,11 @@ adminRouter.patch('/kyc/:id', adminRequired, async (req, res) => {
     data: {
       userId: doc.userId,
       title: `KYC ${parsed.data.status}`,
-      body: parsed.data.note || `Your ${doc.kind} document was ${parsed.data.status}.`,
+      body: parsed.data.note || `Your ${doc.docType} (${doc.kind}) document was ${parsed.data.status}.`,
     },
   })
 
-  return res.json({ document: doc })
+  return res.json({ document: { ...doc, fileData: undefined, hasFile: Boolean(doc.fileData) } })
 })
 
 adminRouter.get('/settings', adminRequired, async (_req, res) => {

@@ -31,7 +31,7 @@ async function main() {
       credentials: true,
     }),
   )
-  app.use(express.json({ limit: '2mb' }))
+  app.use(express.json({ limit: '6mb' }))
 
   app.get('/health', (_req, res) => res.json({ ok: true, service: 'seekapa-api' }))
   app.use('/api/auth', authRouter)

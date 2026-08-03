@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+﻿import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   MessageCircle,
@@ -8,6 +8,8 @@ import {
   Lock,
   ChevronRight,
   ArrowLeft,
+  Eye,
+  X,
 } from 'lucide-react'
 import { api } from '../api'
 import { btnPrimary, inputClass, money } from '../layout'
@@ -68,7 +70,7 @@ function Kpi({
       type="button"
       onClick={onEdit}
       disabled={!onEdit}
-      className="flex min-w-0 flex-col justify-start rounded-lg border border-border bg-[#161a21] px-2.5 py-2 text-left transition-colors hover:border-accent/50 disabled:cursor-default disabled:hover:border-border"
+      className="flex h-full min-h-[72px] min-w-0 flex-col justify-start rounded-lg border border-border bg-[#161a21] px-2.5 py-2 text-left transition-colors hover:border-accent/50 disabled:cursor-default disabled:hover:border-border"
       title={onEdit ? `Edit ${label}` : undefined}
     >
       <div className="flex items-start justify-between gap-1">
@@ -76,7 +78,7 @@ function Kpi({
         {onEdit ? <Pencil size={10} className="mt-0.5 shrink-0 text-secondary" /> : null}
       </div>
       <div className={`mt-0.5 truncate text-sm font-bold tabular-nums ${color}`}>{value}</div>
-      {sub ? <div className="text-[10px] text-secondary">{sub}</div> : null}
+      <div className="mt-auto min-h-[14px] text-[10px] leading-[14px] text-secondary">{sub || '\u00a0'}</div>
     </button>
   )
 }
@@ -123,11 +125,15 @@ function ActionBtn({
     <button
       type="button"
       disabled={disabled}
-      onClick={onClick}
-      className="flex w-full items-center justify-between rounded-md border border-border bg-[#12151a] px-3 py-2 text-left text-[12px] font-medium text-text transition-colors hover:border-accent/50 hover:bg-[#1c222c] disabled:opacity-50"
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onClick()
+      }}
+      className="flex min-h-11 w-full touch-manipulation items-center justify-between gap-2 rounded-md border border-border bg-[#12151a] px-3 py-2.5 text-left text-[13px] font-medium text-text transition-colors hover:border-accent/50 hover:bg-[#1c222c] active:bg-[#1c222c] disabled:opacity-50 xl:min-h-0 xl:py-2 xl:text-[12px]"
     >
-      {label}
-      <ChevronRight size={12} className="text-secondary" />
+      <span className="min-w-0 flex-1 leading-snug">{label}</span>
+      <ChevronRight size={14} className="shrink-0 text-secondary" />
     </button>
   )
 }
@@ -208,6 +214,45 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
   const [modalVal, setModalVal] = useState('')
   const [financeField, setFinanceField] = useState<string | null>(null)
   const [similar, setSimilar] = useState<any[] | null>(null)
+  const [docPreview, setDocPreview] = useState<{
+    id: string
+    fileName: string
+    mimeType?: string | null
+    fileData: string
+    docType: string
+    kind: string
+    status: string
+  } | null>(null)
+  const tabsRef = useRef<HTMLDivElement>(null)
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  function getScrollParent(el: HTMLElement | null): HTMLElement | null {
+    let p = el?.parentElement ?? null
+    while (p) {
+      const oy = getComputedStyle(p).overflowY
+      if (oy === 'auto' || oy === 'scroll' || oy === 'overlay') return p
+      p = p.parentElement
+    }
+    return null
+  }
+
+  function preserveScroll(run: () => void | Promise<void>) {
+    const scroller = getScrollParent(pageRef.current)
+    const top = scroller ? scroller.scrollTop : window.scrollY
+    return Promise.resolve(run()).finally(() => {
+      requestAnimationFrame(() => {
+        if (scroller) scroller.scrollTop = top
+        else window.scrollTo(0, top)
+      })
+    })
+  }
+
+  function goTab(next: TabId) {
+    setTab(next)
+    requestAnimationFrame(() => {
+      tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }
 
   async function saveFinance(field: string, raw: string) {
     const num = Number(raw)
@@ -226,7 +271,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
       setFinanceField(null)
       setModalVal('')
       setMsg(`${field} updated`)
-      await load()
+      await preserveScroll(() => load())
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Update failed')
     } finally {
@@ -264,7 +309,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
       })
       setEditKey(null)
       setMsg('Saved')
-      await load()
+      await preserveScroll(() => load())
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Save failed')
     } finally {
@@ -284,7 +329,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
       setModal(null)
       setModalVal('')
       setMsg('Done')
-      await load()
+      await preserveScroll(() => load())
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Action failed')
     } finally {
@@ -301,7 +346,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
         body: JSON.stringify({ body: comment }),
       })
       setComment('')
-      await load()
+      await preserveScroll(() => load())
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Failed')
     } finally {
@@ -326,6 +371,9 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
           }),
         })
         setTab('calls')
+        requestAnimationFrame(() => {
+          tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        })
         if (client.phone) {
           window.location.href = `tel:${String(client.phone).replace(/[^\d+]/g, '')}`
           setMsg(`Calling ${client.name}…`)
@@ -341,6 +389,9 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
           }),
         })
         setTab('emails')
+        requestAnimationFrame(() => {
+          tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        })
         window.location.href = `mailto:${encodeURIComponent(client.email)}?subject=${encodeURIComponent(`NitajFX — ${client.name}`)}`
         setMsg(`Opening email to ${client.email}`)
       } else {
@@ -354,6 +405,9 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
           }),
         })
         setTab('chat')
+        requestAnimationFrame(() => {
+          tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        })
         if (client.phone) {
           const digits = String(client.phone).replace(/\D/g, '')
           window.open(`https://wa.me/${digits}`, '_blank', 'noopener,noreferrer')
@@ -362,7 +416,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
           setMsg('No phone for WhatsApp — opened Chat log')
         }
       }
-      await load()
+      await preserveScroll(() => load())
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Contact action failed')
     } finally {
@@ -440,7 +494,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
   }
 
   return (
-    <div className="-mx-1 space-y-3 lg:-mx-2">
+    <div ref={pageRef} className="-mx-1 space-y-3 pb-[min(42vh,300px)] lg:-mx-2 xl:pb-4">
       {/* Identity + KPIs */}
       <div className="rounded-xl border border-border bg-[#161a21] p-3 sm:p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -490,7 +544,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
           </Link>
         </div>
 
-        <div className="mt-3 grid grid-cols-3 items-start gap-1.5 sm:grid-cols-5 xl:grid-cols-9">
+        <div className="mt-3 grid grid-cols-3 items-stretch gap-1.5 sm:grid-cols-5 xl:grid-cols-9">
           <Kpi label="Balance" value={money(c.balance)} onEdit={() => openFinanceEdit('balance', c.balance)} />
           <Kpi label="Credit" value={money(c.credit)} onEdit={() => openFinanceEdit('credit', c.credit)} />
           <Kpi label="Equity" value={money(c.equity)} onEdit={() => openFinanceEdit('equity', c.equity)} />
@@ -565,14 +619,14 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
       </div>
 
       {/* Tabs */}
-      <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
+      <div ref={tabsRef} className="scroll-mt-16 overflow-x-auto rounded-xl border border-border bg-[#161a21] md:scroll-mt-3">
         <div className="flex min-w-max gap-0 px-1">
           {TABS.map((t) => (
             <button
               key={t.id}
               type="button"
-              onClick={() => setTab(t.id)}
-              className={`border-b-2 px-3 py-2.5 text-[12px] font-semibold whitespace-nowrap transition-colors ${
+              onClick={() => goTab(t.id)}
+              className={`touch-manipulation border-b-2 px-3 py-3 text-[12px] font-semibold whitespace-nowrap transition-colors sm:py-2.5 ${
                 tab === t.id
                   ? 'border-accent text-accent'
                   : 'border-transparent text-secondary hover:text-text'
@@ -838,44 +892,148 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                   key={d.id}
                   className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-[12px]"
                 >
-                  <div>
-                    <div className="font-semibold">
-                      {d.kind} / {d.docType}
+                  <div className="min-w-0">
+                    <div className="font-semibold capitalize">
+                      {d.docType} · {d.kind}
                     </div>
-                    <div className="text-secondary">
-                      {d.status} · {fmt(d.createdAt)}
+                    <div className="truncate text-secondary">
+                      {d.fileName} · {d.status} · {fmt(d.createdAt)}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
-                      className="rounded bg-buy/20 px-2 py-1 text-[11px] font-semibold text-buy"
+                      disabled={!d.hasFile && !d.fileData}
+                      className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-[11px] font-semibold hover:bg-muted disabled:opacity-40"
                       onClick={() =>
-                        void api(`/api/admin/crm/documents/${d.id}`, {
-                          method: 'PATCH',
-                          body: JSON.stringify({ status: 'approved' }),
-                        }).then(load)
+                        void api<{ document: any }>(`/api/admin/crm/documents/${d.id}/file`)
+                          .then((r) => setDocPreview(r.document))
+                          .catch((e) => setMsg(e instanceof Error ? e.message : 'Could not open file'))
                       }
                     >
-                      Approve
+                      <Eye size={12} />
+                      Check
                     </button>
-                    <button
-                      type="button"
-                      className="rounded bg-sell/20 px-2 py-1 text-[11px] font-semibold text-sell"
-                      onClick={() =>
-                        void api(`/api/admin/crm/documents/${d.id}`, {
-                          method: 'PATCH',
-                          body: JSON.stringify({ status: 'rejected' }),
-                        }).then(load)
-                      }
-                    >
-                      Reject
-                    </button>
+                    {d.status === 'pending' ? (
+                      <>
+                        <button
+                          type="button"
+                          className="rounded bg-buy/20 px-2 py-1 text-[11px] font-semibold text-buy"
+                          onClick={() =>
+                            void api(`/api/admin/crm/documents/${d.id}`, {
+                              method: 'PATCH',
+                              body: JSON.stringify({ status: 'approved' }),
+                            }).then(load)
+                          }
+                        >
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          className="rounded bg-sell/20 px-2 py-1 text-[11px] font-semibold text-sell"
+                          onClick={() =>
+                            void api(`/api/admin/crm/documents/${d.id}`, {
+                              method: 'PATCH',
+                              body: JSON.stringify({
+                                status: 'rejected',
+                                note: 'Please re-upload a clearer document',
+                              }),
+                            }).then(load)
+                          }
+                        >
+                          Reject
+                        </button>
+                      </>
+                    ) : null}
                   </div>
                 </div>
               ))}
             </div>
           )}
+
+          {docPreview ? (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+              <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-border bg-panel">
+                <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold">
+                      {docPreview.docType} · {docPreview.kind}
+                    </div>
+                    <div className="truncate text-xs text-secondary">{docPreview.fileName}</div>
+                  </div>
+                  <button
+                    type="button"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-border"
+                    onClick={() => setDocPreview(null)}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+                <div className="overflow-auto bg-[#0e1116] p-4">
+                  {docPreview.mimeType?.startsWith('image/') ||
+                  docPreview.fileData.startsWith('data:image/') ? (
+                    <img
+                      src={docPreview.fileData}
+                      alt={docPreview.fileName}
+                      className="mx-auto max-h-[55vh] max-w-full object-contain"
+                    />
+                  ) : (
+                    <iframe
+                      title={docPreview.fileName}
+                      src={docPreview.fileData}
+                      className="h-[55vh] w-full rounded-lg bg-white"
+                    />
+                  )}
+                </div>
+                <div className="flex flex-wrap justify-end gap-2 border-t border-border px-4 py-3">
+                  <button
+                    type="button"
+                    className="h-9 rounded-lg border border-border px-3 text-sm"
+                    onClick={() => setDocPreview(null)}
+                  >
+                    Close
+                  </button>
+                  {docPreview.status === 'pending' ? (
+                    <>
+                      <button
+                        type="button"
+                        className="h-9 rounded-lg bg-sell/15 px-3 text-sm font-semibold text-sell"
+                        onClick={() =>
+                          void api(`/api/admin/crm/documents/${docPreview.id}`, {
+                            method: 'PATCH',
+                            body: JSON.stringify({
+                              status: 'rejected',
+                              note: 'Please re-upload a clearer document',
+                            }),
+                          }).then(() => {
+                            setDocPreview(null)
+                            return load()
+                          })
+                        }
+                      >
+                        Reject
+                      </button>
+                      <button
+                        type="button"
+                        className="h-9 rounded-lg bg-[#fcd535] px-3 text-sm font-semibold text-[#202630]"
+                        onClick={() =>
+                          void api(`/api/admin/crm/documents/${docPreview.id}`, {
+                            method: 'PATCH',
+                            body: JSON.stringify({ status: 'approved' }),
+                          }).then(() => {
+                            setDocPreview(null)
+                            return load()
+                          })
+                        }
+                      >
+                        Approve
+                      </button>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           {(tab === 'activities' || tab === 'activity') && (
             <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
@@ -1003,7 +1161,9 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                           type="button"
                           className="text-sell"
                           onClick={() =>
-                            void api(`/api/admin/crm/comments/${n.id}`, { method: 'DELETE' }).then(load)
+                            void preserveScroll(() =>
+                              api(`/api/admin/crm/comments/${n.id}`, { method: 'DELETE' }).then(load),
+                            )
                           }
                         >
                           Delete
@@ -1017,18 +1177,21 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
           </div>
         </div>
 
-        {/* CRM Actions sidebar */}
-        <aside className="h-fit rounded-xl border border-border bg-[#161a21] p-2 xl:sticky xl:top-3">
-          <div className="mb-2 px-1 text-[10px] font-bold capitalize tracking-wide text-secondary">
-            CRM Actions
+        {/* CRM Actions — fixed bottom sheet on mobile, side panel on xl */}
+        <aside className="fixed inset-x-0 bottom-0 z-30 max-h-[min(42vh,320px)] overflow-y-auto overscroll-contain border-t border-border bg-[#161a21]/97 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(0,0,0,0.45)] backdrop-blur-md xl:static xl:z-auto xl:max-h-none xl:overflow-visible xl:rounded-xl xl:border xl:border-border xl:bg-[#161a21] xl:p-2 xl:pb-2 xl:shadow-none xl:backdrop-blur-none xl:sticky xl:top-3 xl:h-fit">
+          <div className="mb-2 flex items-center justify-between px-1">
+            <div className="text-[11px] font-bold capitalize tracking-wide text-secondary xl:text-[10px]">
+              CRM Actions
+            </div>
+            <span className="text-[10px] text-secondary xl:hidden">Swipe for more</span>
           </div>
-          <div className="space-y-1">
+          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-1 xl:gap-1">
             <ActionBtn label="Client Deposit" onClick={() => setModal('deposit')} disabled={busy} />
             <ActionBtn label="Pop-up Alert" onClick={() => setModal('alert')} disabled={busy} />
             <ActionBtn
               label="Send Instant Message"
               onClick={() => {
-                setTab('chat')
+                goTab('chat')
                 setMsg('Use Chat Logs tab to log IM / WhatsApp')
               }}
             />
@@ -1049,18 +1212,9 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
               disabled={busy}
             />
             <ActionBtn label="Change Email" onClick={() => setModal('email')} disabled={busy} />
-            <ActionBtn
-              label="Customer Logs"
-              onClick={() => setTab('activity')}
-            />
-            <ActionBtn
-              label="Client Timeline"
-              onClick={() => setTab('activities')}
-            />
-            <ActionBtn
-              label="Verification"
-              onClick={() => setTab('documents')}
-            />
+            <ActionBtn label="Customer Logs" onClick={() => goTab('activity')} />
+            <ActionBtn label="Client Timeline" onClick={() => goTab('activities')} />
+            <ActionBtn label="Verification" onClick={() => goTab('documents')} />
             <ActionBtn
               label="Find Similar"
               onClick={() => void runAction('find_similar')}
@@ -1069,7 +1223,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
             <ActionBtn
               label="Change Marketing Plan"
               onClick={() => {
-                setTab('tracking')
+                goTab('tracking')
                 startEdit('campaign', c.campaign || '')
               }}
             />
@@ -1083,7 +1237,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                 <Link
                   key={s.id}
                   to={`/crm/clients/${s.id}`}
-                  className="block rounded-md border border-border px-2 py-1.5 text-[11px] hover:border-accent/40"
+                  className="block rounded-md border border-border px-2 py-2 text-[12px] hover:border-accent/40 sm:py-1.5 sm:text-[11px]"
                 >
                   #{s.crmNumber} {s.name}
                 </Link>
@@ -1095,8 +1249,8 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
 
       {/* Modals */}
       {modal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-border bg-[#161a21] p-5 shadow-xl sm:p-6">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
+          <div className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-border bg-[#161a21] p-5 shadow-xl sm:rounded-2xl sm:p-6">
             <h3 className="text-base font-bold text-text">
               {modal === 'alert'
                 ? 'Pop-up Alert'

@@ -103,7 +103,12 @@ interface AppState {
     },
   ) => Promise<string | null>
   withdraw: (amount: number, payment: string, fromAccountId: string) => Promise<string | null>
-  submitKyc: (kind: 'identity' | 'residence', docType: string, fileName: string) => Promise<void>
+  submitKyc: (
+    kind: 'identity' | 'residence',
+    docType: string,
+    fileName: string,
+    file?: { mimeType: string; fileData: string },
+  ) => Promise<void>
   completeQuestionnaire: () => Promise<void>
   markNotificationsRead: () => Promise<void>
   clearToast: () => void
@@ -662,8 +667,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const submitKyc = async (kind: 'identity' | 'residence', docType: string, fileName: string) => {
-    await api('/api/kyc', { method: 'POST', body: JSON.stringify({ kind, docType, fileName }) })
+  const submitKyc = async (
+    kind: 'identity' | 'residence',
+    docType: string,
+    fileName: string,
+    file?: { mimeType: string; fileData: string },
+  ) => {
+    await api('/api/kyc', {
+      method: 'POST',
+      body: JSON.stringify({
+        kind,
+        docType,
+        fileName,
+        mimeType: file?.mimeType,
+        fileData: file?.fileData,
+      }),
+    })
     await refreshAll()
     showToast(`${kind === 'identity' ? 'Identity' : 'Residence'} document uploaded`)
   }

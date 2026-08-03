@@ -238,8 +238,14 @@ crmV2Router.get('/clients-v2', async (req, res) => {
     registeredTo: req.query.registeredTo ? String(req.query.registeredTo) : undefined,
     lastInteractionFrom: req.query.lastInteractionFrom ? String(req.query.lastInteractionFrom) : undefined,
     lastInteractionTo: req.query.lastInteractionTo ? String(req.query.lastInteractionTo) : undefined,
+    lastLoginFrom: req.query.lastLoginFrom ? String(req.query.lastLoginFrom) : undefined,
+    lastLoginTo: req.query.lastLoginTo ? String(req.query.lastLoginTo) : undefined,
+    firstDepositFrom: req.query.firstDepositFrom ? String(req.query.firstDepositFrom) : undefined,
+    firstDepositTo: req.query.firstDepositTo ? String(req.query.firstDepositTo) : undefined,
     depositMin: req.query.depositMin ? String(req.query.depositMin) : undefined,
     depositMax: req.query.depositMax ? String(req.query.depositMax) : undefined,
+    balanceMin: req.query.balanceMin ? String(req.query.balanceMin) : undefined,
+    balanceMax: req.query.balanceMax ? String(req.query.balanceMax) : undefined,
   }
 
   const where = buildClientListWhere(req, q)
@@ -349,6 +355,12 @@ crmV2Router.get('/clients-v2/:id', async (req, res) => {
   if (!client) return res.status(404).json({ error: 'Client not found' })
 
   const { passwordHash: _, totpSecret: __, totpTempSecret: ___, ...safe } = client as any
+  if (Array.isArray(safe.kycDocuments)) {
+    safe.kycDocuments = safe.kycDocuments.map((d: any) => {
+      const { fileData, ...rest } = d
+      return { ...rest, hasFile: Boolean(fileData) }
+    })
+  }
   const enriched = await enrichClientRow(safe)
 
   // Timeline: merge events
@@ -862,6 +874,28 @@ crmV2Router.post('/clients-v2/:id/actions', async (req, res) => {
 })
 
 /** Document review from CRM */
+crmV2Router.get('/documents/:id/file', async (req, res) => {
+  const doc = await prisma.kycDocument.findUnique({
+    where: { id: String(req.params.id) },
+    select: {
+      id: true,
+      fileName: true,
+      mimeType: true,
+      fileData: true,
+      docType: true,
+      kind: true,
+      status: true,
+      userId: true,
+      user: { select: { id: true, name: true, email: true } },
+    },
+  })
+  if (!doc) return res.status(404).json({ error: 'Not found' })
+  if (!(await assertAssignedClient(req, doc.userId))) return res.status(403).json({ error: 'Forbidden' })
+  if (!doc.fileData) return res.status(404).json({ error: 'No file uploaded for this document' })
+  const { userId: _, ...rest } = doc
+  return res.json({ document: rest })
+})
+
 crmV2Router.patch('/documents/:id', async (req, res) => {
   const schema = z.object({
     status: z.enum(['approved', 'rejected', 'pending']),
@@ -878,9 +912,27 @@ crmV2Router.patch('/documents/:id', async (req, res) => {
     where: { id: doc.id },
     data: { status: parsed.data.status, note: parsed.data.note },
   })
-  if (parsed.data.status === 'approved') {
-    await prisma.user.update({ where: { id: doc.userId }, data: { kycStatus: 'approved', identityVerified: true } })
-  }
+
+  const docs = await prisma.kycDocument.findMany({ where: { userId: doc.userId } })
+  const approved = docs.filter((d) => d.status === 'approved')
+  const hasIdentity = approved.some((d) => d.kind === 'identity')
+  const hasResidence = approved.some((d) => d.kind === 'residence')
+
+  await prisma.user.update({
+    where: { id: doc.userId },
+    data: {
+      kycStatus:
+        parsed.data.status === 'rejected'
+          ? 'rejected'
+          : hasIdentity && hasResidence
+            ? 'approved'
+            : 'pending',
+      verified: hasIdentity && hasResidence,
+      identityVerified: hasIdentity,
+      addressVerified: hasResidence,
+    },
+  })
+
   await logCrmActivity({
     clientId: doc.userId,
     staffId: req.user!.id,
@@ -888,7 +940,7 @@ crmV2Router.patch('/documents/:id', async (req, res) => {
     detail: `${doc.kind} / ${doc.docType}`,
     req,
   })
-  return res.json({ document: updated })
+  return res.json({ document: { ...updated, fileData: undefined } })
 })
 
 /** Create document placeholder (upload metadata) */

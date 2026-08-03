@@ -300,6 +300,8 @@ model KycDocument {
   kind      String
   docType   String
   fileName  String
+  mimeType  String?
+  fileData  String?
   status    KycStatus @default(pending)
   note      String?
   userId    String
@@ -308,6 +310,7 @@ model KycDocument {
   updatedAt DateTime  @updatedAt
 
   @@index([userId])
+  @@index([status])
 }
 
 model Setting {

@@ -22,6 +22,13 @@ export type CrmCategoryFilter = (typeof CRM_CATEGORIES)[number]
 
 const ONLINE_MS = 2 * 60 * 1000
 
+function endOfDay(iso: string) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return d
+  d.setHours(23, 59, 59, 999)
+  return d
+}
+
 export async function logCrmActivity(opts: {
   clientId: string
   staffId?: string | null
@@ -80,8 +87,14 @@ export function buildClientListWhere(
     registeredTo?: string
     lastInteractionFrom?: string
     lastInteractionTo?: string
+    lastLoginFrom?: string
+    lastLoginTo?: string
+    firstDepositFrom?: string
+    firstDepositTo?: string
     depositMin?: string
     depositMax?: string
+    balanceMin?: string
+    balanceMax?: string
   },
 ): Prisma.UserWhereInput {
   const where: Prisma.UserWhereInput = { ...clientScopeWhere(req) }
@@ -111,6 +124,16 @@ export function buildClientListWhere(
       ...(q.depositMax ? { lte: Number(q.depositMax) } : {}),
     }
   }
+  if (q.balanceMin || q.balanceMax) {
+    where.accounts = {
+      some: {
+        balance: {
+          ...(q.balanceMin ? { gte: Number(q.balanceMin) } : {}),
+          ...(q.balanceMax ? { lte: Number(q.balanceMax) } : {}),
+        },
+      },
+    }
+  }
   if (q.registeredFrom || q.registeredTo) {
     where.createdAt = {
       ...(q.registeredFrom ? { gte: new Date(q.registeredFrom) } : {}),
@@ -120,11 +143,49 @@ export function buildClientListWhere(
   if (q.lastInteractionFrom || q.lastInteractionTo) {
     where.lastInteractionAt = {
       ...(q.lastInteractionFrom ? { gte: new Date(q.lastInteractionFrom) } : {}),
-      ...(q.lastInteractionTo ? { lte: new Date(q.lastInteractionTo) } : {}),
+      ...(q.lastInteractionTo ? { lte: endOfDay(q.lastInteractionTo) } : {}),
+    }
+  }
+  if (q.lastLoginFrom || q.lastLoginTo) {
+    where.lastSeenAt = {
+      ...(q.lastLoginFrom ? { gte: new Date(q.lastLoginFrom) } : {}),
+      ...(q.lastLoginTo ? { lte: endOfDay(q.lastLoginTo) } : {}),
+    }
+  }
+  if (q.firstDepositFrom || q.firstDepositTo) {
+    const depositStatus = { in: ['completed', 'approved'] as ('completed' | 'approved')[] }
+    const and: Prisma.UserWhereInput[] = []
+    if (q.firstDepositFrom) {
+      const from = new Date(q.firstDepositFrom)
+      and.push({
+        transactions: {
+          some: { type: 'deposit', status: depositStatus, createdAt: { gte: from } },
+        },
+      })
+      and.push({
+        transactions: {
+          none: { type: 'deposit', status: depositStatus, createdAt: { lt: from } },
+        },
+      })
+    }
+    if (q.firstDepositTo) {
+      const to = endOfDay(q.firstDepositTo)
+      and.push({
+        transactions: {
+          some: { type: 'deposit', status: depositStatus, createdAt: { lte: to } },
+        },
+      })
+    }
+    if (and.length) {
+      where.AND = [...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []), ...and]
     }
   }
   if (q.accountType === 'demo' || q.accountType === 'live') {
-    where.accounts = { some: { type: q.accountType } }
+    const prevSome =
+      where.accounts && typeof where.accounts === 'object' && 'some' in where.accounts
+        ? ((where.accounts.some as Record<string, unknown>) || {})
+        : {}
+    where.accounts = { some: { ...prevSome, type: q.accountType } }
   }
 
   const cat = (q.category || 'ALL').toUpperCase()

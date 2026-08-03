@@ -129,6 +129,12 @@ export function publicUser(user: Record<string, any> | null) {
     totpTempSecret: _temp,
     ...rest
   } = user
+  if (Array.isArray(rest.kycDocuments)) {
+    rest.kycDocuments = rest.kycDocuments.map((d: any) => {
+      const { fileData, ...doc } = d
+      return { ...doc, hasFile: Boolean(fileData) }
+    })
+  }
   return {
     ...rest,
     totpEnabled: Boolean(user.totpEnabled),

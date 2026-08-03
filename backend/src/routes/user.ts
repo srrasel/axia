@@ -360,9 +360,20 @@ userRouter.post('/kyc', async (req, res) => {
     kind: z.enum(['identity', 'residence']),
     docType: z.string().min(1),
     fileName: z.string().min(1),
+    mimeType: z.string().optional(),
+    fileData: z.string().optional(),
   })
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
+
+  const mimeType = parsed.data.mimeType || null
+  const fileData = parsed.data.fileData || null
+  if (fileData && fileData.length > 5_500_000) {
+    return res.status(400).json({ error: 'File too large (max 5 MB)' })
+  }
+  if (fileData && !fileData.startsWith('data:')) {
+    return res.status(400).json({ error: 'Invalid file data' })
+  }
 
   await prisma.kycDocument.create({
     data: {
@@ -370,6 +381,8 @@ userRouter.post('/kyc', async (req, res) => {
       kind: parsed.data.kind,
       docType: parsed.data.docType,
       fileName: parsed.data.fileName,
+      mimeType,
+      fileData,
       status: 'pending',
     },
   })

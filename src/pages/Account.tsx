@@ -731,12 +731,12 @@ export function VerificationPage() {
           <UploadBlock
             title="Proof of Identity"
             current={user?.kyc.identityFile}
-            onUpload={(doc, file) => void submitKyc('identity', doc, file)}
+            onUpload={(doc, fileName, file) => void submitKyc('identity', doc, fileName, file)}
           />
           <UploadBlock
             title="Proof of Residence"
             current={user?.kyc.residenceFile}
-            onUpload={(doc, file) => void submitKyc('residence', doc, file)}
+            onUpload={(doc, fileName, file) => void submitKyc('residence', doc, fileName, file)}
           />
         </div>
         <div className="rounded-lg border border-border p-4">
@@ -1776,9 +1776,16 @@ function UploadBlock({
 }: {
   title: string
   current?: string
-  onUpload: (docType: string, fileName: string) => void
+  onUpload: (
+    docType: string,
+    fileName: string,
+    file?: { mimeType: string; fileData: string },
+  ) => void
 }) {
   const [doc, setDoc] = useState('Passport')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   return (
     <div className="rounded-lg border border-border p-4">
       <h3 className="mb-3 text-sm font-semibold">{title}</h3>
@@ -1795,16 +1802,36 @@ function UploadBlock({
         <Upload size={22} className="mb-2 text-text-secondary" />
         <div className="text-sm font-medium">{current ? `Uploaded: ${current}` : 'Upload Document Front Side'}</div>
         <span className="mt-3 inline-flex h-9 items-center rounded border border-border bg-panel px-4 text-sm">
-          Select File
+          {busy ? 'Uploading…' : 'Select File'}
         </span>
         <div className="mt-2 text-[11px] text-text-secondary">PDF, PNG or JPEG up to 5 MB.</div>
+        {error ? <div className="mt-2 text-[11px] text-sell">{error}</div> : null}
         <input
           type="file"
-          accept=".pdf,.png,.jpg,.jpeg"
+          accept=".pdf,.png,.jpg,.jpeg,image/png,image/jpeg,application/pdf"
           className="hidden"
+          disabled={busy}
           onChange={(e) => {
             const file = e.target.files?.[0]
-            if (file) onUpload(doc, file.name)
+            e.target.value = ''
+            if (!file) return
+            if (file.size > 5 * 1024 * 1024) {
+              setError('File too large (max 5 MB)')
+              return
+            }
+            setError(null)
+            setBusy(true)
+            const reader = new FileReader()
+            reader.onload = () => {
+              const fileData = String(reader.result || '')
+              setBusy(false)
+              onUpload(doc, file.name, { mimeType: file.type || 'application/octet-stream', fileData })
+            }
+            reader.onerror = () => {
+              setBusy(false)
+              setError('Could not read file')
+            }
+            reader.readAsDataURL(file)
           }}
         />
       </label>

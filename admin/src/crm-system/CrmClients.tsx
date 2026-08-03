@@ -9,6 +9,7 @@ import {
   Bookmark,
   Plus,
   UserPlus,
+  Pencil,
 } from 'lucide-react'
 import { api } from '../api'
 import { TablePagination, money } from '../layout'
@@ -144,6 +145,8 @@ function exportCsv(rows: ClientRow[]) {
 
 const colFilterClass =
   'h-9 w-full min-w-[110px] rounded-lg border border-border bg-[#12151a] px-2.5 text-sm outline-none hover:border-accent/50 focus:border-accent'
+const colDateClass =
+  'h-9 w-full min-w-[110px] rounded-lg border border-border bg-[#12151a] px-1.5 text-[11px] text-text outline-none hover:border-accent/50 focus:border-accent [color-scheme:dark]'
 const colSelectClass =
   'h-9 w-full min-w-[110px] cursor-pointer appearance-none rounded-lg border border-border px-2.5 pr-9 text-sm outline-none transition-colors hover:border-[#fcd535] focus:border-[#fcd535]'
 const colSelectStyleBase = {
@@ -187,6 +190,11 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
     name: '',
     country: '',
     status: '',
+    assigned: '',
+    firstDeposit: '',
+    lastLogin: '',
+    lastInteraction: '',
+    balanceMin: '',
   })
 
   const query = useMemo(() => {
@@ -199,6 +207,11 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
     if (col.name.trim()) q.set('search', col.name.trim())
     if (col.country.trim()) q.set('country', col.country.trim())
     if (col.status.trim()) q.set('status', col.status.trim())
+    if (col.assigned.trim()) q.set('employeeId', col.assigned.trim())
+    if (col.firstDeposit) q.set('firstDepositFrom', col.firstDeposit)
+    if (col.lastLogin) q.set('lastLoginFrom', col.lastLogin)
+    if (col.lastInteraction) q.set('lastInteractionFrom', col.lastInteraction)
+    if (col.balanceMin.trim()) q.set('balanceMin', col.balanceMin.trim())
     return q.toString()
   }, [category, col, page])
 
@@ -237,6 +250,23 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
       .filter((c): c is string => Boolean(c && c.trim()))
     return [...new Set([...DEFAULT_COUNTRIES, ...fromDb])].sort((a, b) => a.localeCompare(b))
   }, [data?.filterMeta?.countries])
+
+  async function assignClient(clientId: string, assignedToId: string | null) {
+    setBusy(true)
+    setError(null)
+    try {
+      await api(`/api/admin/crm/clients/${clientId}/assign`, {
+        method: 'PATCH',
+        body: JSON.stringify({ assignedToId }),
+      })
+      setToolbarMsg('Assignment updated')
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Assign failed')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   function toggleAll() {
     if (allSelected) setSelected(new Set())
@@ -684,16 +714,18 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
       {error && <p className="text-base text-sell">{error}</p>}
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-[#161a21]">
-        <table className="w-full min-w-[1280px] table-fixed text-left text-sm sm:text-base">
+        <table className="w-full min-w-[1480px] table-fixed text-left text-sm sm:text-base">
           <colgroup>
             <col className="w-10" />
             <col className="w-[220px]" />
+            <col className="w-[140px]" />
+            <col className="w-[140px]" />
             <col className="w-[150px]" />
             <col className="w-[150px]" />
+            <col className="w-[150px]" />
+            <col className="w-[110px]" />
             <col className="w-[160px]" />
-            <col className="w-[160px]" />
-            <col className="w-[160px]" />
-            <col className="w-[120px]" />
+            <col className="w-14" />
           </colgroup>
           <thead>
             <tr className="border-b border-border bg-[#12151a]/80">
@@ -756,18 +788,86 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
               </th>
               <th className={thClass}>
                 <span className={thLabelClass}>First Deposit Date</span>
-                <div className="h-9" />
+                <input
+                  type="date"
+                  className={colDateClass}
+                  value={col.firstDeposit}
+                  title="First deposit on or after"
+                  onChange={(e) => {
+                    setCol((s) => ({ ...s, firstDeposit: e.target.value }))
+                    setPage(1)
+                  }}
+                />
               </th>
               <th className={thClass}>
                 <span className={thLabelClass}>Last Login Date</span>
-                <div className="h-9" />
+                <input
+                  type="date"
+                  className={colDateClass}
+                  value={col.lastLogin}
+                  title="Last login on or after"
+                  onChange={(e) => {
+                    setCol((s) => ({ ...s, lastLogin: e.target.value }))
+                    setPage(1)
+                  }}
+                />
               </th>
               <th className={thClass}>
                 <span className={thLabelClass}>Last Interaction</span>
-                <div className="h-9" />
+                <input
+                  type="date"
+                  className={colDateClass}
+                  value={col.lastInteraction}
+                  title="Last interaction on or after"
+                  onChange={(e) => {
+                    setCol((s) => ({ ...s, lastInteraction: e.target.value }))
+                    setPage(1)
+                  }}
+                />
               </th>
               <th className={`${thClass} text-right`}>
                 <span className={`${thLabelClass} text-right`}>Balance</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  className={`${colFilterClass} text-right`}
+                  placeholder="Min..."
+                  value={col.balanceMin}
+                  title="Minimum balance"
+                  onChange={(e) => {
+                    setCol((s) => ({ ...s, balanceMin: e.target.value.replace(/[^\d.]/g, '') }))
+                    setPage(1)
+                  }}
+                />
+              </th>
+              <th className={thClass}>
+                <span className={thLabelClass}>Assigned To</span>
+                {me.role === 'ADMIN' ? (
+                  <select
+                    className={colSelectClass}
+                    style={{
+                      ...colSelectStyleBase,
+                      backgroundColor: col.assigned ? '#1c222c' : '#12151a',
+                    }}
+                    value={col.assigned}
+                    onChange={(e) => {
+                      setCol((s) => ({ ...s, assigned: e.target.value }))
+                      setPage(1)
+                    }}
+                  >
+                    <option value="">All</option>
+                    {staff.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="h-9" />
+                )}
+              </th>
+              <th className={thClass}>
+                <span className={thLabelClass}>More</span>
                 <div className="h-9" />
               </th>
             </tr>
@@ -793,8 +893,24 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                   >
                     {c.name}
                   </Link>
-                  <div className="mt-0.5 truncate text-[12px] text-secondary">
-                    #{c.crmNumber ?? '-'} · {c.email}
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <span className="truncate text-[12px] text-secondary">
+                      #{c.crmNumber ?? '-'} · <span className="capitalize text-text">{c.name}</span>
+                    </span>
+                    <Link
+                      to={`/crm/clients/${c.id}`}
+                      title="Edit"
+                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border text-secondary transition-colors hover:border-accent/50 hover:text-accent"
+                    >
+                      <Pencil size={13} />
+                    </Link>
+                    <Link
+                      to={`/crm/clients/${c.id}`}
+                      title="View"
+                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border text-secondary transition-colors hover:border-accent/50 hover:text-accent"
+                    >
+                      <Eye size={13} />
+                    </Link>
                   </div>
                 </td>
                 <td className={`${tdClass} text-[14px] font-medium text-secondary`}>{c.country || '-'}</td>
@@ -815,11 +931,48 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <td className={`${tdClass} text-right text-[14px] font-bold tabular-nums`}>
                   {money(c.balance ?? c.totalDeposits)}
                 </td>
+                <td className={tdClass}>
+                  {me.role === 'ADMIN' ? (
+                    <select
+                      className={colSelectClass}
+                      style={{
+                        ...colSelectStyleBase,
+                        backgroundColor: '#12151a',
+                      }}
+                      disabled={busy}
+                      value={c.assignedTo?.id || ''}
+                      onChange={(e) =>
+                        void assignClient(c.id, e.target.value ? e.target.value : null)
+                      }
+                    >
+                      <option value="">Unassigned</option>
+                      {staff.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className="truncate text-[14px] font-medium capitalize text-secondary">
+                      {c.assignedTo?.name || '-'}
+                    </span>
+                  )}
+                </td>
+                <td className={tdClass}>
+                  <span
+                    className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                      c.online ? 'bg-buy/25 text-buy' : 'bg-muted text-secondary'
+                    }`}
+                    title={c.online ? 'Online' : 'Offline'}
+                  >
+                    L
+                  </span>
+                </td>
               </tr>
             ))}
             {clients.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-3 py-12 text-center text-base text-secondary">
+                <td colSpan={10} className="px-3 py-12 text-center text-base text-secondary">
                   No clients found
                 </td>
               </tr>
