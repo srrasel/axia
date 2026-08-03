@@ -217,7 +217,7 @@ export function CrmNotificationsPage() {
         <p className="mb-4 rounded-lg border border-sell/30 bg-sell/15 px-3 py-2 text-sm text-sell">{error}</p>
       ) : null}
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-panel shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
+      <div className="w-full overflow-hidden rounded-2xl border border-border bg-panel shadow-[0_1px_2px_rgba(0,0,0,0.2)] lg:w-[60%]">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
             <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-muted text-secondary">
@@ -244,7 +244,7 @@ export function CrmNotificationsPage() {
                       {!n.read ? (
                         <span className="h-2 w-2 shrink-0 rounded-full bg-accent" title="Unread" />
                       ) : null}
-                      <h3 className="text-base font-semibold tracking-tight text-text">{n.title}</h3>
+                      <h3 className="text-[14px] font-semibold tracking-tight text-text">{n.title}</h3>
                       <span
                         className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                           n.read ? 'bg-muted text-secondary' : 'bg-accent/15 text-accent'
@@ -253,7 +253,7 @@ export function CrmNotificationsPage() {
                         {formatType(n.type)}
                       </span>
                     </div>
-                    <p className="mt-1.5 text-sm text-secondary">{n.body}</p>
+                    <p className="mt-1.5 text-[12px] text-secondary">{n.body}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-secondary">
                       <span>{fmt(n.createdAt)}</span>
                       {n.clientId ? (
