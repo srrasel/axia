@@ -383,7 +383,7 @@ export function PageHeader({ title, children, subtitle }: { title: string; subti
     <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
       <div className="min-w-0">
         <h1 className="text-2xl font-bold tracking-tight text-text sm:text-3xl lg:text-[2rem]">{title}</h1>
-        {subtitle ? <p className="mt-1.5 text-base text-secondary">{subtitle}</p> : null}
+        {subtitle ? <p className="mt-1.5 text-[16px] text-secondary">{subtitle}</p> : null}
       </div>
       {children ? (
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">

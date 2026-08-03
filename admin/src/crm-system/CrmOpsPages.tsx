@@ -19,7 +19,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '../api'
-import { btnPrimary, money, PageHeader, Panel, TablePagination, usePagination } from '../layout'
+import { btnPrimary, money, PageHeader, TablePagination, usePagination } from '../layout'
 
 function fmt(iso?: string) {
   if (!iso) return '—'
@@ -217,9 +217,9 @@ export function CrmNotificationsPage() {
         <p className="mb-4 rounded-lg border border-sell/30 bg-sell/15 px-3 py-2 text-sm text-sell">{error}</p>
       ) : null}
 
-      {items.length === 0 ? (
-        <Panel title="Inbox" subtitle="No notifications yet">
-          <div className="flex flex-col items-center justify-center py-10 text-center">
+      <div className="overflow-hidden rounded-2xl border border-border bg-panel shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
+        {items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
             <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-muted text-secondary">
               <Bell size={20} />
             </div>
@@ -228,43 +228,44 @@ export function CrmNotificationsPage() {
               New CRM alerts will appear here when leads, deposits, or documents need attention.
             </p>
           </div>
-        </Panel>
-      ) : (
-        <div className="space-y-4">
-          {pager.pageItems.map((n) => (
-            <Panel
-              key={n.id}
-              title={n.title}
-              subtitle={`${formatType(n.type)} · ${fmt(n.createdAt)}${n.read ? '' : ' · Unread'}`}
-              action={
-                n.clientId ? (
-                  <Link
-                    to={`/crm/clients/${n.clientId}`}
-                    className="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium hover:bg-muted"
-                  >
-                    Open Client
-                  </Link>
-                ) : null
-              }
-              className={n.read ? undefined : 'border-accent/30'}
-            >
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between gap-4 border-b border-border/60 py-2">
-                  <span className="text-secondary">Message</span>
-                  <span className="max-w-[70%] text-right font-medium text-text">{n.body}</span>
-                </div>
-                <div className="flex justify-between gap-4 border-b border-border/60 py-2">
-                  <span className="text-secondary">Type</span>
-                  <span
-                    className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                      n.read ? 'bg-muted text-secondary' : 'bg-accent/15 text-accent'
-                    }`}
-                  >
-                    {formatType(n.type)}
-                  </span>
-                </div>
-                <div className="flex justify-between gap-4 py-2">
-                  <span className="text-secondary">Status</span>
+        ) : (
+          <div className="divide-y divide-border/60">
+            {pager.pageItems.map((n) => (
+              <div
+                key={n.id}
+                className={clsx(
+                  'px-4 py-4 sm:px-5',
+                  n.read ? 'bg-transparent' : 'bg-accent/10',
+                )}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {!n.read ? (
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-accent" title="Unread" />
+                      ) : null}
+                      <h3 className="text-base font-semibold tracking-tight text-text">{n.title}</h3>
+                      <span
+                        className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                          n.read ? 'bg-muted text-secondary' : 'bg-accent/15 text-accent'
+                        }`}
+                      >
+                        {formatType(n.type)}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 text-sm text-secondary">{n.body}</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-secondary">
+                      <span>{fmt(n.createdAt)}</span>
+                      {n.clientId ? (
+                        <Link
+                          to={`/crm/clients/${n.clientId}`}
+                          className="inline-flex h-8 items-center rounded-md border border-border px-2.5 text-xs font-medium text-text hover:bg-muted"
+                        >
+                          Open Client
+                        </Link>
+                      ) : null}
+                    </div>
+                  </div>
                   <span
                     className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                       n.read ? 'bg-muted text-secondary' : 'bg-buy/15 text-buy'
@@ -274,10 +275,10 @@ export function CrmNotificationsPage() {
                   </span>
                 </div>
               </div>
-            </Panel>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="mt-4">
         <TablePagination
@@ -312,13 +313,12 @@ export function CrmAnalyticsPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold">Analytics</h1>
-        <p className="text-sm text-secondary">
-          Conversion Funnel, ROI, LTV, Retention, Revenue, Source & country
-          {data.scoped ? ' · scoped to your clients' : ''}
-        </p>
-      </div>
+      <PageHeader
+        title="Analytics"
+        subtitle={`Conversion Funnel, ROI, LTV, Retention, Revenue, Source & Country${
+          data.scoped ? ' - scoped to your clients' : ''
+        }`}
+      />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
@@ -384,13 +384,12 @@ export function CrmSecurityPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold">Security</h1>
-        <p className="text-sm text-secondary">
-          2FA, login logs, IP / device history, audit trail, sessions
-          {data.canViewAll ? ' · full access' : ' · your account only'}
-        </p>
-      </div>
+      <PageHeader
+        title="Security"
+        subtitle={`2FA, Login Logs, IP / Device History, Audit Trail, Sessions${
+          data.canViewAll ? ' - full access' : ' - your account only'
+        }`}
+      />
 
       <div className="rounded-xl border border-border bg-[#161a21] p-3">
         <div className="text-sm font-semibold">
