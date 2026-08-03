@@ -151,7 +151,8 @@ function EarningsPage() {
       >
         <div className="text-sm font-semibold w-full mb-1">Record manual earning</div>
         <input
-          type="number"
+          type="text"
+          inputMode="decimal"
           className="h-10 w-28 rounded-xl border border-border bg-panel px-3 text-sm outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
           value={manual.amount}
           onChange={(e) => setManual({ ...manual, amount: Number(e.target.value) })}
@@ -330,7 +331,7 @@ function UserDetail() {
           <select className="h-10 rounded border border-border px-2" value={adjust.accountId} onChange={(e) => setAdjust({ ...adjust, accountId: e.target.value })}>
             {user.accounts.map((a: any) => <option key={a.id} value={a.id}>{a.type} #{a.number} · {money(a.balance)}</option>)}
           </select>
-          <input type="number" className="h-10 w-28 rounded border border-border px-2" value={adjust.amount} onChange={(e) => setAdjust({ ...adjust, amount: Number(e.target.value) })} />
+          <input type="text" inputMode="decimal" className="h-10 w-28 rounded border border-border px-2" value={adjust.amount} onChange={(e) => setAdjust({ ...adjust, amount: Number(e.target.value) })} />
           <input className="h-10 flex-1 rounded border border-border px-2" placeholder="Note" value={adjust.note} onChange={(e) => setAdjust({ ...adjust, note: e.target.value })} />
           <button type="button" className="h-10 rounded bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]" onClick={async () => { await api(`/api/admin/accounts/${adjust.accountId}/adjust`, { method: 'POST', body: JSON.stringify({ amount: adjust.amount, note: adjust.note }) }); load() }}>
             Apply

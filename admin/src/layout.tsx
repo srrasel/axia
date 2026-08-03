@@ -197,14 +197,14 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         <div className="mb-2 truncate text-xs text-secondary">{user?.email}</div>
         <button
           type="button"
-          className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-secondary transition-colors hover:bg-muted hover:text-text"
+          className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-base font-medium text-secondary transition-colors hover:bg-muted hover:text-text"
           onClick={() => {
             logout()
             navigate('/login')
             onNavigate?.()
           }}
         >
-          <LogOut size={15} /> Sign out
+          <LogOut size={18} /> Logout
         </button>
       </div>
     </>
@@ -419,7 +419,7 @@ export function StatusBadge({ status }: { status: string }) {
 export const btnPrimary =
   'h-10 shrink-0 rounded-xl bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]'
 export const inputClass =
-  'h-10 w-full min-w-0 rounded-xl border border-border bg-panel px-3 text-sm text-text outline-none transition-colors placeholder:text-secondary hover:border-[#fcd535]/70 focus:border-[#fcd535] sm:w-auto'
+  'h-10 w-full min-w-0 rounded-xl border border-border bg-panel px-3 text-sm text-text outline-none transition-colors placeholder:text-secondary hover:border-[#fcd535]/70 focus:border-[#fcd535]'
 
 export const PAGE_SIZE = 10
 

@@ -533,7 +533,8 @@ export function CrmClientDetailPage() {
                 ))}
               </select>
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 className={`${inputClass} sm:w-28`}
                 value={bonus.amount}
                 onChange={(e) => setBonus({ ...bonus, amount: Number(e.target.value) })}
@@ -571,7 +572,8 @@ export function CrmClientDetailPage() {
                 ))}
               </select>
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 className={`${inputClass} sm:w-28`}
                 value={adjust.amount}
                 onChange={(e) => setAdjust({ ...adjust, amount: Number(e.target.value) })}
@@ -1137,7 +1139,8 @@ export function CrmPerformancePage() {
       <PageHeader title="Winners & losers" subtitle="Clients with significant profit or loss vs threshold.">
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <input
-            type="number"
+            type="text"
+            inputMode="decimal"
             className={`${inputClass} sm:w-28`}
             value={threshold}
             onChange={(e) => setThreshold(Number(e.target.value))}

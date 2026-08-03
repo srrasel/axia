@@ -14,6 +14,8 @@ import {
   Plus,
   X,
   Shield,
+  Bell,
+  CheckCheck,
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '../api'
@@ -153,6 +155,7 @@ export function CrmNotificationsPage() {
   const [items, setItems] = useState<any[]>([])
   const [unread, setUnread] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
   const pager = usePagination(items, 10)
 
   const load = () =>
@@ -167,51 +170,103 @@ export function CrmNotificationsPage() {
     load()
   }, [])
 
+  async function markAllRead() {
+    setBusy(true)
+    setError(null)
+    try {
+      await api('/api/admin/crm/notifications/read', { method: 'POST', body: '{}' })
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function formatType(type: string) {
+    return String(type || '')
+      .replaceAll('_', ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+  }
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-bold">Notifications</h1>
-          <p className="text-sm text-secondary">
-            New lead, FTD, withdrawal, documents, login alert, missed call, KYC expiry · {unread} unread
-          </p>
-        </div>
-        <button
-          type="button"
-          className={btnPrimary}
-          onClick={() =>
-            void api('/api/admin/crm/notifications/read', { method: 'POST', body: '{}' }).then(load)
-          }
-        >
-          Mark all read
-        </button>
-      </div>
-      {error && <p className="text-sm text-sell">{error}</p>}
-      <div className="space-y-2">
-        {items.length === 0 && <p className="text-sm text-secondary">No notifications yet</p>}
-        {pager.pageItems.map((n) => (
-          <div
-            key={n.id}
-            className={`rounded-xl border px-3 py-2 ${
-              n.read ? 'border-border bg-[#161a21]' : 'border-accent/30 bg-accent/5'
-            }`}
+    <div className="space-y-5">
+      <PageHeader
+        title="Notifications"
+        subtitle="New Lead, FTD, Withdrawal, Documents, Login Alert, Missed Call, And KYC Expiry."
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex h-11 items-center rounded-xl border border-border bg-[#161a21] px-4 text-sm font-medium text-secondary">
+            <Bell size={16} className="mr-2 text-accent" />
+            {unread} Unread
+          </span>
+          <button
+            type="button"
+            className={`${btnPrimary} inline-flex h-11 items-center gap-2 disabled:opacity-60`}
+            disabled={busy || unread === 0}
+            onClick={() => void markAllRead()}
           >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-sm font-semibold">{n.title}</div>
-              <span className="rounded border border-border px-1.5 py-0.5 text-[10px] text-secondary">
-                {n.type}
-              </span>
+            <CheckCheck size={16} />
+            Mark All Read
+          </button>
+        </div>
+      </PageHeader>
+
+      {error && <p className="rounded-xl border border-sell/30 bg-sell/10 px-3 py-2 text-sm text-sell">{error}</p>}
+
+      <div className="overflow-hidden rounded-2xl border border-border bg-[#161a21]">
+        {items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-secondary">
+              <Bell size={22} />
             </div>
-            <div className="text-xs text-secondary">{n.body}</div>
-            <div className="mt-1 text-[10px] text-secondary">{fmt(n.createdAt)}</div>
-            {n.clientId && (
-              <Link to={`/crm/clients/${n.clientId}`} className="text-[11px] text-accent">
-                Open client →
-              </Link>
-            )}
+            <p className="text-base font-semibold text-text">No Notifications Yet</p>
+            <p className="mt-1 max-w-sm text-sm text-secondary">
+              New CRM alerts will appear here when leads, deposits, or documents need attention.
+            </p>
           </div>
-        ))}
+        ) : (
+          <div className="divide-y divide-border">
+            {pager.pageItems.map((n) => (
+              <div
+                key={n.id}
+                className={clsx(
+                  'px-4 py-4 transition-colors sm:px-5',
+                  n.read ? 'bg-transparent' : 'bg-accent/[0.04]',
+                )}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {!n.read ? (
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-accent" title="Unread" />
+                      ) : null}
+                      <h3 className="text-[15px] font-semibold text-text">{n.title}</h3>
+                      <span className="rounded-lg border border-border bg-[#12151a] px-2 py-0.5 text-[11px] font-medium capitalize text-secondary">
+                        {formatType(n.type)}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 text-sm leading-relaxed text-secondary">{n.body}</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-3 text-[12px] text-secondary">
+                      <span>{fmt(n.createdAt)}</span>
+                      {n.clientId ? (
+                        <Link
+                          to={`/crm/clients/${n.clientId}`}
+                          className="font-semibold text-accent hover:text-[#ceaf30]"
+                        >
+                          Open Client →
+                        </Link>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
       <TablePagination
         page={pager.page}
         totalPages={pager.totalPages}

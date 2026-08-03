@@ -4,6 +4,7 @@ import {
   Copy,
   Download,
   Eye,
+  EyeOff,
   Phone,
   Bookmark,
   Plus,
@@ -153,6 +154,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
   const pageSize = 25
   const canCreate = CREATE_ROLES.has(me.role)
   const [showCreate, setShowCreate] = useState(false)
+  const [showCreatePassword, setShowCreatePassword] = useState(false)
   const [createMsg, setCreateMsg] = useState<string | null>(null)
   const [toolbarMsg, setToolbarMsg] = useState<string | null>(null)
   const [createForm, setCreateForm] = useState({
@@ -376,6 +378,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
       })
       setCreateMsg(`Created ${res.client.name}`)
       setShowCreate(false)
+      setShowCreatePassword(false)
       setCreateForm({
         name: '',
         email: '',
@@ -405,6 +408,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
               onClick={() => {
                 setShowCreate((v) => !v)
                 setCreateMsg(null)
+                setShowCreatePassword(false)
               }}
               className="inline-flex h-10 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-[#202630] hover:bg-[#ceaf30]"
             >
@@ -413,7 +417,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
               ) : (
                 <>
                   <UserPlus size={16} />
-                  Add client
+                  Add Client
                 </>
               )}
             </button>
@@ -487,15 +491,32 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
           </label>
           <label className="block text-xs text-secondary">
             Password
-            <input
-              type="text"
-              className={`${createInputClass} mt-1`}
-              value={createForm.password}
-              onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-              placeholder="Min 6 characters"
-              required
-              minLength={6}
-            />
+            <div className="relative mt-1">
+              <input
+                type={showCreatePassword ? 'text' : 'password'}
+                name="password"
+                autoComplete="new-password"
+                className={`${createInputClass} pr-11`}
+                value={createForm.password}
+                onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                placeholder="Min 6 characters"
+                required
+                minLength={6}
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label={showCreatePassword ? 'Hide password' : 'Show password'}
+                onClick={() => setShowCreatePassword((v) => !v)}
+                className="absolute right-3 top-1/2 z-10 -translate-y-1/2 cursor-pointer bg-transparent p-0.5 text-secondary transition-colors hover:text-accent"
+              >
+                {showCreatePassword ? (
+                  <EyeOff size={18} strokeWidth={1.75} />
+                ) : (
+                  <Eye size={18} strokeWidth={1.75} />
+                )}
+              </button>
+            </div>
           </label>
           <label className="block text-xs text-secondary">
             Phone
@@ -555,7 +576,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
               className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-[#202630] hover:bg-[#ceaf30] disabled:opacity-60"
             >
               <Plus size={16} />
-              {busy ? 'Creating...' : 'Create client'}
+              {busy ? 'Creating...' : 'Create Client'}
             </button>
           </div>
         </form>
@@ -663,7 +684,12 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
               <th className={`${thClass} w-10`}>
                 <span className={thLabelClass}>&nbsp;</span>
                 <div className="flex h-9 items-center">
-                  <input type="checkbox" className="h-4 w-4" checked={allSelected} onChange={toggleAll} />
+                  <input
+                    type="checkbox"
+                    className="auth-checkbox h-4 w-4 cursor-pointer rounded border border-[#2b3139]"
+                    checked={allSelected}
+                    onChange={toggleAll}
+                  />
                 </div>
               </th>
               <th className={thClass}>
@@ -761,7 +787,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <td className={tdClass}>
                   <input
                     type="checkbox"
-                    className="h-4 w-4"
+                    className="auth-checkbox h-4 w-4 cursor-pointer rounded border border-[#2b3139]"
                     checked={selected.has(c.id)}
                     onChange={() => toggleOne(c.id)}
                   />

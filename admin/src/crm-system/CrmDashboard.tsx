@@ -111,13 +111,13 @@ export function CrmDashboardPage() {
     <div className="space-y-6 sm:space-y-7">
       <PageHeader
         title="CRM Dashboard"
-        subtitle="Clients, conversions, deposits, and marketing performance."
+        subtitle="Clients, Conversions, Deposits, And Marketing Performance."
       >
         <Link
           to="/crm/clients"
           className="inline-flex h-11 items-center rounded-xl bg-[#fcd535] px-5 text-base font-semibold text-[#202630] hover:bg-[#ceaf30]"
         >
-          Open clients
+          Open Clients
         </Link>
       </PageHeader>
 
