@@ -137,7 +137,7 @@ function exportCsv(rows: ClientRow[]) {
 const colFilterClass =
   'h-9 w-full min-w-[110px] rounded-lg border border-border bg-[#12151a] px-2.5 text-sm outline-none hover:border-accent/50 focus:border-accent'
 const thClass = 'align-bottom px-3 py-3 text-left'
-const thLabelClass = 'mb-1.5 block whitespace-nowrap text-xs font-semibold capitalize tracking-wide text-secondary'
+const thLabelClass = 'mb-1.5 block whitespace-nowrap text-[16px] font-semibold capitalize tracking-wide text-secondary'
 const tdClass = 'align-middle px-3 py-3.5'
 
 export function CrmClientsPage({ me }: { me: AdminUser }) {
@@ -714,7 +714,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                     setPage(1)
                   }}
                 >
-                  <option value="">All countries</option>
+                  <option value="">All Countries</option>
                   {countryOptions.map((country) => (
                     <option key={country} value={country}>
                       {country}
@@ -795,7 +795,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <td className={tdClass}>
                   <Link
                     to={`/crm/clients/${c.id}`}
-                    className="block truncate text-[20px] font-bold text-text hover:text-accent"
+                    className="block truncate text-[16px] font-bold text-text hover:text-accent"
                   >
                     {c.name}
                   </Link>
