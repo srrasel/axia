@@ -19,7 +19,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '../api'
-import { btnPrimary, money, PageHeader, TablePagination, usePagination } from '../layout'
+import { btnPrimary, money, PageHeader, Panel, TablePagination, usePagination } from '../layout'
 
 function fmt(iso?: string) {
   if (!iso) return '—'
@@ -191,90 +191,104 @@ export function CrmNotificationsPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div>
       <PageHeader
         title="Notifications"
-        subtitle="New Lead, FTD, Withdrawal, Documents, Login Alert, Missed Call, And KYC Expiry."
+        subtitle="New Lead, FTD, Withdrawal, Documents, Login Alert, Missed Call, and KYC Expiry."
       >
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex h-11 items-center rounded-xl border border-border bg-[#161a21] px-4 text-sm font-medium text-secondary">
-            <Bell size={16} className="mr-2 text-accent" />
+          <span className="inline-flex h-9 items-center rounded-md border border-border bg-panel px-3 text-sm font-medium text-secondary">
+            <Bell size={15} className="mr-2 text-accent" />
             {unread} Unread
           </span>
           <button
             type="button"
-            className={`${btnPrimary} inline-flex h-11 items-center gap-2 disabled:opacity-60`}
+            className="inline-flex h-9 items-center gap-2 rounded-md bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30] disabled:opacity-60"
             disabled={busy || unread === 0}
             onClick={() => void markAllRead()}
           >
-            <CheckCheck size={16} />
+            <CheckCheck size={15} />
             Mark All Read
           </button>
         </div>
       </PageHeader>
 
-      {error && <p className="rounded-xl border border-sell/30 bg-sell/10 px-3 py-2 text-sm text-sell">{error}</p>}
+      {error ? (
+        <p className="mb-4 rounded-lg border border-sell/30 bg-sell/15 px-3 py-2 text-sm text-sell">{error}</p>
+      ) : null}
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-[#161a21]">
-        {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-secondary">
-              <Bell size={22} />
+      {items.length === 0 ? (
+        <Panel title="Inbox" subtitle="No notifications yet">
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-muted text-secondary">
+              <Bell size={20} />
             </div>
-            <p className="text-base font-semibold text-text">No Notifications Yet</p>
-            <p className="mt-1 max-w-sm text-sm text-secondary">
+            <p className="text-sm font-medium text-text">No Notifications Yet</p>
+            <p className="mt-1 max-w-sm text-xs text-secondary">
               New CRM alerts will appear here when leads, deposits, or documents need attention.
             </p>
           </div>
-        ) : (
-          <div className="divide-y divide-border">
-            {pager.pageItems.map((n) => (
-              <div
-                key={n.id}
-                className={clsx(
-                  'px-4 py-4 transition-colors sm:px-5',
-                  n.read ? 'bg-transparent' : 'bg-accent/[0.04]',
-                )}
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {!n.read ? (
-                        <span className="h-2 w-2 shrink-0 rounded-full bg-accent" title="Unread" />
-                      ) : null}
-                      <h3 className="text-[15px] font-semibold text-text">{n.title}</h3>
-                      <span className="rounded-lg border border-border bg-[#12151a] px-2 py-0.5 text-[11px] font-medium capitalize text-secondary">
-                        {formatType(n.type)}
-                      </span>
-                    </div>
-                    <p className="mt-1.5 text-sm leading-relaxed text-secondary">{n.body}</p>
-                    <div className="mt-2 flex flex-wrap items-center gap-3 text-[12px] text-secondary">
-                      <span>{fmt(n.createdAt)}</span>
-                      {n.clientId ? (
-                        <Link
-                          to={`/crm/clients/${n.clientId}`}
-                          className="font-semibold text-accent hover:text-[#ceaf30]"
-                        >
-                          Open Client →
-                        </Link>
-                      ) : null}
-                    </div>
-                  </div>
+        </Panel>
+      ) : (
+        <div className="space-y-4">
+          {pager.pageItems.map((n) => (
+            <Panel
+              key={n.id}
+              title={n.title}
+              subtitle={`${formatType(n.type)} · ${fmt(n.createdAt)}${n.read ? '' : ' · Unread'}`}
+              action={
+                n.clientId ? (
+                  <Link
+                    to={`/crm/clients/${n.clientId}`}
+                    className="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium hover:bg-muted"
+                  >
+                    Open Client
+                  </Link>
+                ) : null
+              }
+              className={n.read ? undefined : 'border-accent/30'}
+            >
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between gap-4 border-b border-border/60 py-2">
+                  <span className="text-secondary">Message</span>
+                  <span className="max-w-[70%] text-right font-medium text-text">{n.body}</span>
+                </div>
+                <div className="flex justify-between gap-4 border-b border-border/60 py-2">
+                  <span className="text-secondary">Type</span>
+                  <span
+                    className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                      n.read ? 'bg-muted text-secondary' : 'bg-accent/15 text-accent'
+                    }`}
+                  >
+                    {formatType(n.type)}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-4 py-2">
+                  <span className="text-secondary">Status</span>
+                  <span
+                    className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                      n.read ? 'bg-muted text-secondary' : 'bg-buy/15 text-buy'
+                    }`}
+                  >
+                    {n.read ? 'Read' : 'Unread'}
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </Panel>
+          ))}
+        </div>
+      )}
 
-      <TablePagination
-        page={pager.page}
-        totalPages={pager.totalPages}
-        total={pager.total}
-        from={pager.from}
-        to={pager.to}
-        onPageChange={pager.setPage}
-      />
+      <div className="mt-4">
+        <TablePagination
+          page={pager.page}
+          totalPages={pager.totalPages}
+          total={pager.total}
+          from={pager.from}
+          to={pager.to}
+          onPageChange={pager.setPage}
+        />
+      </div>
     </div>
   )
 }
@@ -301,7 +315,7 @@ export function CrmAnalyticsPage() {
       <div>
         <h1 className="text-xl font-bold">Analytics</h1>
         <p className="text-sm text-secondary">
-          Conversion funnel, ROI, LTV, retention, revenue, source & country
+          Conversion Funnel, ROI, LTV, Retention, Revenue, Source & country
           {data.scoped ? ' · scoped to your clients' : ''}
         </p>
       </div>
@@ -438,8 +452,8 @@ export function CrmSecurityPage() {
               <th className="px-3 py-2">User</th>
               <th className="px-3 py-2">IP</th>
               <th className="px-3 py-2">Device</th>
-              <th className="px-3 py-2">Last active</th>
-              <th className="px-3 py-2" />
+              <th className="px-3 py-2">Last Active</th>
+              <th className="px-3 py-2">Action</th>
             </tr>
           </thead>
           <tbody>

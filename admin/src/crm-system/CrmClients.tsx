@@ -136,15 +136,14 @@ function exportCsv(rows: ClientRow[]) {
 
 const colFilterClass =
   'h-9 w-full min-w-[110px] rounded-lg border border-border bg-[#12151a] px-2.5 text-sm outline-none hover:border-accent/50 focus:border-accent'
-const colSelectStyle = {
-  backgroundColor: '#12151a',
+const colSelectClass =
+  'h-9 w-full min-w-[110px] cursor-pointer appearance-none rounded-lg border border-border px-2.5 pr-9 text-sm outline-none focus:border-border'
+const colSelectStyleBase = {
   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa3b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
   backgroundRepeat: 'no-repeat',
   backgroundPosition: 'right 10px center',
   backgroundSize: '14px 14px',
 } as const
-const colSelectClass =
-  `${colFilterClass} cursor-pointer appearance-none pr-9`
 const thClass = 'align-bottom px-3 py-3 text-left'
 const thLabelClass = 'mb-1.5 block whitespace-nowrap text-[14px] font-semibold capitalize tracking-wide text-secondary'
 const tdClass = 'align-middle px-3 py-3.5'
@@ -716,7 +715,10 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <span className={thLabelClass}>Country</span>
                 <select
                   className={colSelectClass}
-                  style={colSelectStyle}
+                  style={{
+                    ...colSelectStyleBase,
+                    backgroundColor: col.country ? '#1c222c' : '#12151a',
+                  }}
                   value={col.country}
                   onChange={(e) => {
                     setCol((s) => ({ ...s, country: e.target.value }))
@@ -764,7 +766,10 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 {me.role === 'ADMIN' ? (
                   <select
                     className={colSelectClass}
-                    style={colSelectStyle}
+                    style={{
+                      ...colSelectStyleBase,
+                      backgroundColor: col.assigned ? '#1c222c' : '#12151a',
+                    }}
                     value={col.assigned}
                     onChange={(e) => {
                       setCol((s) => ({ ...s, assigned: e.target.value }))
