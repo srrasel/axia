@@ -204,7 +204,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             onNavigate?.()
           }}
         >
-          <LogOut size={18} /> Logout
+          <LogOut size={18} /> Log Out
         </button>
       </div>
     </>
