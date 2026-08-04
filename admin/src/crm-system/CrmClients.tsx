@@ -7,6 +7,7 @@ import {
   EyeOff,
   Phone,
   Bookmark,
+  BookmarkMinus,
   Plus,
   UserPlus,
   Pencil,
@@ -59,6 +60,8 @@ type ClientRow = {
   totalDeposits: number
   balance?: number
   online: boolean
+  tradingRestricted?: boolean
+  active?: boolean
   assignedTo: { id: string; name: string; email: string } | null
 }
 
@@ -144,11 +147,11 @@ function exportCsv(rows: ClientRow[]) {
 }
 
 const colFilterClass =
-  'h-9 w-full min-w-[110px] rounded-lg border border-border bg-[#12151a] px-2.5 text-sm outline-none hover:border-accent/50 focus:border-accent'
+  'h-9 w-full min-w-[150px] rounded-lg border border-border bg-[#12151a] px-2.5 text-sm outline-none hover:border-accent/50 focus:border-accent'
 const colDateClass =
-  'h-9 w-full min-w-[110px] rounded-lg border border-border bg-[#12151a] px-1.5 text-[11px] text-text outline-none hover:border-accent/50 focus:border-accent [color-scheme:dark]'
+  'h-9 w-full min-w-[150px] rounded-lg border border-border bg-[#12151a] px-2 text-sm text-text outline-none placeholder:text-secondary hover:border-accent/50 focus:border-accent [color-scheme:dark]'
 const colSelectClass =
-  'h-9 w-full min-w-[110px] cursor-pointer appearance-none rounded-lg border border-border px-2.5 pr-9 text-sm outline-none transition-colors hover:border-[#fcd535] focus:border-[#fcd535]'
+  'h-9 w-full min-w-[150px] cursor-pointer appearance-none rounded-lg border border-border px-2.5 pr-9 text-sm outline-none transition-colors hover:border-[#fcd535] focus:border-[#fcd535]'
 const colSelectStyleBase = {
   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa3b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
   backgroundRepeat: 'no-repeat',
@@ -158,6 +161,35 @@ const colSelectStyleBase = {
 const thClass = 'align-bottom px-3 py-3 text-left'
 const thLabelClass = 'mb-1.5 block whitespace-nowrap text-[14px] font-semibold capitalize tracking-wide text-secondary'
 const tdClass = 'align-middle px-3 py-3.5'
+
+/** Native date inputs ignore placeholder — show text until focused or filled. */
+function DateFilterInput({
+  value,
+  onChange,
+  placeholder,
+  title,
+}: {
+  value: string
+  onChange: (value: string) => void
+  placeholder: string
+  title?: string
+}) {
+  const [focused, setFocused] = useState(false)
+  const showDate = focused || Boolean(value)
+
+  return (
+    <input
+      type={showDate ? 'date' : 'text'}
+      className={colDateClass}
+      value={value}
+      placeholder={placeholder}
+      title={title || placeholder}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  )
+}
 
 export function CrmClientsPage({ me }: { me: AdminUser }) {
   const navigate = useNavigate()
@@ -316,8 +348,10 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
     return true
   }
 
-  async function flagSelected() {
+  async function togglePotentialSelected() {
     if (!needSelection()) return
+    const rows = selectedRows()
+    const unflag = rows.length > 0 && rows.every((c) => c.crmCategory === 'POTENTIAL')
     setBusy(true)
     setError(null)
     try {
@@ -326,13 +360,17 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
         body: JSON.stringify({
           ids: [...selected],
           action: 'category',
-          crmCategory: 'POTENTIAL',
+          crmCategory: unflag ? 'NEW' : 'POTENTIAL',
         }),
       })
-      setToolbarMsg(`Flagged ${selected.size} client(s) as Potential`)
+      setToolbarMsg(
+        unflag
+          ? `Removed Potential from ${rows.length} client(s)`
+          : `Flagged ${rows.length} client(s) as Potential`,
+      )
       await load()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Flag failed')
+      setError(e instanceof Error ? e.message : unflag ? 'Unbookmark failed' : 'Flag failed')
     } finally {
       setBusy(false)
     }
@@ -662,51 +700,71 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2">
-        {[
-          {
-            icon: Bookmark,
-            title: 'Flag as Potential',
-            onClick: () => void flagSelected(),
-            needsSelection: true,
-          },
-          {
-            icon: Phone,
-            title: 'Call selected',
-            onClick: () => void callSelected(),
-            needsSelection: true,
-          },
-          {
-            icon: Eye,
-            title: 'View profile',
-            onClick: viewSelected,
-            needsSelection: true,
-          },
-          {
-            icon: Download,
-            title: selected.size > 0 ? `Export selected (${selected.size})` : 'Export page',
-            onClick: exportSelected,
-            needsSelection: false,
-          },
-          {
-            icon: Copy,
-            title: 'Copy CRM IDs',
-            onClick: () => void copySelectedIds(),
-            needsSelection: true,
-          },
-        ].map(({ icon: Icon, title, onClick, needsSelection }) => (
-          <button
-            key={title}
-            type="button"
-            title={title}
-            disabled={busy || (needsSelection && selected.size === 0)}
-            onClick={onClick}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-[#161a21] text-secondary hover:border-accent/50 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Icon size={18} />
-          </button>
-        ))}
+        {(() => {
+          const rows = selectedRows()
+          const canUnflag =
+            rows.length > 0 && rows.every((c) => c.crmCategory === 'POTENTIAL')
+          return [
+            {
+              icon: canUnflag ? BookmarkMinus : Bookmark,
+              title: canUnflag ? 'Remove Potential (unbookmark)' : 'Flag as Potential',
+              onClick: () => void togglePotentialSelected(),
+              needsSelection: true,
+              active: canUnflag,
+            },
+            {
+              icon: Phone,
+              title: 'Call selected',
+              onClick: () => void callSelected(),
+              needsSelection: true,
+              active: false,
+            },
+            {
+              icon: Eye,
+              title: 'View profile',
+              onClick: viewSelected,
+              needsSelection: true,
+              active: false,
+            },
+            {
+              icon: Download,
+              title: selected.size > 0 ? `Export selected (${selected.size})` : 'Export page',
+              onClick: exportSelected,
+              needsSelection: false,
+              active: false,
+            },
+            {
+              icon: Copy,
+              title: 'Copy CRM IDs',
+              onClick: () => void copySelectedIds(),
+              needsSelection: true,
+              active: false,
+            },
+          ].map(({ icon: Icon, title, onClick, needsSelection, active }) => (
+            <button
+              key={title}
+              type="button"
+              title={title}
+              disabled={busy || (needsSelection && selected.size === 0)}
+              onClick={onClick}
+              className={`flex h-10 w-10 items-center justify-center rounded-xl border bg-[#161a21] transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                active
+                  ? 'border-accent/60 text-accent'
+                  : 'border-border text-secondary hover:border-accent/50 hover:text-accent'
+              }`}
+            >
+              <Icon size={18} />
+            </button>
+          ))
+        })()}
         <span className="ml-2 text-sm text-secondary">
-          {selected.size > 0 ? `${selected.size} selected` : 'Tip: select clients, then use the icons'}
+          {selected.size > 0
+            ? `${selected.size} selected${
+                selectedRows().every((c) => c.crmCategory === 'POTENTIAL')
+                  ? ' · tap bookmark to unflag Potential'
+                  : ' · tap bookmark to flag Potential'
+              }`
+            : 'Tip: select clients, then use the icons'}
         </span>
       </div>
 
@@ -714,17 +772,17 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
       {error && <p className="text-base text-sell">{error}</p>}
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-[#161a21]">
-        <table className="w-full min-w-[1480px] table-fixed text-left text-sm sm:text-base">
+        <table className="w-full min-w-[1720px] table-fixed text-left text-sm sm:text-base">
           <colgroup>
             <col className="w-10" />
             <col className="w-[220px]" />
-            <col className="w-[140px]" />
-            <col className="w-[140px]" />
-            <col className="w-[150px]" />
-            <col className="w-[150px]" />
-            <col className="w-[150px]" />
-            <col className="w-[110px]" />
-            <col className="w-[160px]" />
+            <col className="w-[170px]" />
+            <col className="w-[170px]" />
+            <col className="w-[170px]" />
+            <col className="w-[170px]" />
+            <col className="w-[170px]" />
+            <col className="w-[170px]" />
+            <col className="w-[190px]" />
             <col className="w-14" />
           </colgroup>
           <thead>
@@ -788,39 +846,36 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
               </th>
               <th className={thClass}>
                 <span className={thLabelClass}>First Deposit Date</span>
-                <input
-                  type="date"
-                  className={colDateClass}
+                <DateFilterInput
                   value={col.firstDeposit}
+                  placeholder="Filter date..."
                   title="First deposit on or after"
-                  onChange={(e) => {
-                    setCol((s) => ({ ...s, firstDeposit: e.target.value }))
+                  onChange={(value) => {
+                    setCol((s) => ({ ...s, firstDeposit: value }))
                     setPage(1)
                   }}
                 />
               </th>
               <th className={thClass}>
                 <span className={thLabelClass}>Last Login Date</span>
-                <input
-                  type="date"
-                  className={colDateClass}
+                <DateFilterInput
                   value={col.lastLogin}
+                  placeholder="Filter date..."
                   title="Last login on or after"
-                  onChange={(e) => {
-                    setCol((s) => ({ ...s, lastLogin: e.target.value }))
+                  onChange={(value) => {
+                    setCol((s) => ({ ...s, lastLogin: value }))
                     setPage(1)
                   }}
                 />
               </th>
               <th className={thClass}>
                 <span className={thLabelClass}>Last Interaction</span>
-                <input
-                  type="date"
-                  className={colDateClass}
+                <DateFilterInput
                   value={col.lastInteraction}
+                  placeholder="Filter date..."
                   title="Last interaction on or after"
-                  onChange={(e) => {
-                    setCol((s) => ({ ...s, lastInteraction: e.target.value }))
+                  onChange={(value) => {
+                    setCol((s) => ({ ...s, lastInteraction: value }))
                     setPage(1)
                   }}
                 />
@@ -897,16 +952,13 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                   />
                 </td>
                 <td className={tdClass}>
-                  <Link
-                    to={`/crm/clients/${c.id}`}
-                    className="block truncate text-[16px] font-bold capitalize text-text hover:text-accent"
-                  >
-                    {c.name}
-                  </Link>
-                  <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <span className="truncate text-[12px] text-secondary">
-                      #{c.crmNumber ?? '-'} · <span className="capitalize text-text">{c.name}</span>
-                    </span>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <Link
+                      to={`/crm/clients/${c.id}`}
+                      className="max-w-[calc(100%-4.5rem)] truncate text-[16px] font-bold capitalize text-[#22a06b] hover:text-[#1a8056]"
+                    >
+                      {c.name}
+                    </Link>
                     <Link
                       to={`/crm/clients/${c.id}`}
                       title="Edit"
@@ -970,14 +1022,30 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                   )}
                 </td>
                 <td className={tdClass}>
-                  <span
-                    className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
-                      c.online ? 'bg-buy/25 text-buy' : 'bg-muted text-secondary'
-                    }`}
-                    title={c.online ? 'Online' : 'Offline'}
-                  >
-                    L
-                  </span>
+                  {(() => {
+                    const restricted = Boolean(c.tradingRestricted) || c.active === false
+                    const title = [
+                      c.online ? 'Online' : 'Offline',
+                      c.tradingRestricted ? 'Trading restricted' : null,
+                      c.active === false ? 'Account disabled' : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')
+                    return (
+                      <span
+                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full border text-xs font-bold ${
+                          restricted
+                            ? 'border-sell/50 text-sell'
+                            : c.online
+                              ? 'border-buy/50 text-buy'
+                              : 'border-border text-secondary'
+                        }`}
+                        title={title}
+                      >
+                        L
+                      </span>
+                    )
+                  })()}
                 </td>
               </tr>
             ))}

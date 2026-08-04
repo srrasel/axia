@@ -87,18 +87,30 @@ function InfoRow({
   label,
   value,
   editable,
+  editing,
   onEdit,
 }: {
   label: string
   value?: ReactNode
   editable?: boolean
+  editing?: boolean
   onEdit?: () => void
 }) {
   return (
-    <div className="flex min-h-[28px] min-w-0 items-start gap-1 overflow-hidden border-b border-border/40 py-1.5 text-[12px] leading-tight">
+    <div
+      className={`flex min-h-[28px] min-w-0 items-start gap-1 border-b border-border/40 py-1.5 text-[12px] leading-tight ${
+        editing ? 'overflow-visible' : 'overflow-hidden'
+      }`}
+    >
       <span className="w-[42%] max-w-[42%] shrink-0 text-secondary">{label}</span>
-      <span className="min-w-0 flex-1 overflow-hidden break-all font-medium text-text">{value ?? '—'}</span>
-      {editable ? (
+      <span
+        className={`min-w-0 flex-1 font-medium text-text ${
+          editing ? 'overflow-visible' : 'overflow-hidden break-all'
+        }`}
+      >
+        {value ?? '—'}
+      </span>
+      {editable && !editing ? (
         <button
           type="button"
           onClick={onEdit}
@@ -206,7 +218,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
   const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<TabId>('tracking')
   const [busy, setBusy] = useState(false)
-  const [msg, setMsg] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ text: string; tone: 'ok' | 'err' } | null>(null)
   const [comment, setComment] = useState('')
   const [editKey, setEditKey] = useState<string | null>(null)
   const [editVal, setEditVal] = useState('')
@@ -225,6 +237,19 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
   } | null>(null)
   const tabsRef = useRef<HTMLDivElement>(null)
   const pageRef = useRef<HTMLDivElement>(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function showToast(text: string, tone: 'ok' | 'err' = 'ok') {
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    setToast({ text, tone })
+    toastTimer.current = setTimeout(() => setToast(null), 3200)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current)
+    }
+  }, [])
 
   function getScrollParent(el: HTMLElement | null): HTMLElement | null {
     let p = el?.parentElement ?? null
@@ -257,11 +282,10 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
   async function saveFinance(field: string, raw: string) {
     const num = Number(raw)
     if (!Number.isFinite(num)) {
-      setMsg('Enter a valid number')
+      showToast('Enter a valid number', 'err')
       return
     }
     setBusy(true)
-    setMsg(null)
     try {
       await api(`/api/admin/crm/clients-v2/${id}/finance`, {
         method: 'PATCH',
@@ -270,10 +294,10 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
       setModal(null)
       setFinanceField(null)
       setModalVal('')
-      setMsg(`${field} updated`)
+      showToast(`${field} updated`)
       await preserveScroll(() => load())
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'Update failed')
+      showToast(e instanceof Error ? e.message : 'Update failed', 'err')
     } finally {
       setBusy(false)
     }
@@ -301,17 +325,16 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
 
   async function saveProfile(patch: Record<string, unknown>) {
     setBusy(true)
-    setMsg(null)
     try {
       await api(`/api/admin/crm/clients-v2/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(patch),
       })
       setEditKey(null)
-      setMsg('Saved')
+      showToast('Saved')
       await preserveScroll(() => load())
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'Save failed')
+      showToast(e instanceof Error ? e.message : 'Save failed', 'err')
     } finally {
       setBusy(false)
     }
@@ -319,7 +342,6 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
 
   async function runAction(action: string, extra: Record<string, string> = {}) {
     setBusy(true)
-    setMsg(null)
     try {
       const res = await api<any>(`/api/admin/crm/clients-v2/${id}/actions`, {
         method: 'POST',
@@ -328,10 +350,20 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
       if (res.similar) setSimilar(res.similar)
       setModal(null)
       setModalVal('')
-      setMsg('Done')
+      const labels: Record<string, string> = {
+        restrict_trading: 'Trading restricted',
+        unrestrict_trading: 'Trading unrestricted',
+        disable_account: 'Account disabled',
+        enable_account: 'Account enabled',
+        popup_alert: 'Alert sent',
+        change_password: 'Password updated',
+        change_email: 'Email updated',
+        find_similar: 'Similar clients loaded',
+      }
+      showToast(labels[action] || 'Done')
       await preserveScroll(() => load())
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'Action failed')
+      showToast(e instanceof Error ? e.message : 'Action failed', 'err')
     } finally {
       setBusy(false)
     }
@@ -346,9 +378,10 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
         body: JSON.stringify({ body: comment }),
       })
       setComment('')
+      showToast('Comment added')
       await preserveScroll(() => load())
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'Failed')
+      showToast(e instanceof Error ? e.message : 'Failed', 'err')
     } finally {
       setBusy(false)
     }
@@ -358,7 +391,6 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
     const client = data?.client
     if (!client || !id) return
     setBusy(true)
-    setMsg(null)
     try {
       if (kind === 'call') {
         await api(`/api/admin/crm/clients-v2/${id}/comms`, {
@@ -376,9 +408,9 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
         })
         if (client.phone) {
           window.location.href = `tel:${String(client.phone).replace(/[^\d+]/g, '')}`
-          setMsg(`Calling ${client.name}…`)
+          showToast(`Calling ${client.name}…`)
         } else {
-          setMsg('No phone number on file — logged under Calls')
+          showToast('No phone number on file — logged under Calls', 'err')
         }
       } else if (kind === 'email') {
         await api(`/api/admin/crm/clients-v2/${id}/comms`, {
@@ -393,7 +425,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
           tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
         })
         window.location.href = `mailto:${encodeURIComponent(client.email)}?subject=${encodeURIComponent(`NitajFX — ${client.name}`)}`
-        setMsg(`Opening email to ${client.email}`)
+        showToast(`Opening email to ${client.email}`)
       } else {
         await api(`/api/admin/crm/clients-v2/${id}/comms`, {
           method: 'POST',
@@ -411,14 +443,14 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
         if (client.phone) {
           const digits = String(client.phone).replace(/\D/g, '')
           window.open(`https://wa.me/${digits}`, '_blank', 'noopener,noreferrer')
-          setMsg('Opening WhatsApp chat…')
+          showToast('Opening WhatsApp chat…')
         } else {
-          setMsg('No phone for WhatsApp — opened Chat log')
+          showToast('No phone for WhatsApp — opened Chat log', 'err')
         }
       }
       await preserveScroll(() => load())
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'Contact action failed')
+      showToast(e instanceof Error ? e.message : 'Contact action failed', 'err')
     } finally {
       setBusy(false)
     }
@@ -466,26 +498,75 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
   }
 
   function commitEdit() {
-    if (!editKey) return
-    void saveProfile({ [editKey]: editVal || null })
+    if (!editKey || busy) return
+    const value = editVal.trim()
+    if (editKey === 'name' && value.length < 2) {
+      showToast('Name must be at least 2 characters', 'err')
+      return
+    }
+    const nullable = new Set([
+      'phone',
+      'campaign',
+      'campaignId',
+      'campaignType',
+      'clientSource',
+      'address',
+      'mediaSource',
+      'adGroup',
+      'creative',
+      'keyword',
+      'landingPage',
+      'country',
+      'nationality',
+      'language',
+    ])
+    const payload: Record<string, unknown> = {
+      [editKey]: value === '' && nullable.has(editKey) ? null : value,
+    }
+    void saveProfile(payload)
   }
 
   const editableValue = (key: string, display: ReactNode) => {
     if (editKey === key) {
       return (
-        <span className="flex items-center gap-1">
+        <span className="flex w-full min-w-0 items-center gap-1.5">
           <input
             autoFocus
-            className="h-6 w-full min-w-0 rounded border border-accent bg-[#12151a] px-1 text-[12px] outline-none"
+            className="h-7 min-w-0 flex-1 rounded border border-accent bg-[#12151a] px-1.5 text-[12px] outline-none"
             value={editVal}
+            disabled={busy}
             onChange={(e) => setEditVal(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') commitEdit()
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                commitEdit()
+              }
               if (e.key === 'Escape') setEditKey(null)
             }}
           />
-          <button type="button" className="text-[10px] font-semibold text-accent" onClick={commitEdit}>
+          <button
+            type="button"
+            disabled={busy}
+            className="h-7 shrink-0 rounded bg-accent px-2 text-[11px] font-bold text-[#202630] hover:bg-[#ceaf30] disabled:opacity-50"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              commitEdit()
+            }}
+          >
             OK
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            className="h-7 shrink-0 rounded border border-border px-2 text-[11px] text-secondary hover:text-text disabled:opacity-50"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setEditKey(null)
+            }}
+          >
+            Cancel
           </button>
         </span>
       )
@@ -507,6 +588,16 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
               {c.online ? (
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-buy">
                   <span className="h-1.5 w-1.5 rounded-full bg-buy" /> Online
+                </span>
+              ) : null}
+              {c.tradingRestricted ? (
+                <span className="rounded bg-sell/15 px-2 py-0.5 text-[10px] font-semibold text-sell">
+                  Trading restricted
+                </span>
+              ) : null}
+              {c.active === false ? (
+                <span className="rounded bg-sell/15 px-2 py-0.5 text-[10px] font-semibold text-sell">
+                  Account disabled
                 </span>
               ) : null}
             </div>
@@ -638,7 +729,20 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
         </div>
       </div>
 
-      {msg && <p className="text-xs font-medium text-accent">{msg}</p>}
+      {toast ? (
+        <div className="pointer-events-none fixed inset-x-0 top-4 z-[80] flex justify-center px-4 sm:top-6">
+          <div
+            className={`pointer-events-auto max-w-md rounded-xl border px-4 py-3 text-sm font-medium shadow-2xl ${
+              toast.tone === 'err'
+                ? 'border-sell/40 bg-[#1a1214] text-sell'
+                : 'border-accent/40 bg-[#1a1810] text-accent'
+            }`}
+            role="status"
+          >
+            {toast.text}
+          </div>
+        </div>
+      ) : null}
 
       <div className="grid gap-3 xl:grid-cols-[1fr_220px]">
         <div className="min-w-0 space-y-3">
@@ -680,12 +784,14 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                     label="First Name"
                     value={editableValue('name', first)}
                     editable
+                    editing={editKey === 'name'}
                     onEdit={() => startEdit('name', c.name)}
                   />
                   <InfoRow
                     label="Mobile"
                     value={editableValue('phone', c.phone || '—')}
                     editable
+                    editing={editKey === 'phone'}
                     onEdit={() => startEdit('phone', c.phone || '')}
                   />
                   <InfoRow label="Date of Birth" value={c.dateOfBirth ? fmt(c.dateOfBirth) : '—'} />
@@ -697,6 +803,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                     label="Campaign Name"
                     value={editableValue('campaign', c.campaign || '—')}
                     editable
+                    editing={editKey === 'campaign'}
                     onEdit={() => startEdit('campaign', c.campaign || '')}
                   />
                   <InfoRow label="Campaign ID" value={c.campaignId || '—'} />
@@ -711,6 +818,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                     label="Citizenship"
                     value={editableValue('nationality', c.nationality || '—')}
                     editable
+                    editing={editKey === 'nationality'}
                     onEdit={() => startEdit('nationality', c.nationality || '')}
                   />
                   <InfoRow label="Customer ID" value={c.id?.slice(0, 10)} />
@@ -740,6 +848,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                     label="UI Language"
                     value={editableValue('language', c.language || '—')}
                     editable
+                    editing={editKey === 'language'}
                     onEdit={() => startEdit('language', c.language || '')}
                   />
                   <InfoRow label="Total Deposit" value={money(c.deposits)} />
@@ -758,12 +867,14 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                     label="Phone"
                     value={editableValue('phone', c.phone || '—')}
                     editable
+                    editing={editKey === 'phone'}
                     onEdit={() => startEdit('phone', c.phone || '')}
                   />
                   <InfoRow
                     label="Country"
                     value={editableValue('country', c.country || '—')}
                     editable
+                    editing={editKey === 'country'}
                     onEdit={() => startEdit('country', c.country || '')}
                   />
                   <InfoRow label="Base Currency" value={c.accounts?.[0]?.currency || 'USD'} />
@@ -773,6 +884,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                     label="Client Source"
                     value={editableValue('clientSource', c.clientSource || '—')}
                     editable
+                    editing={editKey === 'clientSource'}
                     onEdit={() => startEdit('clientSource', c.clientSource || '')}
                   />
                   <InfoRow label="Landing Page" value={c.landingPage || '—'} />
@@ -908,7 +1020,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                       onClick={() =>
                         void api<{ document: any }>(`/api/admin/crm/documents/${d.id}/file`)
                           .then((r) => setDocPreview(r.document))
-                          .catch((e) => setMsg(e instanceof Error ? e.message : 'Could not open file'))
+                          .catch((e) => showToast(e instanceof Error ? e.message : 'Could not open file', 'err'))
                       }
                     >
                       <Eye size={12} />
@@ -1179,11 +1291,26 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
 
         {/* CRM Actions — fixed bottom sheet on mobile, side panel on xl */}
         <aside className="fixed inset-x-0 bottom-0 z-30 max-h-[min(42vh,320px)] overflow-y-auto overscroll-contain border-t border-border bg-[#161a21]/97 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(0,0,0,0.45)] backdrop-blur-md xl:static xl:z-auto xl:max-h-none xl:overflow-visible xl:rounded-xl xl:border xl:border-border xl:bg-[#161a21] xl:p-2 xl:pb-2 xl:shadow-none xl:backdrop-blur-none xl:sticky xl:top-3 xl:h-fit">
-          <div className="mb-2 flex items-center justify-between px-1">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2 px-1">
             <div className="text-[11px] font-bold capitalize tracking-wide text-secondary xl:text-[10px]">
               CRM Actions
             </div>
-            <span className="text-[10px] text-secondary xl:hidden">Swipe for more</span>
+            <div className="flex flex-wrap gap-1">
+              {c.tradingRestricted ? (
+                <span className="rounded bg-sell/15 px-1.5 py-0.5 text-[10px] font-semibold text-sell">
+                  Trading restricted
+                </span>
+              ) : null}
+              {c.active === false ? (
+                <span className="rounded bg-sell/15 px-1.5 py-0.5 text-[10px] font-semibold text-sell">
+                  Account disabled
+                </span>
+              ) : (
+                <span className="rounded bg-buy/15 px-1.5 py-0.5 text-[10px] font-semibold text-buy">
+                  Account active
+                </span>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-1 xl:gap-1">
             <ActionBtn label="Client Deposit" onClick={() => setModal('deposit')} disabled={busy} />
@@ -1192,23 +1319,22 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
               label="Send Instant Message"
               onClick={() => {
                 goTab('chat')
-                setMsg('Use Chat Logs tab to log IM / WhatsApp')
+                showToast('Use Chat Logs tab to log IM / WhatsApp')
               }}
             />
             <ActionBtn label="Manage Password" onClick={() => setModal('password')} disabled={busy} />
             <ActionBtn
-              label="Restrict Trading"
-              onClick={() => void runAction('restrict_trading')}
+              label={c.tradingRestricted ? 'Unrestrict Trading' : 'Restrict Trading'}
+              onClick={() =>
+                void runAction(c.tradingRestricted ? 'unrestrict_trading' : 'restrict_trading')
+              }
               disabled={busy}
             />
             <ActionBtn
-              label="Disable Account"
-              onClick={() => void runAction('disable_account')}
-              disabled={busy}
-            />
-            <ActionBtn
-              label="Enable Account"
-              onClick={() => void runAction('enable_account')}
+              label={c.active === false ? 'Enable Account' : 'Disable Account'}
+              onClick={() =>
+                void runAction(c.active === false ? 'enable_account' : 'disable_account')
+              }
               disabled={busy}
             />
             <ActionBtn label="Change Email" onClick={() => setModal('email')} disabled={busy} />

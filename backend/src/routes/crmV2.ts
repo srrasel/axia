@@ -408,9 +408,9 @@ crmV2Router.patch('/clients-v2/:id', async (req, res) => {
   const schema = z.object({
     name: z.string().min(2).optional(),
     phone: z.string().nullable().optional(),
-    country: z.string().optional(),
-    nationality: z.string().optional(),
-    language: z.string().optional(),
+    country: z.string().nullable().optional(),
+    nationality: z.string().nullable().optional(),
+    language: z.string().nullable().optional(),
     address: z.string().nullable().optional(),
     dateOfBirth: z.string().nullable().optional(),
     crmCategory: z.enum(['BAD', 'CONVERSION', 'FTD', 'NEW', 'ONLINE', 'ONLINE_FTD', 'POTENTIAL', 'PRACTICE', 'RETENTION', 'TEST']).optional(),
