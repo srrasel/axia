@@ -4,7 +4,7 @@ import { DollarSign } from 'lucide-react'
 import { api } from './api'
 import { AuthProvider, useAuth } from './auth'
 import { LoginPage, ForgotPasswordPage } from './auth-pages'
-import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination, canAccessPath, isCrmStaffRole, ToastPopup, useToast, actionBtnPrimary, actionBtnSuccess, actionBtnDanger, actionBtnNeutral, actionTdClass, nameLinkClass, nameCellClass } from './layout'
+import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination, canAccessPath, isCrmStaffRole, ToastPopup, useToast, actionBtnPrimary, actionBtnSuccess, actionBtnDanger, actionBtnNeutral, actionTdClass, nameLinkClass, nameCellClass, StatusBadge } from './layout'
 import { setActiveCurrency } from './currency'
 import { Dashboard } from './dashboard'
 import { CrmPricesPage, CrmStaffPage } from './crm'
@@ -386,7 +386,7 @@ function UserDetail() {
         <div className="overflow-auto">
           <table className="w-full text-sm">
             <thead className="bg-muted text-[14px] text-secondary"><tr><th className="pl-[15px] pr-3 py-2 text-left">Number</th><th className="pl-[15px] pr-3 py-2 text-left">Type</th><th className="pl-[15px] pr-3 py-2 text-left">Balance</th><th className="pl-[15px] pr-3 py-2 text-left">Equity</th></tr></thead>
-            <tbody>{accountsPager.pageItems.map((a: any) => <tr key={a.id} className="border-t border-border"><td className="pl-[15px] pr-3 py-2">{a.number}</td><td className="pl-[15px] pr-3 py-2">{a.type}</td><td className="pl-[15px] pr-3 py-2">{money(a.balance)}</td><td className="pl-[15px] pr-3 py-2">{money(a.equity)}</td></tr>)}</tbody>
+            <tbody>{accountsPager.pageItems.map((a: any) => <tr key={a.id} className="border-t border-border"><td className="pl-[15px] pr-3 py-2 tabular-nums">{a.number}</td><td className="pl-[15px] pr-3 py-2"><StatusBadge status={a.type === 'live' ? 'Live' : 'Demo'} /></td><td className="pl-[15px] pr-3 py-2 font-semibold tabular-nums text-[#22a06b]">{money(a.balance)}</td><td className="pl-[15px] pr-3 py-2 tabular-nums">{money(a.equity)}</td></tr>)}</tbody>
           </table>
         </div>
         <TablePagination page={accountsPager.page} totalPages={accountsPager.totalPages} total={accountsPager.total} from={accountsPager.from} to={accountsPager.to} onPageChange={accountsPager.setPage} />
@@ -415,10 +415,36 @@ function AccountsPage() {
       <div className="overflow-hidden rounded-xl border border-border bg-panel">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-[14px] text-secondary"><tr><th className="pl-[15px] pr-3 py-2">User</th><th className="pl-[15px] pr-3 py-2">Number</th><th className="pl-[15px] pr-3 py-2">Type</th><th className="pl-[15px] pr-3 py-2">Balance</th><th className="pl-[15px] pr-3 py-2">Leverage</th></tr></thead>
+            <thead className="bg-muted text-[14px] text-secondary">
+              <tr>
+                <th className="pl-[15px] pr-3 py-2">User</th>
+                <th className="pl-[15px] pr-3 py-2">Number</th>
+                <th className="pl-[15px] pr-3 py-2">Type</th>
+                <th className="pl-[15px] pr-3 py-2">Balance</th>
+                <th className="pl-[15px] pr-3 py-2">Leverage</th>
+              </tr>
+            </thead>
             <tbody>
-              {pager.pageItems.map((a) => <tr key={a.id} className="border-t border-border"><td className={`pl-[15px] pr-3 py-2 ${nameCellClass}`}>{a.user.name}</td><td className="pl-[15px] pr-3 py-2">{a.number}</td><td className="pl-[15px] pr-3 py-2">{a.type}</td><td className="pl-[15px] pr-3 py-2">{money(a.balance)}</td><td className="pl-[15px] pr-3 py-2">{a.leverage}</td></tr>)}
-              {pager.total === 0 ? <tr><td colSpan={5} className="pl-[15px] pr-3 py-8 text-center text-secondary">No accounts</td></tr> : null}
+              {pager.pageItems.map((a) => (
+                <tr key={a.id} className="border-t border-border">
+                  <td className={`pl-[15px] pr-3 py-2 ${nameCellClass}`}>{a.user?.name || '—'}</td>
+                  <td className="pl-[15px] pr-3 py-2 tabular-nums">{a.number}</td>
+                  <td className="pl-[15px] pr-3 py-2">
+                    <StatusBadge status={a.type === 'live' ? 'Live' : 'Demo'} />
+                  </td>
+                  <td className="pl-[15px] pr-3 py-2 font-semibold tabular-nums text-[#22a06b]">
+                    {money(a.balance)}
+                  </td>
+                  <td className="pl-[15px] pr-3 py-2 tabular-nums">1:{a.leverage}</td>
+                </tr>
+              ))}
+              {pager.total === 0 ? (
+                <tr>
+                  <td colSpan={5} className="pl-[15px] pr-3 py-8 text-center text-secondary">
+                    No accounts
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>

@@ -151,6 +151,7 @@ export function SettingsPage() {
   const [convertOnSave, setConvertOnSave] = useState(true)
   const [saving, setSaving] = useState(false)
   const [testingNow, setTestingNow] = useState(false)
+  const [fxRefreshing, setFxRefreshing] = useState(false)
   const { toast, showToast } = useToast(2000)
   const [error, setError] = useState<string | null>(null)
   const [originalCurrency, setOriginalCurrency] = useState('EUR')
@@ -231,7 +232,27 @@ export function SettingsPage() {
     }
   }
 
-  if (error) {
+  const refreshFx = async () => {
+    setFxRefreshing(true)
+    setError(null)
+    try {
+      const r = await api<{
+        source?: string
+        date?: string
+        matrix?: Record<string, Record<string, number>>
+      }>('/api/admin/fx?force=1')
+      setFx(r)
+      showToast(`FX Rates Refreshed${r.date ? ` · ${r.date}` : ''}`)
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'FX Refresh Failed'
+      setError(message)
+      showToast(message, 'err')
+    } finally {
+      setFxRefreshing(false)
+    }
+  }
+
+  if (error && !defs.length) {
     return (
       <div className="rounded-2xl border border-sell/30 bg-sell/10 px-4 py-3 text-sm text-sell">{error}</div>
     )
@@ -282,11 +303,12 @@ export function SettingsPage() {
           action={
             <button
               type="button"
-              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border px-3 text-xs font-semibold text-secondary transition-colors hover:bg-muted hover:text-text"
-              onClick={() => void api('/api/admin/fx').then(setFx)}
+              disabled={fxRefreshing}
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border px-3 text-xs font-semibold text-secondary transition-colors hover:bg-muted hover:text-text disabled:opacity-60"
+              onClick={() => void refreshFx()}
             >
-              <RefreshCw size={13} />
-              Refresh
+              <RefreshCw size={13} className={fxRefreshing ? 'animate-spin' : undefined} />
+              {fxRefreshing ? 'Refreshing…' : 'Refresh'}
             </button>
           }
         >

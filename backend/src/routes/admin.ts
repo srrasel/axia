@@ -770,8 +770,9 @@ adminRouter.post('/payments/nowpayments/test', async (req, res) => {
   return res.status(result.ok ? 200 : 400).json(result)
 })
 
-adminRouter.get('/fx', adminRequired, async (_req, res) => {
-  return res.json(await fxMatrix())
+adminRouter.get('/fx', adminRequired, async (req, res) => {
+  const force = req.query.force === '1' || req.query.refresh === '1'
+  return res.json(await fxMatrix(force))
 })
 
 adminRouter.post('/fx/convert', async (req, res) => {

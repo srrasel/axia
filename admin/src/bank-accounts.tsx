@@ -148,7 +148,7 @@ export function BankAccountsPage() {
                           onChange={(e) => setForm({ ...form, accountName: e.target.value })}
                         />
                       </label>
-                      <label className="block text-sm md:col-span-2">
+                      <label className="block text-sm">
                         IBAN / Account Number
                         <input
                           className="mt-1 h-10 w-full rounded-md border border-border px-3 font-mono"

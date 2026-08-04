@@ -426,17 +426,19 @@ export function PageHeader({ title, children, subtitle }: { title: string; subti
 export function StatusBadge({ status }: { status: string }) {
   const s = status.toLowerCase()
   const tone =
-    s === 'completed' || s === 'online' || s === 'approved' || s === 'active' || s === 'yes'
+    s === 'completed' || s === 'online' || s === 'approved' || s === 'active' || s === 'yes' || s === 'live'
       ? 'bg-buy/15 text-buy border-buy/25'
-      : s === 'pending'
-        ? 'bg-accent/15 text-accent border-accent/25'
-        : s === 'rejected' || s === 'forced' || s === 'offline'
-          ? 'bg-sell/15 text-sell border-sell/25'
-          : 'bg-muted text-secondary border-border'
+      : s === 'demo'
+        ? 'bg-sell/15 text-sell border-sell/25'
+        : s === 'pending'
+          ? 'bg-accent/15 text-accent border-accent/25'
+          : s === 'rejected' || s === 'forced' || s === 'offline'
+            ? 'bg-sell/15 text-sell border-sell/25'
+            : 'bg-muted text-secondary border-border'
   return (
     <span
       className={clsx(
-        'inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold capitalize tracking-wide',
+        'inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-semibold capitalize tracking-wide',
         tone,
       )}
     >
@@ -449,6 +451,24 @@ export const btnPrimary =
   'h-10 shrink-0 rounded-xl bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]'
 export const inputClass =
   'h-10 w-full min-w-0 rounded-xl border border-border bg-panel px-3 text-sm text-text outline-none transition-colors placeholder:text-secondary hover:border-[#fcd535]/70 focus:border-[#fcd535]'
+
+/** Select matching inputClass, with custom chevron inset from the right */
+export const selectClass =
+  'h-10 w-full min-w-0 cursor-pointer appearance-none rounded-xl border border-border bg-panel py-0 pl-3 pr-10 text-sm text-text outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]'
+export const selectChevronStyle = {
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa3b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'right 16px center',
+  backgroundSize: '14px 14px',
+} as const
+
+export function formatRoleLabel(role?: string | null) {
+  if (!role) return ''
+  return role
+    .replaceAll('_', ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
 
 /** Shared table / toolbar action buttons */
 export const actionBtnBase =

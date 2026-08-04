@@ -9,6 +9,9 @@ import {
   StatusBadge,
   btnPrimary,
   inputClass,
+  selectClass,
+  selectChevronStyle,
+  formatRoleLabel,
   usePagination,
   TablePagination,
   ToastPopup,
@@ -1437,7 +1440,7 @@ export function CrmStaffPage() {
       <PageHeader title="CRM Users" subtitle="Managers and employees who log into the admin / CRM desk.">
         {isAdmin ? (
           <button type="button" className={btnPrimary} onClick={() => setShowCreate((v) => !v)}>
-            {showCreate ? 'Cancel' : 'Create CRM user'}
+            {showCreate ? 'Cancel' : 'Create CRM User'}
           </button>
         ) : null}
       </PageHeader>
@@ -1479,7 +1482,8 @@ export function CrmStaffPage() {
             minLength={6}
           />
           <select
-            className={inputClass}
+            className={`${selectClass} capitalize`}
+            style={selectChevronStyle}
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value })}
           >
@@ -1495,7 +1499,7 @@ export function CrmStaffPage() {
               'EMPLOYEE',
             ].map((r) => (
               <option key={r} value={r}>
-                {r.replaceAll('_', ' ')}
+                {formatRoleLabel(r)}
               </option>
             ))}
           </select>
@@ -1528,7 +1532,11 @@ export function CrmStaffPage() {
                     <td className="pl-[15px] pr-3 py-2.5">
                       {canEdit ? (
                         <select
-                          className="h-9 rounded-lg border border-border bg-panel px-2 text-sm"
+                          className="h-9 w-full min-w-[140px] cursor-pointer appearance-none rounded-lg border border-border bg-panel py-0 pl-2.5 pr-9 text-sm capitalize outline-none hover:border-[#fcd535]/70 focus:border-[#fcd535]"
+                          style={{
+                            ...selectChevronStyle,
+                            backgroundPosition: 'right 12px center',
+                          }}
                           value={s.role}
                           disabled={busy === s.id}
                           onChange={(e) => void patchStaff(s.id, { role: e.target.value })}
@@ -1545,7 +1553,7 @@ export function CrmStaffPage() {
                             'EMPLOYEE',
                           ].map((r) => (
                             <option key={r} value={r}>
-                              {r.replaceAll('_', ' ')}
+                              {formatRoleLabel(r)}
                             </option>
                           ))}
                         </select>

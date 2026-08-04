@@ -232,8 +232,8 @@ export async function convertPlatformCurrency(fromRaw: string, toRaw: string): P
 }
 
 /** Pretty matrix for admin UI */
-export async function fxMatrix() {
-  const fx = await fetchFxRates()
+export async function fxMatrix(force = false) {
+  const fx = await fetchFxRates(force)
   const codes = ['USD', 'EUR', 'GBP'] as const
   const matrix: Record<string, Record<string, number>> = {}
   for (const from of codes) {
