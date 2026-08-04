@@ -100,7 +100,7 @@ export function CrmRolesPage() {
 
       <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
         <table className="w-full min-w-[700px] text-left text-sm">
-          <thead className="border-b border-border text-[10px] capitalize text-secondary">
+          <thead className="border-b border-border text-[14px] capitalize text-secondary">
             <tr>
               <th className="px-3 py-2">Name</th>
               <th className="px-3 py-2">Email</th>
