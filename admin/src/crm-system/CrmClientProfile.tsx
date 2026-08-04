@@ -12,7 +12,7 @@ import {
   X,
 } from 'lucide-react'
 import { api } from '../api'
-import { btnPrimary, inputClass, money } from '../layout'
+import { btnPrimary, inputClass, money, TablePagination, usePagination } from '../layout'
 import type { AdminUser } from '../auth'
 
 type TimelineItem = { at: string; type: string; title: string; detail?: string }
@@ -475,6 +475,14 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
     }
     return days
   }, [data?.timeline])
+
+  const timelineRows = useMemo(() => data?.timeline ?? [], [data?.timeline])
+  const activityRows = useMemo(
+    () => (data?.client?.crmActivities as any[]) ?? [],
+    [data?.client?.crmActivities],
+  )
+  const timelinePager = usePagination(timelineRows)
+  const activityPager = usePagination(activityRows)
 
   if (error) {
     return (
@@ -1147,33 +1155,98 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
             </div>
           ) : null}
 
-          {(tab === 'activities' || tab === 'activity') && (
-            <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
-              <table className="w-full min-w-[720px] text-left text-[12px]">
-                <thead className="border-b border-border text-[10px] capitalize text-secondary">
-                  <tr>
-                    <th className="px-3 py-2">Employee</th>
-                    <th className="px-3 py-2">Action</th>
-                    <th className="px-3 py-2">IP</th>
-                    <th className="px-3 py-2">Device</th>
-                    <th className="px-3 py-2">Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(c.crmActivities || []).map((a: any) => (
-                    <tr key={a.id} className="border-b border-border/50">
-                      <td className="px-3 py-2">{a.staff?.name || '—'}</td>
-                      <td className="px-3 py-2">
-                        {a.action}
-                        {a.detail ? <span className="block text-[10px] text-secondary">{a.detail}</span> : null}
-                      </td>
-                      <td className="px-3 py-2 text-secondary">{a.ip || '—'}</td>
-                      <td className="max-w-[200px] truncate px-3 py-2 text-secondary">{a.device || '—'}</td>
-                      <td className="px-3 py-2 text-secondary">{fmt(a.createdAt)}</td>
+          {tab === 'activities' && (
+            <div className="overflow-hidden rounded-xl border border-border bg-[#161a21]">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-left text-[12px]">
+                  <thead className="border-b border-border text-[10px] capitalize text-secondary">
+                    <tr>
+                      <th className="px-3 py-2">Type</th>
+                      <th className="px-3 py-2">Event</th>
+                      <th className="px-3 py-2">Detail</th>
+                      <th className="px-3 py-2">Time</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {timelinePager.pageItems.map((t, i) => (
+                      <tr key={`${t.at}-${t.type}-${i}`} className="border-b border-border/50">
+                        <td className="px-3 py-2 capitalize text-secondary">{t.type}</td>
+                        <td className="px-3 py-2">{t.title}</td>
+                        <td className="max-w-[280px] truncate px-3 py-2 text-secondary">
+                          {t.detail || '—'}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2 text-secondary">{fmt(t.at)}</td>
+                      </tr>
+                    ))}
+                    {timelinePager.total === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="px-3 py-8 text-center text-sm text-secondary">
+                          No timeline activity yet
+                        </td>
+                      </tr>
+                    ) : null}
+                  </tbody>
+                </table>
+              </div>
+              <TablePagination
+                page={timelinePager.page}
+                totalPages={timelinePager.totalPages}
+                total={timelinePager.total}
+                from={timelinePager.from}
+                to={timelinePager.to}
+                onPageChange={timelinePager.setPage}
+              />
+            </div>
+          )}
+
+          {tab === 'activity' && (
+            <div className="overflow-hidden rounded-xl border border-border bg-[#161a21]">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-left text-[12px]">
+                  <thead className="border-b border-border text-[10px] capitalize text-secondary">
+                    <tr>
+                      <th className="px-3 py-2">Employee</th>
+                      <th className="px-3 py-2">Action</th>
+                      <th className="px-3 py-2">IP</th>
+                      <th className="px-3 py-2">Device</th>
+                      <th className="px-3 py-2">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activityPager.pageItems.map((a: any) => (
+                      <tr key={a.id} className="border-b border-border/50">
+                        <td className="px-3 py-2">{a.staff?.name || '—'}</td>
+                        <td className="px-3 py-2">
+                          {a.action}
+                          {a.detail ? (
+                            <span className="block text-[10px] text-secondary">{a.detail}</span>
+                          ) : null}
+                        </td>
+                        <td className="px-3 py-2 text-secondary">{a.ip || '—'}</td>
+                        <td className="max-w-[200px] truncate px-3 py-2 text-secondary">
+                          {a.device || '—'}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2 text-secondary">{fmt(a.createdAt)}</td>
+                      </tr>
+                    ))}
+                    {activityPager.total === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-3 py-8 text-center text-sm text-secondary">
+                          No activity history yet
+                        </td>
+                      </tr>
+                    ) : null}
+                  </tbody>
+                </table>
+              </div>
+              <TablePagination
+                page={activityPager.page}
+                totalPages={activityPager.totalPages}
+                total={activityPager.total}
+                from={activityPager.from}
+                to={activityPager.to}
+                onPageChange={activityPager.setPage}
+              />
             </div>
           )}
 

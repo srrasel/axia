@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
+  Calendar,
   Copy,
   Download,
   Eye,
@@ -149,7 +150,7 @@ function exportCsv(rows: ClientRow[]) {
 const colFilterClass =
   'h-9 w-full min-w-[150px] rounded-lg border border-border bg-[#12151a] px-2.5 text-sm outline-none hover:border-accent/50 focus:border-accent'
 const colDateClass =
-  'h-9 w-full min-w-[150px] rounded-lg border border-border bg-[#12151a] px-2 text-sm text-text outline-none placeholder:text-secondary hover:border-accent/50 focus:border-accent [color-scheme:dark]'
+  'h-9 w-full min-w-[150px] rounded-lg border border-border bg-[#12151a] px-2.5 pr-9 text-sm text-text outline-none hover:border-accent/50 focus:border-accent [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0'
 const colSelectClass =
   'h-9 w-full min-w-[150px] cursor-pointer appearance-none rounded-lg border border-border px-2.5 pr-9 text-sm outline-none transition-colors hover:border-[#fcd535] focus:border-[#fcd535]'
 const colSelectStyleBase = {
@@ -162,7 +163,7 @@ const thClass = 'align-bottom px-3 py-3 text-left'
 const thLabelClass = 'mb-1.5 block whitespace-nowrap text-[14px] font-semibold capitalize tracking-wide text-secondary'
 const tdClass = 'align-middle px-3 py-3.5'
 
-/** Native date inputs ignore placeholder — show text until focused or filled. */
+/** Date filter with placeholder + calendar icon; one click opens the picker. */
 function DateFilterInput({
   value,
   onChange,
@@ -174,20 +175,50 @@ function DateFilterInput({
   placeholder: string
   title?: string
 }) {
-  const [focused, setFocused] = useState(false)
-  const showDate = focused || Boolean(value)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const openPicker = () => {
+    const el = inputRef.current
+    if (!el) return
+    try {
+      el.showPicker()
+    } catch {
+      el.focus()
+      el.click()
+    }
+  }
 
   return (
-    <input
-      type={showDate ? 'date' : 'text'}
-      className={colDateClass}
-      value={value}
-      placeholder={placeholder}
-      title={title || placeholder}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      onChange={(e) => onChange(e.target.value)}
-    />
+    <div className="relative min-w-[150px]">
+      <input
+        ref={inputRef}
+        type="date"
+        className={`${colDateClass} ${value ? '' : 'text-transparent'}`}
+        value={value}
+        title={title || placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        onClick={openPicker}
+      />
+      {!value ? (
+        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-secondary">
+          {placeholder}
+        </span>
+      ) : null}
+      <button
+        type="button"
+        tabIndex={-1}
+        className="absolute right-2 top-1/2 z-10 -translate-y-1/2 text-secondary hover:text-accent"
+        title={title || placeholder}
+        aria-label="Open calendar"
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          openPicker()
+        }}
+      >
+        <Calendar className="h-4 w-4" />
+      </button>
+    </div>
   )
 }
 

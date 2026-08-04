@@ -237,10 +237,7 @@ export function CrmNotificationsPage() {
             {pager.pageItems.map((n) => (
               <div
                 key={n.id}
-                className={clsx(
-                  'border-b border-border/60 py-3 last:border-b-0',
-                  !n.read && 'rounded-lg bg-accent/10 px-3',
-                )}
+                className="border-b border-border/60 py-3 last:border-b-0"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
