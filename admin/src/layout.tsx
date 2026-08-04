@@ -127,6 +127,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const admin = isAdminRole(user?.role)
+  const homePath = admin ? '/' : '/crm'
   const visibleGroups = navGroups
     .map((group) => ({
       ...group,
@@ -140,13 +141,19 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <>
-      <div className="relative flex items-center gap-2.5 border-b border-border px-5 py-5">
+      <NavLink
+        to={homePath}
+        end
+        onClick={onNavigate}
+        className="relative flex items-center gap-2.5 border-b border-border px-5 py-5 transition-colors hover:bg-muted/60"
+        title="Go to dashboard"
+      >
         <BrandLogo variant="dark" className="h-8" />
         <div>
           <div className="text-[11px] font-semibold capitalize tracking-[0.14em] text-accent">Admin</div>
           <div className="text-xs text-secondary">Control Center</div>
         </div>
-      </div>
+      </NavLink>
       <div className="relative px-5 py-3 text-[16px] capitalize tracking-wide text-white">
         {user?.role?.replaceAll('_', ' ').toLowerCase()} - <CurrencyBadge />
       </div>
@@ -213,6 +220,8 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AdminLayout() {
   const [open, setOpen] = useState(false)
+  const { user } = useAuth()
+  const homePath = isAdminRole(user?.role) ? '/' : '/crm'
 
   useEffect(() => {
     if (!open) return
@@ -237,39 +246,57 @@ export function AdminLayout() {
           <SidebarNav />
         </aside>
 
-        {open ? (
-          <div className="fixed inset-0 z-50 md:hidden">
+        <div
+          className={clsx(
+            'fixed inset-0 z-50 transition-[visibility] duration-300 md:hidden',
+            open ? 'visible pointer-events-auto' : 'invisible pointer-events-none',
+          )}
+        >
+          <button
+            type="button"
+            className={clsx(
+              'absolute inset-0 bg-black/60 transition-opacity duration-300',
+              open ? 'opacity-100' : 'opacity-0',
+            )}
+            aria-label="Close menu"
+            onClick={() => setOpen(false)}
+          />
+          <aside
+            className={clsx(
+              'absolute right-0 top-0 flex h-full w-[min(280px,86vw)] flex-col border-l border-border bg-panel text-text shadow-2xl transition-transform duration-300 ease-out',
+              open ? 'translate-x-0' : 'translate-x-full',
+            )}
+          >
+            <div
+              className="pointer-events-none absolute inset-0 opacity-50"
+              style={{
+                background:
+                  'radial-gradient(500px 220px at 100% 0%, rgba(252,213,53,0.08), transparent 60%)',
+              }}
+            />
             <button
               type="button"
-              className="absolute inset-0 bg-black/60"
-              aria-label="Close menu"
+              className="absolute right-3 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-panel text-secondary hover:text-text"
               onClick={() => setOpen(false)}
-            />
-            <aside className="absolute right-0 top-0 flex h-full w-[min(280px,86vw)] animate-[slideInRight_0.22s_ease-out] flex-col border-l border-border bg-panel text-text shadow-2xl">
-              <div
-                className="pointer-events-none absolute inset-0 opacity-50"
-                style={{
-                  background:
-                    'radial-gradient(500px 220px at 100% 0%, rgba(252,213,53,0.08), transparent 60%)',
-                }}
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-panel text-secondary hover:text-text"
-                onClick={() => setOpen(false)}
-                aria-label="Close"
-              >
-                <X size={18} />
-              </button>
-              <SidebarNav onNavigate={() => setOpen(false)} />
-            </aside>
-          </div>
-        ) : null}
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
+            <SidebarNav onNavigate={() => setOpen(false)} />
+          </aside>
+        </div>
 
         <div className="flex min-w-0 flex-1 flex-col bg-surface">
           <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-panel/95 px-4 backdrop-blur md:hidden">
-            <BrandLogo variant="dark" className="h-7" />
-            <span className="text-xs font-semibold capitalize tracking-wide text-accent">Admin</span>
+            <NavLink
+              to={homePath}
+              end
+              className="inline-flex items-center gap-2"
+              title="Go to dashboard"
+            >
+              <BrandLogo variant="dark" className="h-7" />
+              <span className="text-xs font-semibold capitalize tracking-wide text-accent">Admin</span>
+            </NavLink>
             <button
               type="button"
               className="ml-auto flex h-10 w-10 items-center justify-center rounded-xl border border-border text-text hover:bg-muted"

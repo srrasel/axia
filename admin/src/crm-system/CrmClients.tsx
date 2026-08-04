@@ -229,7 +229,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
   const [bulkAssign, setBulkAssign] = useState('')
   const [busy, setBusy] = useState(false)
   const [page, setPage] = useState(1)
-  const pageSize = 25
+  const pageSize = 5
   const canCreate = CREATE_ROLES.has(me.role)
   const [showCreate, setShowCreate] = useState(false)
   const [showCreatePassword, setShowCreatePassword] = useState(false)
@@ -776,7 +776,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
               onClick={onClick}
               className={`flex h-10 w-10 items-center justify-center rounded-xl border bg-[#161a21] transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                 active
-                  ? 'border-accent/60 text-accent'
+                  ? 'border-accent/70 bg-accent/20 text-accent'
                   : 'border-border text-secondary hover:border-accent/50 hover:text-accent'
               }`}
             >
@@ -799,10 +799,11 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
       {error && <p className="text-base text-sell">{error}</p>}
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-[#161a21]">
-        <table className="w-full min-w-[1720px] table-fixed text-left text-sm sm:text-base">
+        <table className="w-full min-w-[1780px] table-fixed text-left text-sm sm:text-base">
           <colgroup>
             <col className="w-10" />
             <col className="w-[220px]" />
+            <col className="w-[74px]" />
             <col className="w-[170px]" />
             <col className="w-[170px]" />
             <col className="w-[170px]" />
@@ -836,6 +837,10 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                     setPage(1)
                   }}
                 />
+              </th>
+              <th className={`${thClass} text-center`}>
+                <span className={thLabelClass}>Edit</span>
+                <div className="h-9" />
               </th>
               <th className={thClass}>
                 <span className={thLabelClass}>Country</span>
@@ -875,7 +880,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <span className={thLabelClass}>First Deposit Date</span>
                 <DateFilterInput
                   value={col.firstDeposit}
-                  placeholder="Filter date..."
+                  placeholder="First Deposit Date"
                   title="First deposit on or after"
                   onChange={(value) => {
                     setCol((s) => ({ ...s, firstDeposit: value }))
@@ -887,7 +892,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <span className={thLabelClass}>Last Login Date</span>
                 <DateFilterInput
                   value={col.lastLogin}
-                  placeholder="Filter date..."
+                  placeholder="Last Login Date"
                   title="Last login on or after"
                   onChange={(value) => {
                     setCol((s) => ({ ...s, lastLogin: value }))
@@ -899,7 +904,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 <span className={thLabelClass}>Last Interaction</span>
                 <DateFilterInput
                   value={col.lastInteraction}
-                  placeholder="Filter date..."
+                  placeholder="Last Interaction"
                   title="Last interaction on or after"
                   onChange={(value) => {
                     setCol((s) => ({ ...s, lastInteraction: value }))
@@ -982,16 +987,9 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                   <div className="flex min-w-0 items-center gap-2">
                     <Link
                       to={`/crm/clients/${c.id}`}
-                      className="max-w-[calc(100%-4.5rem)] truncate text-[16px] font-bold capitalize text-[#22a06b] hover:text-[#1a8056]"
+                      className="max-w-[calc(100%-2.25rem)] truncate text-[16px] font-bold capitalize text-[#22a06b] hover:text-[#1a8056]"
                     >
                       {c.name}
-                    </Link>
-                    <Link
-                      to={`/crm/clients/${c.id}`}
-                      title="Edit"
-                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-buy/40 text-buy transition-colors hover:border-buy hover:text-buy"
-                    >
-                      <Pencil size={13} />
                     </Link>
                     <Link
                       to={`/crm/clients/${c.id}`}
@@ -1001,6 +999,15 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                       <Eye size={13} />
                     </Link>
                   </div>
+                </td>
+                <td className={`${tdClass} text-center`}>
+                  <Link
+                    to={`/crm/clients/${c.id}`}
+                    title="Edit"
+                    className="mx-auto inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-buy/40 text-buy transition-colors hover:border-buy hover:text-buy"
+                  >
+                    <Pencil size={13} />
+                  </Link>
                 </td>
                 <td className={`${tdClass} text-[14px] font-medium text-secondary`}>{c.country || '-'}</td>
                 <td className={tdClass}>
@@ -1078,7 +1085,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
             ))}
             {clients.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-3 py-12 text-center text-base text-secondary">
+                <td colSpan={11} className="px-3 py-12 text-center text-base text-secondary">
                   No clients found
                 </td>
               </tr>
