@@ -57,6 +57,26 @@ function toTitleCase(text?: string | null) {
     .replace(/\w\S*/g, (w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
 }
 
+const FINANCE_FIELD_LABELS: Record<string, string> = {
+  balance: 'Balance',
+  credit: 'Credit',
+  equity: 'Equity',
+  freeMargin: 'Free Margin',
+  openPnl: 'Open P&L',
+  closedPnl: 'Closed P&L',
+  deposits: 'Deposit',
+  withdrawals: 'Withdrawals',
+  netDeposit: 'Net Deposit',
+}
+
+function financeFieldLabel(field?: string | null) {
+  if (!field) return ''
+  return (
+    FINANCE_FIELD_LABELS[field] ||
+    toTitleCase(field.replace(/([a-z])([A-Z])/g, '$1 $2'))
+  )
+}
+
 function Kpi({
   label,
   value,
@@ -249,7 +269,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
   function showToast(text: string, tone: 'ok' | 'err' = 'ok') {
     if (toastTimer.current) clearTimeout(toastTimer.current)
     setToast({ text, tone })
-    toastTimer.current = setTimeout(() => setToast(null), 3200)
+    toastTimer.current = setTimeout(() => setToast(null), 2000)
   }
 
   useEffect(() => {
@@ -301,7 +321,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
       setModal(null)
       setFinanceField(null)
       setModalVal('')
-      showToast(`${field} updated`)
+      showToast(`${financeFieldLabel(field)} Updated`)
       await preserveScroll(() => load())
     } catch (e) {
       showToast(e instanceof Error ? e.message : 'Update failed', 'err')
@@ -1466,7 +1486,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                   : modal === 'email'
                     ? 'Change Email'
                     : modal === 'finance'
-                      ? `Edit ${toTitleCase(financeField)}`
+                      ? `Edit ${financeFieldLabel(financeField)}`
                       : 'Client Deposit note'}
             </h3>
             <input
