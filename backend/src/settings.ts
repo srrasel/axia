@@ -93,7 +93,7 @@ export const SETTING_DEFS: SettingMeta[] = [
   },
   {
     key: 'premium_threshold',
-    label: 'Premium deposit threshold',
+    label: 'Premium Deposit Threshold',
     description: 'Total deposits required to unlock Premium / Signals',
     type: 'number',
     group: 'Premium',

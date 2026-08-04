@@ -69,6 +69,16 @@ select:disabled,
 ::-webkit-scrollbar-thumb { background: #3a4250; border-radius: 999px; }
 ::-webkit-scrollbar-track { background: transparent; }
 
+@media (max-width: 767px) {
+  ::-webkit-scrollbar { width: 3px; height: 3px; }
+  ::-webkit-scrollbar-thumb { background: #3a4250; border-radius: 999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #3a4250 transparent;
+  }
+}
+
 input, select, textarea {
   color: inherit;
   background: var(--color-panel);

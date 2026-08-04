@@ -57,7 +57,7 @@ function SettingField({
     <div className="group relative overflow-hidden rounded-2xl border border-border/80 bg-muted/20 p-4 transition-colors hover:border-accent/25 hover:bg-muted/35">
       <div className="mb-1 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-sm font-semibold text-text">{def.label}</div>
+          <div className="text-sm font-semibold capitalize text-text">{def.label}</div>
           <p className="mt-1 text-xs leading-relaxed text-secondary">{def.description}</p>
         </div>
         <code className="shrink-0 rounded-md border border-border bg-panel px-1.5 py-0.5 text-[10px] text-secondary">

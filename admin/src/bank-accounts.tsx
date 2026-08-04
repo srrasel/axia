@@ -94,7 +94,7 @@ export function BankAccountsPage() {
               subtitle={
                 row.contactOnly
                   ? 'International — clients contact Finance (no fixed account)'
-                  : `Country code: ${row.countryCode}`
+                  : `Country Code: ${row.countryCode}`
               }
               action={
                 canEdit ? (
@@ -122,7 +122,7 @@ export function BankAccountsPage() {
                       className="h-9 rounded-md border border-border px-3 text-sm font-medium hover:bg-muted"
                       onClick={() => startEdit(row)}
                     >
-                      Edit account
+                      Edit Account
                     </button>
                   )
                 ) : null
@@ -133,7 +133,7 @@ export function BankAccountsPage() {
                   {!row.contactOnly ? (
                     <>
                       <label className="block text-sm">
-                        Bank name
+                        Bank Name
                         <input
                           className="mt-1 h-10 w-full rounded-md border border-border px-3"
                           value={form.bankName || ''}
@@ -141,7 +141,7 @@ export function BankAccountsPage() {
                         />
                       </label>
                       <label className="block text-sm">
-                        Account name
+                        Account Name
                         <input
                           className="mt-1 h-10 w-full rounded-md border border-border px-3"
                           value={form.accountName || ''}
@@ -149,7 +149,7 @@ export function BankAccountsPage() {
                         />
                       </label>
                       <label className="block text-sm md:col-span-2">
-                        IBAN / Account number
+                        IBAN / Account Number
                         <input
                           className="mt-1 h-10 w-full rounded-md border border-border px-3 font-mono"
                           value={form.iban || ''}
@@ -167,7 +167,7 @@ export function BankAccountsPage() {
                     </>
                   ) : null}
                   <label className="block text-sm md:col-span-2">
-                    Client instruction
+                    Client Instruction
                     <textarea
                       className="mt-1 min-h-[72px] w-full rounded-md border border-border px-3 py-2 text-sm"
                       value={form.referenceHint || ''}
@@ -180,7 +180,7 @@ export function BankAccountsPage() {
                       checked={form.active ?? true}
                       onChange={(e) => setForm({ ...form, active: e.target.checked })}
                     />
-                    Active (visible to clients)
+                    Active (Visible To Clients)
                   </label>
                 </div>
               ) : (

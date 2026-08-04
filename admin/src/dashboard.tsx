@@ -137,8 +137,8 @@ export function Dashboard() {
         title={crmOnly ? 'My dashboard' : 'Dashboard'}
         subtitle={
           crmOnly
-            ? `Your assigned clients · last 14 days · ${cur}`
-            : `${s.platformName || 'NitajFX'} · last 14 days · ${cur}`
+            ? `Your Assigned Clients · Last 14 Days · ${cur}`
+            : `${(s.platformName || 'Nitajfx').replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())} · Last 14 Days · ${cur}`
         }
       >
         <div className="flex flex-wrap items-center gap-2">
@@ -160,7 +160,7 @@ export function Dashboard() {
               to="/transactions"
               className="rounded-xl border border-border bg-panel px-3.5 py-2 text-sm font-medium text-text hover:bg-muted"
             >
-              Money ops
+              Money Ops
             </Link>
           ) : (
             <Link
@@ -401,10 +401,10 @@ export function Dashboard() {
         </Panel>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-          <Card title="Open trades" value={String(s.openTrades)} sub={`${s.pendingTrades || 0} pending · ${s.closedTrades || 0} closed`} icon={CandlestickChart} tone="info" />
-          <Card title="Pending KYC" value={String(s.pendingKyc)} sub={`${s.pendingDeposits ?? 0} dep · ${s.pendingWithdrawals ?? 0} wd`} icon={BadgeCheck} tone="warn" />
-          <Card title="Trading fees" value={money(s.tradingFees)} sub="From closed trades" icon={LineChart} tone="good" />
-          <Card title="Traded volume" value={`${Number(s.tradedVolume || 0).toFixed(2)} lots`} sub={`Client PnL ${money(s.clientRealizedPnl)}`} icon={Landmark} tone="neutral" />
+          <Card title="Open Trades" value={String(s.openTrades)} sub={`${s.pendingTrades || 0} Pending · ${s.closedTrades || 0} Closed`} icon={CandlestickChart} tone="info" />
+          <Card title="Pending KYC" value={String(s.pendingKyc)} sub={`${s.pendingDeposits ?? 0} Dep · ${s.pendingWithdrawals ?? 0} Wd`} icon={BadgeCheck} tone="warn" />
+          <Card title="Trading Fees" value={money(s.tradingFees)} sub="From Closed Trades" icon={LineChart} tone="good" />
+          <Card title="Traded Volume" value={`${Number(s.tradedVolume || 0).toFixed(2)} Lots`} sub={`Client PnL ${money(s.clientRealizedPnl)}`} icon={Landmark} tone="neutral" />
         </div>
       </div>
 
@@ -484,7 +484,7 @@ export function Dashboard() {
           <Link
             key={item.to}
             to={item.to}
-            className="rounded-xl border border-border bg-panel px-3.5 py-2 text-sm font-medium text-text transition-colors hover:border-accent/30 hover:bg-muted"
+            className="rounded-xl border border-border bg-panel px-3.5 py-2 text-sm font-medium capitalize text-text transition-colors hover:border-accent/30 hover:bg-muted"
           >
             {item.label}
           </Link>

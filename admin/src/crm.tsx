@@ -1194,7 +1194,7 @@ export function CrmPricesPage() {
 
   return (
     <div>
-      <PageHeader title="Market prices" />
+      <PageHeader title="Market Prices" />
       {!manager ? (
         <p className="mb-4 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-sm text-accent">
           View only — managers and admins can set forced prices.
@@ -1412,7 +1412,7 @@ export function CrmStaffPage() {
 
   return (
     <div>
-      <PageHeader title="CRM users" subtitle="Managers and employees who log into the admin / CRM desk.">
+      <PageHeader title="CRM Users" subtitle="Managers and employees who log into the admin / CRM desk.">
         {isAdmin ? (
           <button type="button" className={btnPrimary} onClick={() => setShowCreate((v) => !v)}>
             {showCreate ? 'Cancel' : 'Create CRM user'}

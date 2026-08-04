@@ -105,8 +105,8 @@ const navGroups: { title: string; items: NavItem[] }[] = [
       { to: '/crm/security', icon: Shield, label: 'Security', crmAllowed: true },
       { to: '/crm/roles', icon: UserCog, label: 'Roles', adminOnly: true },
       { to: '/crm/system', icon: SlidersHorizontal, label: 'CRM Settings', adminOnly: true },
-      { to: '/crm/prices', icon: Gauge, label: 'Market prices', adminOnly: true },
-      { to: '/crm/staff', icon: Users, label: 'CRM users', adminOnly: true },
+      { to: '/crm/prices', icon: Gauge, label: 'Market Prices', adminOnly: true },
+      { to: '/crm/staff', icon: Users, label: 'CRM Users', adminOnly: true },
     ],
   },
   {
@@ -115,8 +115,8 @@ const navGroups: { title: string; items: NavItem[] }[] = [
       { to: '/users', icon: Users, label: 'Users', adminOnly: true },
       { to: '/accounts', icon: Landmark, label: 'Accounts', adminOnly: true },
       { to: '/trades', icon: CandlestickChart, label: 'Trades', adminOnly: true },
-      { to: '/transactions', icon: ArrowLeftRight, label: 'Money ops', adminOnly: true },
-      { to: '/bank-accounts', icon: Building2, label: 'Bank accounts', adminOnly: true },
+      { to: '/transactions', icon: ArrowLeftRight, label: 'Money Ops', adminOnly: true },
+      { to: '/bank-accounts', icon: Building2, label: 'Bank Accounts', adminOnly: true },
       { to: '/kyc', icon: BadgeCheck, label: 'KYC', adminOnly: true },
       { to: '/settings', icon: Settings, label: 'Settings', adminOnly: true },
     ],
@@ -361,8 +361,8 @@ export function Card({
           accentMap[tone],
         )}
       />
-      <div className="flex items-start justify-between gap-3">
-        <div className="text-[11px] font-semibold capitalize tracking-[0.12em] text-secondary">{title}</div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-[14px] font-semibold capitalize tracking-[0.12em] text-secondary">{title}</div>
         {Icon ? (
           <span className={clsx('flex h-9 w-9 items-center justify-center rounded-xl', toneMap[tone])}>
             <Icon size={16} />
@@ -370,7 +370,7 @@ export function Card({
         ) : null}
       </div>
       <div className="mt-3 text-xl font-bold tracking-tight tabular-nums text-text sm:text-[1.65rem]">{value}</div>
-      {sub ? <div className="mt-1.5 text-xs text-secondary">{sub}</div> : null}
+      {sub ? <div className="mt-1.5 text-xs capitalize text-secondary">{sub}</div> : null}
     </div>
   )
 }
@@ -397,8 +397,8 @@ export function Panel({
     >
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-border/60 pb-4 sm:mb-5">
         <div>
-          <h2 className="text-base font-semibold tracking-tight text-text">{title}</h2>
-          {subtitle ? <p className="mt-0.5 text-xs text-secondary">{subtitle}</p> : null}
+          <h2 className="text-base font-semibold capitalize tracking-tight text-text">{title}</h2>
+          {subtitle ? <p className="mt-0.5 text-xs capitalize text-secondary">{subtitle}</p> : null}
         </div>
         {action}
       </div>

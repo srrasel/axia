@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
+import { DollarSign } from 'lucide-react'
 import { api } from './api'
 import { AuthProvider, useAuth } from './auth'
 import { LoginPage, ForgotPasswordPage } from './auth-pages'
@@ -92,15 +93,25 @@ function EarningsPage() {
       >
         <div className="flex items-center gap-2">
           <span className="rounded bg-muted px-2 py-1 text-xs font-semibold">{data.currency || 'USD'}</span>
-          <select className="h-10 rounded-xl border border-border bg-panel px-2 text-sm outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]" value={type} onChange={(e) => setType(e.target.value)}>
-          <option value="">All types</option>
-          <option value="trading_fee">Trading fee</option>
-          <option value="deposit_fee">Deposit fee</option>
-          <option value="withdraw_fee">Withdraw fee</option>
-          <option value="referral_commission">Referral</option>
-          <option value="spread">Spread</option>
-          <option value="other">Other</option>
-        </select>
+          <select
+            className="h-10 cursor-pointer appearance-none rounded-xl border border-border bg-panel py-0 pl-8 pr-3 text-sm outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa3b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'left 10px center',
+              backgroundSize: '14px 14px',
+            }}
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          >
+            <option value="">All Types</option>
+            <option value="trading_fee">Trading Fee</option>
+            <option value="deposit_fee">Deposit Fee</option>
+            <option value="withdraw_fee">Withdraw Fee</option>
+            <option value="referral_commission">Referral</option>
+            <option value="spread">Spread</option>
+            <option value="other">Other</option>
+          </select>
         </div>
       </PageHeader>
 
@@ -108,12 +119,12 @@ function EarningsPage() {
         <Card title="Total earnings" value={money(data.summary.totalEarnings)} />
         <Card title="Ledger entries" value={String(data.summary.entries)} />
         <Card title="Trading fees" value={money(data.summary.tradingFeesCollected)} />
-        <Card title="Client PnL" value={money(data.summary.clientRealizedPnl)} sub="Closed trades net" />
+        <Card title="Client PnL" value={money(data.summary.clientRealizedPnl)} sub="Closed Trades Net" />
       </div>
 
       <div className={`mb-5 grid gap-4 ${crmOnly || !data.feeSettings ? '' : 'lg:grid-cols-2'}`}>
         <div className="rounded-xl border border-border bg-panel p-4">
-          <h2 className="mb-3 font-semibold">By type</h2>
+          <h2 className="mb-3 font-semibold">By Type</h2>
           <div className="space-y-2">
             {data.byType.map((r: any) => (
               <div key={r.type} className="flex justify-between text-sm">
@@ -126,7 +137,7 @@ function EarningsPage() {
         </div>
         {!crmOnly && data.feeSettings ? (
         <div className="rounded-xl border border-border bg-panel p-4">
-          <h2 className="mb-3 font-semibold">Fee settings (live)</h2>
+          <h2 className="mb-3 font-semibold">Fee Settings (Live)</h2>
           <div className="space-y-2 text-sm">
             {Object.entries(data.feeSettings).map(([k, v]) => (
               <div key={k} className="flex justify-between">
@@ -150,14 +161,19 @@ function EarningsPage() {
           load()
         }}
       >
-        <div className="text-sm font-semibold w-full mb-1">Record manual earning</div>
-        <input
-          type="text"
-          inputMode="decimal"
-          className="h-10 w-28 rounded-xl border border-border bg-panel px-3 text-sm outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
-          value={manual.amount}
-          onChange={(e) => setManual({ ...manual, amount: Number(e.target.value) })}
-        />
+        <div className="mb-1 w-full text-sm font-semibold capitalize text-text">Record Manual Earning</div>
+        <div className="relative">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-secondary">
+            <DollarSign size={14} />
+          </span>
+          <input
+            type="text"
+            inputMode="decimal"
+            className="h-10 w-28 rounded-xl border border-border bg-panel pl-8 pr-3 text-sm outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
+            value={manual.amount}
+            onChange={(e) => setManual({ ...manual, amount: Number(e.target.value) })}
+          />
+        </div>
         <input
           className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-panel px-3 text-sm outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
           value={manual.description}
@@ -170,7 +186,7 @@ function EarningsPage() {
       <div className="overflow-hidden rounded-xl border border-border bg-panel">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-secondary">
+            <thead className="bg-muted text-[14px] text-secondary">
               <tr>
                 <th className="px-3 py-2">Type</th>
                 <th className="px-3 py-2">Amount</th>
