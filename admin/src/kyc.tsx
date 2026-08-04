@@ -251,7 +251,7 @@ export function KycPage() {
             <div className="space-y-3 border-t border-border px-4 py-3 sm:px-5">
               {preview.status === 'pending' ? (
                 <label className="block text-xs text-secondary">
-                  Reject note
+                  Reject Note
                   <input
                     className="mt-1 h-10 w-full rounded-xl border border-border bg-[#12151a] px-3 text-sm text-text outline-none focus:border-accent"
                     value={rejectNote}

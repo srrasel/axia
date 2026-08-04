@@ -67,33 +67,41 @@ function SettingField({
 
       <div className="mt-3">
         {def.type === 'boolean' ? (
-          <button
-            type="button"
-            role="switch"
-            aria-checked={isOn}
-            onClick={() => onChange(isOn ? 'false' : 'true')}
+          <div
             className={clsx(
-              'relative inline-flex h-9 w-full items-center justify-between rounded-xl border px-3 text-sm font-medium transition-colors',
+              'flex h-10 items-center justify-between gap-3 rounded-xl border px-3 transition-colors',
               isOn
-                ? 'border-buy/30 bg-buy/15 text-buy'
-                : 'border-border bg-panel text-secondary hover:border-[#fcd535]/70',
+                ? 'border-buy/30 bg-buy/15'
+                : 'border-border bg-panel',
             )}
           >
-            <span>{isOn ? 'Enabled' : 'Disabled'}</span>
             <span
               className={clsx(
-                'relative h-5 w-9 rounded-full transition-colors',
+                'text-sm font-medium',
+                isOn ? 'text-buy' : 'text-secondary',
+              )}
+            >
+              {isOn ? 'Enabled' : 'Disabled'}
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isOn}
+              aria-label={isOn ? 'Disable setting' : 'Enable setting'}
+              onClick={() => onChange(isOn ? 'false' : 'true')}
+              className={clsx(
+                'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors',
                 isOn ? 'bg-buy' : 'bg-muted',
               )}
             >
               <span
                 className={clsx(
-                  'absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform',
-                  isOn ? 'translate-x-4' : 'translate-x-0.5',
+                  'h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ease-out',
+                  isOn ? 'translate-x-5' : 'translate-x-0',
                 )}
               />
-            </span>
-          </button>
+            </button>
+          </div>
         ) : def.type === 'select' && def.options ? (
           <select className={fieldClass} value={value} onChange={(e) => onChange(e.target.value)}>
             {def.options.map((o) => (

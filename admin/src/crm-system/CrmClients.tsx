@@ -472,7 +472,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
       const body: Record<string, unknown> = {
         name: createForm.name
           .trim()
-          .replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()),
+          .replace(/\w\S*/g, (w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()),
         email: createForm.email.trim(),
         password: createForm.password,
         phone: createForm.phone.trim() || undefined,

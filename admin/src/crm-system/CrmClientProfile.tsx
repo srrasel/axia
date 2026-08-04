@@ -54,7 +54,7 @@ function toTitleCase(text?: string | null) {
   if (!text) return ''
   return text
     .replaceAll('_', ' ')
-    .replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .replace(/\w\S*/g, (w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
 }
 
 function Kpi({

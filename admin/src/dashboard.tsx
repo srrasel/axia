@@ -138,7 +138,7 @@ export function Dashboard() {
         subtitle={
           crmOnly
             ? `Your Assigned Clients · Last 14 Days · ${cur}`
-            : `${(s.platformName || 'Nitajfx').replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())} · Last 14 Days · ${cur}`
+            : `${(s.platformName || 'Nitajfx').replace(/\w\S*/g, (w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())} · Last 14 Days · ${cur}`
         }
       >
         <div className="flex flex-wrap items-center gap-2">
