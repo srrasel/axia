@@ -19,11 +19,19 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '../api'
-import { btnPrimary, money, PageHeader, Panel, TablePagination, usePagination } from '../layout'
+import { btnPrimary, money, PageHeader, Panel, TablePagination, ToastPopup, usePagination, useToast } from '../layout'
 
 function fmt(iso?: string) {
   if (!iso) return '—'
   return new Date(iso).toLocaleString()
+}
+
+function formatRoleLabel(role?: string | null) {
+  if (!role) return ''
+  return role
+    .replaceAll('_', ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 /** 17. Roles — Admin only */
@@ -78,20 +86,20 @@ export function CrmRolesPage() {
         {roles.map((r) => (
           <div key={r.role} className="rounded-xl border border-border bg-[#161a21] p-3">
             <div className="flex items-center justify-between">
-              <div className="font-semibold">{r.label}</div>
-              <span className="rounded bg-accent/15 px-2 py-0.5 text-[10px] font-bold text-accent">
-                {r.access}
+              <div className="font-semibold capitalize">{formatRoleLabel(r.label || r.role)}</div>
+              <span className="rounded bg-accent/15 px-2 py-0.5 text-[12px] font-bold capitalize text-accent">
+                {formatRoleLabel(r.access)}
               </span>
             </div>
-            <div className="mt-1 text-xs text-secondary">{r.count} users</div>
+            <div className="mt-1 text-[14px] text-secondary">{r.count} users</div>
             <div className="mt-2 flex flex-wrap gap-1">
               {(r.permissions || []).slice(0, 6).map((p: string) => (
-                <span key={p} className="rounded border border-border px-1.5 py-0.5 text-[9px] text-secondary">
-                  {p.replace('crm.', '')}
+                <span key={p} className="rounded border border-border px-1.5 py-0.5 text-[12px] capitalize text-secondary">
+                  {p.replace('crm.', '').replaceAll('.', ' ')}
                 </span>
               ))}
               {(r.permissions || []).length > 6 && (
-                <span className="text-[9px] text-secondary">+{r.permissions.length - 6}</span>
+                <span className="text-[12px] text-secondary">+{r.permissions.length - 6}</span>
               )}
             </div>
           </div>
@@ -119,7 +127,7 @@ export function CrmRolesPage() {
                     disabled={busy || u.role === 'ADMIN'}
                     value={u.role}
                     onChange={(e) => void saveRole(u.id, e.target.value)}
-                    className="h-8 rounded border border-border bg-[#12151a] px-2 text-xs outline-none focus:border-accent"
+                    className="h-8 rounded border border-border bg-[#12151a] px-2 text-xs capitalize outline-none focus:border-accent"
                   >
                     {[
                       'ADMIN',
@@ -134,7 +142,7 @@ export function CrmRolesPage() {
                       'EMPLOYEE',
                     ].map((r) => (
                       <option key={r} value={r}>
-                        {r}
+                        {formatRoleLabel(r)}
                       </option>
                     ))}
                   </select>
@@ -678,7 +686,7 @@ function TagEditor({
 export function CrmSystemSettingsPage() {
   const [settings, setSettings] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
-  const [msg, setMsg] = useState<string | null>(null)
+  const { toast, showToast } = useToast(2000)
   const [busy, setBusy] = useState(false)
   const [tab, setTab] = useState<CrmSettingsTab>('locale')
 
@@ -690,7 +698,6 @@ export function CrmSystemSettingsPage() {
 
   async function save() {
     setBusy(true)
-    setMsg(null)
     setError(null)
     try {
       const r = await api<{ settings: any }>('/api/admin/crm/system-settings', {
@@ -698,9 +705,11 @@ export function CrmSystemSettingsPage() {
         body: JSON.stringify({ settings }),
       })
       setSettings(r.settings)
-      setMsg('CRM system settings saved')
+      showToast('CRM System Settings Saved')
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed')
+      const message = e instanceof Error ? e.message : 'Failed'
+      setError(message)
+      showToast(message, 'err')
     } finally {
       setBusy(false)
     }
@@ -721,33 +730,15 @@ export function CrmSystemSettingsPage() {
 
   return (
     <div className="space-y-5">
+      {toast ? <ToastPopup text={toast.text} tone={toast.tone} /> : null}
       <PageHeader
         title="CRM System Settings"
         subtitle="Admin only · Locale, messaging channels, APIs, and templates for the CRM desk."
-      >
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => void save()}
-          className={`${btnPrimary} inline-flex items-center gap-2 disabled:opacity-50`}
-        >
-          <Save size={15} />
-          {busy ? 'Saving…' : 'Save changes'}
-        </button>
-      </PageHeader>
+      />
 
-      {(msg || error) && (
-        <div
-          className={clsx(
-            'rounded-xl border px-4 py-2.5 text-sm',
-            error
-              ? 'border-sell/30 bg-sell/10 text-sell'
-              : 'border-accent/30 bg-accent/10 text-accent',
-          )}
-        >
-          {error || msg}
-        </div>
-      )}
+      {error ? (
+        <div className="rounded-xl border border-sell/30 bg-sell/10 px-4 py-2.5 text-sm text-sell">{error}</div>
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
         {/* Sidebar */}
@@ -1058,7 +1049,7 @@ export function CrmSystemSettingsPage() {
               className={`${btnPrimary} inline-flex items-center gap-2 disabled:opacity-50`}
             >
               <Save size={15} />
-              {busy ? 'Saving…' : 'Save changes'}
+              {busy ? 'Saving…' : 'Save Changes'}
             </button>
           </div>
         </section>

@@ -2,7 +2,23 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from './api'
 import { useAuth } from './auth'
-import { Card, PageHeader, money, StatusBadge, btnPrimary, inputClass, usePagination, TablePagination } from './layout'
+import {
+  Card,
+  PageHeader,
+  money,
+  StatusBadge,
+  btnPrimary,
+  inputClass,
+  usePagination,
+  TablePagination,
+  ToastPopup,
+  useToast,
+  actionBtnPrimary,
+  actionBtnDanger,
+  actionBtnSuccess,
+  actionBtnNeutral,
+  actionTdClassLoose,
+} from './layout'
 import { getActiveCurrency } from './currency'
 
 function isManagerRole(role?: string) {
@@ -1164,7 +1180,7 @@ export function CrmPricesPage() {
   const manager = isManagerRole(user?.role)
   const [data, setData] = useState<any>(null)
   const [forms, setForms] = useState<Record<string, string>>({})
-  const [msg, setMsg] = useState<string | null>(null)
+  const { toast, showToast } = useToast(2000)
   const pager = usePagination(data?.quotes || [])
 
   const load = () => void api('/api/admin/crm/prices').then(setData)
@@ -1182,18 +1198,19 @@ export function CrmPricesPage() {
       method: 'PUT',
       body: JSON.stringify({ price, active: true, note: 'CRM override' }),
     })
-    setMsg(`Forced ${q.symbol} @ ${price}`)
+    showToast(`Forced ${q.symbol} @ ${price}`)
     load()
   }
 
   const clearPrice = async (symbol: string) => {
     await api(`/api/admin/crm/prices/${symbol}`, { method: 'DELETE' })
-    setMsg(`Cleared ${symbol}`)
+    showToast(`Cleared ${symbol}`)
     load()
   }
 
   return (
     <div>
+      {toast ? <ToastPopup text={toast.text} tone={toast.tone} /> : null}
       <PageHeader title="Market Prices" />
       {!manager ? (
         <p className="mb-4 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-sm text-accent">
@@ -1204,15 +1221,14 @@ export function CrmPricesPage() {
           Forced prices override live quotes for all clients (open trade marks update immediately).
         </p>
       )}
-      {msg ? <p className="mb-3 rounded-xl border border-buy/30 bg-buy/10 px-3 py-2 text-sm text-buy">{msg}</p> : null}
 
       <div className="hidden overflow-hidden rounded-2xl border border-border bg-panel md:block">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-secondary">
+            <thead className="bg-muted text-[14px] text-secondary">
               <tr>
                 <th className="px-3 py-2.5">Symbol</th>
-                <th className="px-3 py-2.5">Live / forced</th>
+                <th className="px-3 py-2.5">Live / Forced</th>
                 <th className="px-3 py-2.5">Bid / Ask</th>
                 <th className="px-3 py-2.5">Override</th>
                 <th className="px-3 py-2.5">Actions</th>
@@ -1247,22 +1263,26 @@ export function CrmPricesPage() {
                       onChange={(e) => setForms({ ...forms, [q.symbol]: e.target.value })}
                     />
                   </td>
-                  <td className="space-x-2 px-3 py-2.5">
+                  <td className={actionTdClassLoose}>
                     {manager ? (
-                      <>
-                        <button type="button" className="text-link" onClick={() => void forcePrice(q)}>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          className={actionBtnPrimary}
+                          onClick={() => void forcePrice(q)}
+                        >
                           Force
                         </button>
                         {ov ? (
                           <button
                             type="button"
-                            className="text-sell"
+                            className={actionBtnDanger}
                             onClick={() => void clearPrice(q.symbol)}
                           >
                             Clear
                           </button>
                         ) : null}
-                      </>
+                      </div>
                     ) : (
                       '—'
                     )}
@@ -1317,13 +1337,13 @@ export function CrmPricesPage() {
                     onChange={(e) => setForms({ ...forms, [q.symbol]: e.target.value })}
                   />
                   <div className="flex gap-2">
-                    <button type="button" className={btnPrimary} onClick={() => void forcePrice(q)}>
+                    <button type="button" className={actionBtnPrimary} onClick={() => void forcePrice(q)}>
                       Force
                     </button>
                     {ov ? (
                       <button
                         type="button"
-                        className="h-10 rounded-xl border border-sell/30 bg-sell/10 px-4 text-sm font-semibold text-sell"
+                        className={actionBtnDanger}
                         onClick={() => void clearPrice(q.symbol)}
                       >
                         Clear
@@ -1363,7 +1383,7 @@ export function CrmStaffPage() {
     role: 'SALES' as string,
   })
   const [error, setError] = useState<string | null>(null)
-  const [msg, setMsg] = useState<string | null>(null)
+  const { toast, showToast } = useToast(2000)
   const [busy, setBusy] = useState<string | null>(null)
   const pager = usePagination(staff)
 
@@ -1380,11 +1400,10 @@ export function CrmStaffPage() {
     e.preventDefault()
     if (!isAdmin) return
     setError(null)
-    setMsg(null)
     setBusy('create')
     try {
       await api('/api/admin/crm/staff', { method: 'POST', body: JSON.stringify(form) })
-      setMsg(`Created ${form.role.toLowerCase()} ${form.name}`)
+      showToast(`Created ${form.role.replaceAll('_', ' ').toLowerCase()} ${form.name}`)
       setShowCreate(false)
       setForm({ name: '', email: '', password: 'crm123456', role: 'SALES' })
       load()
@@ -1398,10 +1417,10 @@ export function CrmStaffPage() {
   const patchStaff = async (id: string, body: Record<string, unknown>) => {
     if (!isAdmin) return
     setError(null)
-    setMsg(null)
     setBusy(id)
     try {
       await api(`/api/admin/crm/staff/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
+      showToast('Staff updated')
       load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Update failed')
@@ -1412,6 +1431,7 @@ export function CrmStaffPage() {
 
   return (
     <div>
+      {toast ? <ToastPopup text={toast.text} tone={toast.tone} /> : null}
       <PageHeader title="CRM Users" subtitle="Managers and employees who log into the admin / CRM desk.">
         {isAdmin ? (
           <button type="button" className={btnPrimary} onClick={() => setShowCreate((v) => !v)}>
@@ -1425,7 +1445,6 @@ export function CrmStaffPage() {
           View only — only admins can create or edit CRM users.
         </p>
       ) : null}
-      {msg ? <p className="mb-4 rounded-xl border border-buy/30 bg-buy/15 px-3 py-2 text-sm text-buy">{msg}</p> : null}
       {error ? <p className="mb-4 rounded-xl border border-sell/30 bg-sell/15 px-3 py-2 text-sm text-sell">{error}</p> : null}
 
       {showCreate && isAdmin ? (
@@ -1537,13 +1556,13 @@ export function CrmStaffPage() {
                       <StatusBadge status={s.active === false ? 'Offline' : 'Active'} />
                     </td>
                     {isAdmin ? (
-                      <td className="px-3 py-2.5">
+                      <td className={actionTdClassLoose}>
                         {canEdit ? (
                           <div className="flex flex-wrap gap-2">
                             <button
                               type="button"
                               disabled={busy === s.id}
-                              className="text-sm text-link disabled:opacity-50"
+                              className={s.active === false ? actionBtnSuccess : actionBtnDanger}
                               onClick={() =>
                                 void patchStaff(s.id, {
                                   active: s.active === false,
@@ -1555,13 +1574,13 @@ export function CrmStaffPage() {
                             <button
                               type="button"
                               disabled={busy === s.id}
-                              className="text-sm text-secondary hover:text-text disabled:opacity-50"
+                              className={actionBtnNeutral}
                               onClick={() => {
                                 const password = window.prompt('New password (min 6 chars)', 'crm123456')
                                 if (password && password.length >= 6) void patchStaff(s.id, { password })
                               }}
                             >
-                              Reset password
+                              Reset Password
                             </button>
                           </div>
                         ) : (

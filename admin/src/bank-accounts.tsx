@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from './api'
 import { useAuth } from './auth'
-import { PageHeader, Panel } from './layout'
+import { PageHeader, Panel, ToastPopup, useToast } from './layout'
 
 type BankAccountRow = {
   id: string
@@ -23,7 +23,7 @@ export function BankAccountsPage() {
   const [accounts, setAccounts] = useState<BankAccountRow[]>([])
   const [editing, setEditing] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<BankAccountRow>>({})
-  const [msg, setMsg] = useState<string | null>(null)
+  const { toast, showToast } = useToast(2000)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -39,14 +39,12 @@ export function BankAccountsPage() {
   const startEdit = (row: BankAccountRow) => {
     setEditing(row.countryCode)
     setForm({ ...row })
-    setMsg(null)
     setError(null)
   }
 
   const save = async () => {
     if (!editing) return
     setSaving(true)
-    setMsg(null)
     setError(null)
     try {
       await api(`/api/admin/bank-accounts/${editing}`, {
@@ -60,11 +58,13 @@ export function BankAccountsPage() {
           active: form.active,
         }),
       })
-      setMsg(`Bank account updated for ${form.label}`)
+      showToast(`Bank Account Updated For ${form.label}`)
       setEditing(null)
       load()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Save failed')
+      const message = e instanceof Error ? e.message : 'Save Failed'
+      setError(message)
+      showToast(message, 'err')
     } finally {
       setSaving(false)
     }
@@ -72,6 +72,7 @@ export function BankAccountsPage() {
 
   return (
     <div>
+      {toast ? <ToastPopup text={toast.text} tone={toast.tone} /> : null}
       <PageHeader
         title="Change Bank Account"
         subtitle="Bank details shown to clients on the deposit page. Update anytime — accounts may change frequently."
@@ -81,7 +82,6 @@ export function BankAccountsPage() {
           View only — managers and admins can edit bank accounts.
         </p>
       ) : null}
-      {msg ? <p className="mb-4 rounded-lg border border-buy/30 bg-buy/15 px-3 py-2 text-sm text-buy">{msg}</p> : null}
       {error ? <p className="mb-4 rounded-lg border border-sell/30 bg-sell/15 px-3 py-2 text-sm text-sell">{error}</p> : null}
 
       <div className="space-y-4">

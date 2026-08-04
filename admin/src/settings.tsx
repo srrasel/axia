@@ -17,7 +17,7 @@ import {
 import clsx from 'clsx'
 import { api } from './api'
 import { setActiveCurrency, useCurrency } from './currency'
-import { PageHeader, Panel, btnPrimary } from './layout'
+import { PageHeader, Panel, btnPrimary, ToastPopup, useToast } from './layout'
 
 type SettingDef = {
   key: string
@@ -151,7 +151,7 @@ export function SettingsPage() {
   const [convertOnSave, setConvertOnSave] = useState(true)
   const [saving, setSaving] = useState(false)
   const [testingNow, setTestingNow] = useState(false)
-  const [msg, setMsg] = useState<string | null>(null)
+  const { toast, showToast } = useToast(2000)
   const [error, setError] = useState<string | null>(null)
   const [originalCurrency, setOriginalCurrency] = useState('EUR')
   const [activeGroup, setActiveGroup] = useState<string>('General')
@@ -184,7 +184,6 @@ export function SettingsPage() {
 
   const saveAll = async () => {
     setSaving(true)
-    setMsg(null)
     try {
       const r = await api<{ conversion?: any; values?: { currency?: string } }>('/api/admin/settings', {
         method: 'PUT',
@@ -194,15 +193,15 @@ export function SettingsPage() {
       setActiveCurrency(savedCurrency)
       await refresh()
       if (r.conversion && r.conversion.rate !== 1) {
-        setMsg(
+        showToast(
           `Converted ${r.conversion.from} → ${r.conversion.to} at ${r.conversion.rate.toFixed(6)} (${r.conversion.source}, ${r.conversion.date}). Updated ${r.conversion.accounts} accounts, ${r.conversion.earnings} earnings, ${r.conversion.transactions} transactions.`,
         )
       } else {
-        setMsg(`Settings saved · currency ${savedCurrency}`)
+        showToast(`Settings Saved · Currency ${savedCurrency}`)
       }
       load()
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'Save failed')
+      showToast(e instanceof Error ? e.message : 'Save Failed', 'err')
     } finally {
       setSaving(false)
     }
@@ -210,7 +209,6 @@ export function SettingsPage() {
 
   const testNow = async () => {
     setTestingNow(true)
-    setMsg(null)
     try {
       const r = await api<{
         ok: boolean
@@ -219,13 +217,15 @@ export function SettingsPage() {
         error?: string
         sampleMinBtcUsd?: number
       }>('/api/admin/payments/nowpayments/test', { method: 'POST' })
-      setMsg(
-        r.ok
-          ? `NOWPayments OK${r.sandbox ? ' (sandbox)' : ''} · ${r.apiStatus || 'connected'}${r.sampleMinBtcUsd != null ? ` · min BTC→USD ${r.sampleMinBtcUsd}` : ''}`
-          : `NOWPayments failed: ${r.error || 'unknown'}`,
-      )
+      if (r.ok) {
+        showToast(
+          `NOWPayments OK${r.sandbox ? ' (sandbox)' : ''} · ${r.apiStatus || 'connected'}${r.sampleMinBtcUsd != null ? ` · min BTC→USD ${r.sampleMinBtcUsd}` : ''}`,
+        )
+      } else {
+        showToast(`NOWPayments Failed: ${r.error || 'unknown'}`, 'err')
+      }
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'NOWPayments test failed')
+      showToast(e instanceof Error ? e.message : 'NOWPayments Test Failed', 'err')
     } finally {
       setTestingNow(false)
     }
@@ -252,10 +252,10 @@ export function SettingsPage() {
     fx?.matrix?.[originalCurrency]?.[nextCur] != null ? Number(fx.matrix[originalCurrency][nextCur]) : null
   const activeDefs = defs.filter((d) => d.group === activeGroup)
   const ActiveIcon = GROUP_META[activeGroup]?.icon || Building2
-  const msgTone = msg?.toLowerCase().includes('fail') ? 'sell' : 'buy'
 
   return (
     <div className="space-y-5">
+      {toast ? <ToastPopup text={toast.text} tone={toast.tone} /> : null}
       <PageHeader
         title="Settings"
         subtitle="Configure platform fees, limits, payments, and live FX conversion."
@@ -269,21 +269,10 @@ export function SettingsPage() {
           <Shield size={15} />
           {testingNow ? 'Testing…' : 'Test NOWPayments'}
         </button>
-        <button type="button" disabled={saving} className={`${btnPrimary} inline-flex items-center gap-2 disabled:opacity-60`} onClick={() => void saveAll()}>
-          <Save size={15} />
-          {saving ? 'Saving…' : 'Save all'}
-        </button>
       </PageHeader>
 
-      {msg ? (
-        <div
-          className={clsx(
-            'rounded-2xl border px-4 py-3 text-sm',
-            msgTone === 'sell' ? 'border-sell/30 bg-sell/10 text-sell' : 'border-buy/30 bg-buy/10 text-buy',
-          )}
-        >
-          {msg}
-        </div>
+      {error ? (
+        <div className="rounded-2xl border border-sell/30 bg-sell/10 px-4 py-3 text-sm text-sell">{error}</div>
       ) : null}
 
       {fx ? (

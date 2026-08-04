@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Eye, X, Check, Ban, FileText } from 'lucide-react'
 import { api } from './api'
-import { PageHeader, Panel, StatusBadge, TablePagination, usePagination } from './layout'
+import { PageHeader, Panel, StatusBadge, TablePagination, usePagination, actionBtnPrimary, actionBtnSuccess, actionBtnDanger, actionBtnNeutral, actionTdClass } from './layout'
 
 type KycDoc = {
   id: string
@@ -137,12 +137,12 @@ export function KycPage() {
                   <td className="px-3 py-3">
                     <StatusBadge status={d.status} />
                   </td>
-                  <td className="px-3 py-3">
+                  <td className={actionTdClass}>
                     <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         disabled={previewLoading || !d.hasFile}
-                        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs font-medium hover:bg-muted disabled:opacity-40"
+                        className={actionBtnNeutral}
                         onClick={() => void openPreview(d.id)}
                       >
                         <Eye size={14} />
@@ -153,7 +153,7 @@ export function KycPage() {
                           <button
                             type="button"
                             disabled={busy}
-                            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-buy/15 px-2.5 text-xs font-semibold text-buy hover:bg-buy/25 disabled:opacity-40"
+                            className={actionBtnSuccess}
                             onClick={() => void review(d.id, 'approved')}
                           >
                             <Check size={14} />
@@ -162,7 +162,7 @@ export function KycPage() {
                           <button
                             type="button"
                             disabled={busy}
-                            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-sell/15 px-2.5 text-xs font-semibold text-sell hover:bg-sell/25 disabled:opacity-40"
+                            className={actionBtnDanger}
                             onClick={() => void review(d.id, 'rejected')}
                           >
                             <Ban size={14} />
@@ -272,19 +272,19 @@ export function KycPage() {
                     <button
                       type="button"
                       disabled={busy}
-                      className="inline-flex h-10 items-center gap-2 rounded-xl bg-sell/15 px-4 text-sm font-semibold text-sell hover:bg-sell/25 disabled:opacity-50"
+                      className={actionBtnDanger}
                       onClick={() => void review(preview.id, 'rejected')}
                     >
-                      <Ban size={16} />
+                      <Ban size={14} />
                       Reject
                     </button>
                     <button
                       type="button"
                       disabled={busy}
-                      className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] hover:bg-[#ceaf30] disabled:opacity-50"
+                      className={actionBtnPrimary}
                       onClick={() => void review(preview.id, 'approved')}
                     >
-                      <Check size={16} />
+                      <Check size={14} />
                       Approve
                     </button>
                   </>

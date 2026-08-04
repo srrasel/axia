@@ -4,7 +4,7 @@ import { DollarSign } from 'lucide-react'
 import { api } from './api'
 import { AuthProvider, useAuth } from './auth'
 import { LoginPage, ForgotPasswordPage } from './auth-pages'
-import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination, canAccessPath, isCrmStaffRole } from './layout'
+import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination, canAccessPath, isCrmStaffRole, ToastPopup, useToast, actionBtnPrimary, actionBtnSuccess, actionBtnDanger, actionBtnNeutral, actionTdClass } from './layout'
 import { setActiveCurrency } from './currency'
 import { Dashboard } from './dashboard'
 import { CrmPricesPage, CrmStaffPage } from './crm'
@@ -337,14 +337,35 @@ function UserDetail() {
         <Card title="KYC" value={user.kycStatus} />
       </div>
       <div className="mb-4 flex flex-wrap gap-2">
-        <button type="button" className="rounded border border-border px-3 py-2 text-sm" onClick={async () => { await api(`/api/admin/users/${user.id}`, { method: 'PATCH', body: JSON.stringify({ active: !user.active }) }); load() }}>
-          {user.active ? 'Disable' : 'Enable'} user
+        <button
+          type="button"
+          className={user.active ? actionBtnDanger : actionBtnSuccess}
+          onClick={async () => {
+            await api(`/api/admin/users/${user.id}`, { method: 'PATCH', body: JSON.stringify({ active: !user.active }) })
+            load()
+          }}
+        >
+          {user.active ? 'Disable User' : 'Enable User'}
         </button>
-        <button type="button" className="rounded border border-border px-3 py-2 text-sm" onClick={async () => { await api(`/api/admin/users/${user.id}`, { method: 'PATCH', body: JSON.stringify({ verified: !user.verified }) }); load() }}>
-          Toggle verified
+        <button
+          type="button"
+          className={actionBtnNeutral}
+          onClick={async () => {
+            await api(`/api/admin/users/${user.id}`, { method: 'PATCH', body: JSON.stringify({ verified: !user.verified }) })
+            load()
+          }}
+        >
+          Toggle Verified
         </button>
-        <button type="button" className="rounded border border-border px-3 py-2 text-sm" onClick={async () => { await api(`/api/admin/users/${user.id}/password`, { method: 'POST', body: JSON.stringify({ password: 'reset123' }) }); alert('Password set to reset123') }}>
-          Reset password
+        <button
+          type="button"
+          className={actionBtnNeutral}
+          onClick={async () => {
+            await api(`/api/admin/users/${user.id}/password`, { method: 'POST', body: JSON.stringify({ password: 'reset123' }) })
+            alert('Password set to reset123')
+          }}
+        >
+          Reset Password
         </button>
       </div>
       <div className="mb-6 rounded-xl border border-border bg-panel p-4">
@@ -412,7 +433,7 @@ function TradesPage() {
   const [status, setStatus] = useState('open')
   const [edits, setEdits] = useState<Record<string, { openPrice: string; currentPrice: string }>>({})
   const [busy, setBusy] = useState<string | null>(null)
-  const [msg, setMsg] = useState<string | null>(null)
+  const { toast, showToast } = useToast(2000)
   const pager = usePagination(trades)
   const load = () =>
     void api<{ trades: any[] }>(`/api/admin/trades${status ? `?status=${status}` : ''}`).then((r) => {
@@ -438,16 +459,15 @@ function TradesPage() {
     if (!Number.isFinite(openPrice) || openPrice <= 0) return
     if (!Number.isFinite(currentPrice) || currentPrice <= 0) return
     setBusy(t.id)
-    setMsg(null)
     try {
       await api(`/api/admin/trades/${t.id}/price`, {
         method: 'PATCH',
         body: JSON.stringify({ openPrice, currentPrice, lockMark: true }),
       })
-      setMsg(`Updated ${t.symbol} open=${openPrice} mark=${currentPrice} (locked)`)
+      showToast(`Updated ${t.symbol} Open=${openPrice} Mark=${currentPrice} (Locked)`)
       load()
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'Failed')
+      showToast(e instanceof Error ? e.message : 'Failed', 'err')
     } finally {
       setBusy(null)
     }
@@ -455,6 +475,7 @@ function TradesPage() {
 
   return (
     <div>
+      {toast ? <ToastPopup text={toast.text} tone={toast.tone} /> : null}
       <PageHeader title="Trades" subtitle="Change open (entry) or mark price in real time — client pages refresh live.">
         <select className="h-10 rounded border border-border px-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">All</option>
@@ -463,7 +484,6 @@ function TradesPage() {
           <option value="closed">Closed</option>
         </select>
       </PageHeader>
-      {msg && <p className="mb-3 text-sm text-accent">{msg}</p>}
       <div className="overflow-hidden rounded-xl border border-border bg-panel">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
@@ -522,27 +542,27 @@ function TradesPage() {
                       t.currentPrice
                     )}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className={actionTdClass}>
                     {t.status === 'open' || t.status === 'pending' ? (
                       <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
                           disabled={busy === t.id}
-                          className="text-xs font-semibold text-[#fcd535] disabled:opacity-50"
+                          className={actionBtnPrimary}
                           onClick={() => void savePrice(t)}
                         >
-                          Apply price
+                          Apply Price
                         </button>
                         {t.status === 'open' ? (
                           <button
                             type="button"
-                            className="text-xs text-link"
+                            className={actionBtnDanger}
                             onClick={async () => {
                               await api(`/api/admin/trades/${t.id}/close`, { method: 'POST' })
                               load()
                             }}
                           >
-                            Force close
+                            Force Close
                           </button>
                         ) : null}
                       </div>
@@ -646,16 +666,26 @@ function TransactionsPage() {
                     {t.note || '—'}
                   </td>
                   <td className="px-3 py-2">{new Date(t.createdAt).toLocaleString()}</td>
-                  <td className="px-3 py-2 space-x-2">
+                  <td className={`${actionTdClass} space-x-2`}>
                     {t.status === 'pending' && (t.type === 'deposit' || t.type === 'withdraw') ? (
-                      <>
-                        <button type="button" disabled={busy === t.id} className="text-buy disabled:opacity-50" onClick={() => void review(t.id, 'approved')}>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          disabled={busy === t.id}
+                          className={actionBtnSuccess}
+                          onClick={() => void review(t.id, 'approved')}
+                        >
                           Approve
                         </button>
-                        <button type="button" disabled={busy === t.id} className="text-sell disabled:opacity-50" onClick={() => void review(t.id, 'rejected')}>
+                        <button
+                          type="button"
+                          disabled={busy === t.id}
+                          className={actionBtnDanger}
+                          onClick={() => void review(t.id, 'rejected')}
+                        >
                           Reject
                         </button>
-                      </>
+                      </div>
                     ) : (
                       '—'
                     )}

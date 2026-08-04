@@ -26,7 +26,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import clsx from 'clsx'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from './auth'
 import { CurrencyProvider, money, useCurrency } from './currency'
 import { BrandLogo } from './BrandLogo'
@@ -450,6 +450,16 @@ export const btnPrimary =
 export const inputClass =
   'h-10 w-full min-w-0 rounded-xl border border-border bg-panel px-3 text-sm text-text outline-none transition-colors placeholder:text-secondary hover:border-[#fcd535]/70 focus:border-[#fcd535]'
 
+/** Shared table / toolbar action buttons */
+export const actionBtnBase =
+  'inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg px-3.5 text-[14px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40'
+export const actionBtnPrimary = `${actionBtnBase} bg-[#fcd535] text-[#202630] hover:bg-[#ceaf30]`
+export const actionBtnSuccess = `${actionBtnBase} border border-buy/40 bg-buy/15 text-buy hover:bg-buy/25`
+export const actionBtnDanger = `${actionBtnBase} border border-sell/40 bg-sell/15 text-sell hover:bg-sell/25`
+export const actionBtnNeutral = `${actionBtnBase} border border-border bg-panel text-secondary hover:border-accent/40 hover:bg-muted hover:text-text`
+export const actionTdClass = 'px-3 py-2 pl-[22px]'
+export const actionTdClassLoose = 'px-3 py-2.5 pl-[22px]'
+
 export const PAGE_SIZE = 10
 
 export function usePagination<T>(items: T[], pageSize = PAGE_SIZE) {
@@ -579,4 +589,50 @@ export function TablePagination({
       </div>
     </div>
   )
+}
+
+/** Top toast popup for save / force / success feedback */
+export function ToastPopup({
+  text,
+  tone = 'ok',
+}: {
+  text: string
+  tone?: 'ok' | 'err'
+}) {
+  const display = text ? text.charAt(0).toUpperCase() + text.slice(1) : ''
+  return (
+    <div className="pointer-events-none fixed inset-x-0 top-14 z-[80] flex justify-center px-4 sm:top-16">
+      <div
+        className={clsx(
+          'pointer-events-auto max-w-md rounded-xl border px-4 py-3 text-sm font-medium shadow-2xl',
+          tone === 'err'
+            ? 'border-sell/35 bg-white text-[#b42318]'
+            : 'border-[#d0d5dd] bg-white text-[#101828]',
+        )}
+        role="status"
+      >
+        {display}
+      </div>
+    </div>
+  )
+}
+
+export function useToast(durationMs = 2000) {
+  const [toast, setToast] = useState<{ text: string; tone: 'ok' | 'err' } | null>(null)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (timer.current) clearTimeout(timer.current)
+    }
+  }, [])
+
+  function showToast(text: string, tone: 'ok' | 'err' = 'ok') {
+    if (!text) return
+    if (timer.current) clearTimeout(timer.current)
+    setToast({ text, tone })
+    timer.current = setTimeout(() => setToast(null), durationMs)
+  }
+
+  return { toast, showToast }
 }

@@ -12,7 +12,7 @@ import {
   X,
 } from 'lucide-react'
 import { api } from '../api'
-import { btnPrimary, inputClass, money, TablePagination, usePagination } from '../layout'
+import { btnPrimary, inputClass, money, TablePagination, usePagination, actionBtnPrimary, actionBtnSuccess, actionBtnDanger, actionBtnNeutral } from '../layout'
 import type { AdminUser } from '../auth'
 
 type TimelineItem = { at: string; type: string; title: string; detail?: string }
@@ -1048,25 +1048,25 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                       {d.fileName} · {d.status} · {fmt(d.createdAt)}
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 pl-[10px]">
                     <button
                       type="button"
                       disabled={!d.hasFile && !d.fileData}
-                      className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-[11px] font-semibold hover:bg-muted disabled:opacity-40"
+                      className={`${actionBtnNeutral} disabled:opacity-40`}
                       onClick={() =>
                         void api<{ document: any }>(`/api/admin/crm/documents/${d.id}/file`)
                           .then((r) => setDocPreview(r.document))
                           .catch((e) => showToast(e instanceof Error ? e.message : 'Could not open file', 'err'))
                       }
                     >
-                      <Eye size={12} />
+                      <Eye size={14} />
                       Check
                     </button>
                     {d.status === 'pending' ? (
                       <>
                         <button
                           type="button"
-                          className="rounded bg-buy/20 px-2 py-1 text-[11px] font-semibold text-buy"
+                          className={actionBtnSuccess}
                           onClick={() =>
                             void api(`/api/admin/crm/documents/${d.id}`, {
                               method: 'PATCH',
@@ -1078,7 +1078,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                         </button>
                         <button
                           type="button"
-                          className="rounded bg-sell/20 px-2 py-1 text-[11px] font-semibold text-sell"
+                          className={actionBtnDanger}
                           onClick={() =>
                             void api(`/api/admin/crm/documents/${d.id}`, {
                               method: 'PATCH',
@@ -1145,7 +1145,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                     <>
                       <button
                         type="button"
-                        className="h-9 rounded-lg bg-sell/15 px-3 text-sm font-semibold text-sell"
+                        className={actionBtnDanger}
                         onClick={() =>
                           void api(`/api/admin/crm/documents/${docPreview.id}`, {
                             method: 'PATCH',
@@ -1163,7 +1163,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                       </button>
                       <button
                         type="button"
-                        className="h-9 rounded-lg bg-[#fcd535] px-3 text-sm font-semibold text-[#202630]"
+                        className={actionBtnPrimary}
                         onClick={() =>
                           void api(`/api/admin/crm/documents/${docPreview.id}`, {
                             method: 'PATCH',

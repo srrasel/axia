@@ -13,7 +13,7 @@ import {
   Pencil,
 } from 'lucide-react'
 import { api } from '../api'
-import { TablePagination, money } from '../layout'
+import { TablePagination, money, ToastPopup, useToast } from '../layout'
 import type { AdminUser } from '../auth'
 
 const CATEGORIES = [
@@ -232,8 +232,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
   const canCreate = CREATE_ROLES.has(me.role)
   const [showCreate, setShowCreate] = useState(false)
   const [showCreatePassword, setShowCreatePassword] = useState(false)
-  const [createMsg, setCreateMsg] = useState<string | null>(null)
-  const [toolbarMsg, setToolbarMsg] = useState<string | null>(null)
+  const { toast, showToast } = useToast(2000)
   const [createForm, setCreateForm] = useState({
     name: '',
     email: '',
@@ -317,7 +316,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
         method: 'PATCH',
         body: JSON.stringify({ assignedToId }),
       })
-      setToolbarMsg('Assignment updated')
+      showToast('Assignment updated')
       await load()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Assign failed')
@@ -366,11 +365,10 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
 
   function needSelection(min = 1) {
     if (selected.size < min) {
-      setToolbarMsg(min === 1 ? 'Select at least one client first' : `Select ${min} clients first`)
+      showToast(min === 1 ? 'Select at least one client first' : `Select ${min} clients first`)
       setError(null)
       return false
     }
-    setToolbarMsg(null)
     return true
   }
 
@@ -389,7 +387,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
           crmCategory: unflag ? 'NEW' : 'POTENTIAL',
         }),
       })
-      setToolbarMsg(
+      showToast(
         unflag
           ? `Removed Potential from ${rows.length} client(s)`
           : `Flagged ${rows.length} client(s) as Potential`,
@@ -406,7 +404,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
     if (!needSelection()) return
     const rows = selectedRows()
     if (rows.length !== 1) {
-      setToolbarMsg('Select exactly one client to call')
+      showToast('Select exactly one client to call')
       return
     }
     const c = rows[0]
@@ -422,9 +420,9 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
       })
       if (c.phone) {
         window.location.href = `tel:${c.phone.replace(/[^\d+]/g, '')}`
-        setToolbarMsg(`Calling ${c.name}...`)
+        showToast(`Calling ${c.name}...`)
       } else {
-        setToolbarMsg(`No phone for ${c.name} - opened profile`)
+        showToast(`No phone for ${c.name} - opened profile`)
         navigate(`/crm/clients/${c.id}`)
       }
       await load()
@@ -444,11 +442,11 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
   function exportSelected() {
     const rows = selected.size > 0 ? selectedRows() : clients
     if (rows.length === 0) {
-      setToolbarMsg('No clients to export')
+      showToast('No clients to export')
       return
     }
     exportCsv(rows)
-    setToolbarMsg(`Exported ${rows.length} client(s)`)
+    showToast(`Exported ${rows.length} client(s)`)
   }
 
   async function copySelectedIds() {
@@ -456,9 +454,9 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
     const ids = selectedRows().map((c) => String(c.crmNumber ?? c.id))
     try {
       await navigator.clipboard.writeText(ids.join('\n'))
-      setToolbarMsg(`Copied ${ids.length} CRM ID(s)`)
+      showToast(`Copied ${ids.length} CRM ID(s)`)
     } catch {
-      setToolbarMsg('Could not copy to clipboard')
+      showToast('Could not copy to clipboard')
     }
   }
 
@@ -467,7 +465,6 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
     if (!canCreate) return
     setBusy(true)
     setError(null)
-    setCreateMsg(null)
     try {
       const body: Record<string, unknown> = {
         name: createForm.name
@@ -486,7 +483,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
         method: 'POST',
         body: JSON.stringify(body),
       })
-      setCreateMsg(`Created ${res.client.name}`)
+      showToast(`Created ${res.client.name}`)
       setShowCreate(false)
       setShowCreatePassword(false)
       setCreateForm({
@@ -509,6 +506,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
 
   return (
     <div className="-mx-1 space-y-4 lg:-mx-2">
+      {toast ? <ToastPopup text={toast.text} tone={toast.tone} /> : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight text-text sm:text-3xl">Clients</h1>
         <div className="flex flex-wrap items-center gap-2">
@@ -517,7 +515,6 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
               type="button"
               onClick={() => {
                 setShowCreate((v) => !v)
-                setCreateMsg(null)
                 setShowCreatePassword(false)
               }}
               className="inline-flex h-10 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-[#202630] hover:bg-[#ceaf30]"
@@ -559,10 +556,6 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
           )}
         </div>
       </div>
-
-      {createMsg ? (
-        <p className="rounded-xl border border-buy/30 bg-buy/15 px-3 py-2 text-sm text-buy">{createMsg}</p>
-      ) : null}
 
       {showCreate && canCreate ? (
         <form
@@ -795,7 +788,6 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
         </span>
       </div>
 
-      {toolbarMsg ? <p className="text-sm text-buy">{toolbarMsg}</p> : null}
       {error && <p className="text-base text-sell">{error}</p>}
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-[#161a21]">
