@@ -158,7 +158,7 @@ const colSelectStyleBase = {
 } as const
 const thClass = 'align-bottom px-3 py-3 text-left'
 const thLabelClass = 'mb-1.5 block whitespace-nowrap text-[14px] font-semibold capitalize tracking-wide text-secondary'
-const tdClass = 'align-middle px-3 py-3.5'
+const tdClass = 'align-middle px-3 py-1.5 sm:py-3.5'
 
 /** Date filter: custom UI only — avoids native mm/dd/yyyy + icon overlap. */
 function DateFilterInput({
@@ -799,11 +799,10 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
       {error && <p className="text-base text-sell">{error}</p>}
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-[#161a21]">
-        <table className="w-full min-w-[1780px] table-fixed text-left text-sm sm:text-base">
+        <table className="w-full min-w-[1720px] table-fixed text-left text-sm sm:text-base">
           <colgroup>
             <col className="w-10" />
             <col className="w-[220px]" />
-            <col className="w-[96px]" />
             <col className="w-[170px]" />
             <col className="w-[170px]" />
             <col className="w-[170px]" />
@@ -837,10 +836,6 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                     setPage(1)
                   }}
                 />
-              </th>
-              <th className={`${thClass} text-center`}>
-                <span className={thLabelClass}>Actions</span>
-                <div className="h-9" />
               </th>
               <th className={thClass}>
                 <span className={thLabelClass}>Country</span>
@@ -987,28 +982,26 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                   <div className="flex min-w-0 items-center gap-2">
                     <Link
                       to={`/crm/clients/${c.id}`}
-                      className="max-w-full truncate text-[16px] font-bold capitalize text-[#22a06b] hover:text-[#1a8056]"
+                      className="min-w-0 flex-1 truncate pr-[10px] text-[14px] font-bold capitalize text-[#22a06b] hover:text-[#1a8056] sm:text-[16px]"
                     >
                       {c.name}
                     </Link>
-                  </div>
-                </td>
-                <td className={`${tdClass} text-center`}>
-                  <div className="flex items-center justify-center gap-2">
-                    <Link
-                      to={`/crm/clients/${c.id}`}
-                      title="Edit"
-                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-buy/40 text-buy transition-colors hover:border-buy hover:text-buy"
-                    >
-                      <Pencil size={13} />
-                    </Link>
-                    <Link
-                      to={`/crm/clients/${c.id}`}
-                      title="View"
-                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-buy/40 text-buy transition-colors hover:border-buy hover:text-buy"
-                    >
-                      <Eye size={13} />
-                    </Link>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Link
+                        to={`/crm/clients/${c.id}`}
+                        title="Edit"
+                        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-buy/40 text-buy transition-colors hover:border-buy hover:text-buy"
+                      >
+                        <Pencil size={13} />
+                      </Link>
+                      <Link
+                        to={`/crm/clients/${c.id}`}
+                        title="View"
+                        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-buy/40 text-buy transition-colors hover:border-buy hover:text-buy"
+                      >
+                        <Eye size={13} />
+                      </Link>
+                    </div>
                   </div>
                 </td>
                 <td className={`${tdClass} text-[14px] font-medium text-secondary`}>{c.country || '-'}</td>
@@ -1087,7 +1080,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
             ))}
             {clients.length === 0 && (
               <tr>
-                <td colSpan={11} className="px-3 py-12 text-center text-base text-secondary">
+                <td colSpan={10} className="px-3 py-12 text-center text-base text-secondary">
                   No clients found
                 </td>
               </tr>

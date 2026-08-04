@@ -1371,7 +1371,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
         </div>
 
         {/* CRM Actions — fixed bottom sheet on mobile, side panel on xl */}
-        <aside className="fixed inset-x-0 -bottom-[60px] z-30 max-h-[min(42vh,320px)] overflow-y-auto overscroll-contain border-t border-border bg-[#161a21]/97 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(0,0,0,0.45)] backdrop-blur-md xl:static xl:z-auto xl:max-h-none xl:overflow-visible xl:rounded-xl xl:border xl:border-border xl:bg-[#161a21] xl:p-2 xl:pb-2 xl:shadow-none xl:backdrop-blur-none xl:sticky xl:top-3 xl:h-fit">
+        <aside className="fixed inset-x-0 -bottom-[30px] z-30 max-h-[min(42vh,320px)] overflow-y-auto overscroll-contain border-t border-border bg-[#161a21]/97 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(0,0,0,0.45)] backdrop-blur-md xl:static xl:z-auto xl:max-h-none xl:overflow-visible xl:rounded-xl xl:border xl:border-border xl:bg-[#161a21] xl:p-2 xl:pb-2 xl:shadow-none xl:backdrop-blur-none xl:sticky xl:top-3 xl:h-fit">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2 px-1">
             <div className="text-[11px] font-bold capitalize tracking-wide text-secondary xl:text-[10px]">
               CRM Actions
