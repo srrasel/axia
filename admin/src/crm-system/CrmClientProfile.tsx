@@ -205,27 +205,27 @@ function TradePriceRow({ trade, onSaved }: { trade: any; onSaved: () => void | P
 
   return (
     <tr className="border-b border-border/50">
-      <td className="px-2 py-2 font-semibold">
+      <td className="pl-[15px] pr-2 py-2 font-semibold">
         {trade.symbol}
         {trade.markLocked ? <span className="ml-1 text-[9px] text-accent">locked</span> : null}
       </td>
-      <td className="px-2 py-2 capitalize">{trade.side}</td>
-      <td className="px-2 py-2">{trade.volume}</td>
-      <td className="px-2 py-2">
+      <td className="pl-[15px] pr-2 py-2 capitalize">{trade.side}</td>
+      <td className="pl-[15px] pr-2 py-2">{trade.volume}</td>
+      <td className="pl-[15px] pr-2 py-2">
         <input
           className="h-7 w-24 rounded border border-border bg-[#12151a] px-1.5 text-[11px] tabular-nums outline-none focus:border-accent"
           value={openPrice}
           onChange={(e) => setOpenPrice(e.target.value)}
         />
       </td>
-      <td className="px-2 py-2">
+      <td className="pl-[15px] pr-2 py-2">
         <input
           className="h-7 w-24 rounded border border-border bg-[#12151a] px-1.5 text-[11px] tabular-nums outline-none focus:border-accent"
           value={currentPrice}
           onChange={(e) => setCurrentPrice(e.target.value)}
         />
       </td>
-      <td className="px-2 py-2">
+      <td className="pl-[15px] pr-2 py-2">
         <button
           type="button"
           disabled={busy}
@@ -938,27 +938,27 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
             <div className="space-y-3">
               <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
                 <table className="w-full min-w-[720px] text-left text-[12px]">
-                  <thead className="border-b border-border text-[10px] capitalize text-secondary">
+                  <thead className="border-b border-border text-[14px] capitalize text-secondary">
                     <tr>
-                      <th className="px-3 py-2">Account</th>
-                      <th className="px-3 py-2">Type</th>
-                      <th className="px-3 py-2">Leverage</th>
-                      <th className="px-3 py-2">Balance</th>
-                      <th className="px-3 py-2">Equity</th>
-                      <th className="px-3 py-2">Credit</th>
-                      <th className="px-3 py-2">Status</th>
+                      <th className="pl-[15px] pr-3 py-2">Account</th>
+                      <th className="pl-[15px] pr-3 py-2">Type</th>
+                      <th className="pl-[15px] pr-3 py-2">Leverage</th>
+                      <th className="pl-[15px] pr-3 py-2">Balance</th>
+                      <th className="pl-[15px] pr-3 py-2">Equity</th>
+                      <th className="pl-[15px] pr-3 py-2">Credit</th>
+                      <th className="pl-[15px] pr-3 py-2">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {(c.accounts || []).map((a: any) => (
                       <tr key={a.id} className="border-b border-border/50">
-                        <td className="px-3 py-2 font-semibold">{a.number}</td>
-                        <td className="px-3 py-2">{a.type}</td>
-                        <td className="px-3 py-2">{a.leverage}</td>
-                        <td className="px-3 py-2 tabular-nums">{money(a.balance)}</td>
-                        <td className="px-3 py-2 tabular-nums">{money(a.equity)}</td>
-                        <td className="px-3 py-2 tabular-nums">{money(a.credit)}</td>
-                        <td className="px-3 py-2">{a.active === false ? 'Disabled' : 'Active'}</td>
+                        <td className="pl-[15px] pr-3 py-2 font-semibold">{a.number}</td>
+                        <td className="pl-[15px] pr-3 py-2">{a.type}</td>
+                        <td className="pl-[15px] pr-3 py-2">{a.leverage}</td>
+                        <td className="pl-[15px] pr-3 py-2 tabular-nums">{money(a.balance)}</td>
+                        <td className="pl-[15px] pr-3 py-2 tabular-nums">{money(a.equity)}</td>
+                        <td className="pl-[15px] pr-3 py-2 tabular-nums">{money(a.credit)}</td>
+                        <td className="pl-[15px] pr-3 py-2">{a.active === false ? 'Disabled' : 'Active'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -974,14 +974,14 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[800px] text-left text-[12px]">
-                    <thead className="border-b border-border text-[10px] capitalize text-secondary">
+                    <thead className="border-b border-border text-[14px] capitalize text-secondary">
                       <tr>
-                        <th className="px-2 py-2">Symbol</th>
-                        <th className="px-2 py-2">Side</th>
-                        <th className="px-2 py-2">Vol</th>
-                        <th className="px-2 py-2">Open (entry)</th>
-                        <th className="px-2 py-2">Current (mark)</th>
-                        <th className="px-2 py-2">Action</th>
+                        <th className="pl-[15px] pr-2 py-2">Symbol</th>
+                        <th className="pl-[15px] pr-2 py-2">Side</th>
+                        <th className="pl-[15px] pr-2 py-2">Vol</th>
+                        <th className="pl-[15px] pr-2 py-2">Open (entry)</th>
+                        <th className="pl-[15px] pr-2 py-2">Current (mark)</th>
+                        <th className="pl-[15px] pr-2 py-2">Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1008,21 +1008,21 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
           {tab === 'transactions' && (
             <div className="overflow-x-auto rounded-xl border border-border bg-[#161a21]">
               <table className="w-full min-w-[640px] text-left text-[12px]">
-                <thead className="border-b border-border text-[10px] capitalize text-secondary">
+                <thead className="border-b border-border text-[14px] capitalize text-secondary">
                   <tr>
-                    <th className="px-3 py-2">Type</th>
-                    <th className="px-3 py-2">Amount</th>
-                    <th className="px-3 py-2">Status</th>
-                    <th className="px-3 py-2">Created</th>
+                    <th className="pl-[15px] pr-3 py-2">Type</th>
+                    <th className="pl-[15px] pr-3 py-2">Amount</th>
+                    <th className="pl-[15px] pr-3 py-2">Status</th>
+                    <th className="pl-[15px] pr-3 py-2">Created</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(c.transactions || []).map((t: any) => (
                     <tr key={t.id} className="border-b border-border/50">
-                      <td className="px-3 py-2 capitalize">{t.type}</td>
-                      <td className={`px-3 py-2 tabular-nums ${pnlClass(t.amount)}`}>{money(t.amount)}</td>
-                      <td className="px-3 py-2">{t.status}</td>
-                      <td className="px-3 py-2 text-secondary">{fmt(t.createdAt)}</td>
+                      <td className="pl-[15px] pr-3 py-2 capitalize">{t.type}</td>
+                      <td className={`pl-[15px] pr-3 py-2 tabular-nums ${pnlClass(t.amount)}`}>{money(t.amount)}</td>
+                      <td className="pl-[15px] pr-3 py-2">{t.status}</td>
+                      <td className="pl-[15px] pr-3 py-2 text-secondary">{fmt(t.createdAt)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1187,28 +1187,28 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
             <div className="overflow-hidden rounded-xl border border-border bg-[#161a21]">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[720px] text-left text-[12px]">
-                  <thead className="border-b border-border text-[10px] capitalize text-secondary">
+                  <thead className="border-b border-border text-[14px] capitalize text-secondary">
                     <tr>
-                      <th className="px-3 py-2">Type</th>
-                      <th className="px-3 py-2">Event</th>
-                      <th className="px-3 py-2">Detail</th>
-                      <th className="px-3 py-2">Time</th>
+                      <th className="pl-[15px] pr-3 py-2">Type</th>
+                      <th className="pl-[15px] pr-3 py-2">Event</th>
+                      <th className="pl-[15px] pr-3 py-2">Detail</th>
+                      <th className="pl-[15px] pr-3 py-2">Time</th>
                     </tr>
                   </thead>
                   <tbody>
                     {timelinePager.pageItems.map((t, i) => (
                       <tr key={`${t.at}-${t.type}-${i}`} className="border-b border-border/50">
-                        <td className="px-3 py-2 capitalize text-secondary">{t.type}</td>
-                        <td className="px-3 py-2">{t.title}</td>
-                        <td className="max-w-[280px] truncate px-3 py-2 text-secondary">
+                        <td className="pl-[15px] pr-3 py-2 capitalize text-secondary">{t.type}</td>
+                        <td className="pl-[15px] pr-3 py-2">{t.title}</td>
+                        <td className="max-w-[280px] truncate pl-[15px] pr-3 py-2 text-secondary">
                           {t.detail || '—'}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-2 text-secondary">{fmt(t.at)}</td>
+                        <td className="whitespace-nowrap pl-[15px] pr-3 py-2 text-secondary">{fmt(t.at)}</td>
                       </tr>
                     ))}
                     {timelinePager.total === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-3 py-8 text-center text-sm text-secondary">
+                        <td colSpan={4} className="pl-[15px] pr-3 py-8 text-center text-sm text-secondary">
                           No timeline activity yet
                         </td>
                       </tr>
@@ -1231,35 +1231,35 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
             <div className="overflow-hidden rounded-xl border border-border bg-[#161a21]">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[720px] text-left text-[12px]">
-                  <thead className="border-b border-border text-[10px] capitalize text-secondary">
+                  <thead className="border-b border-border text-[14px] capitalize text-secondary">
                     <tr>
-                      <th className="px-3 py-2">Employee</th>
-                      <th className="px-3 py-2">Action</th>
-                      <th className="px-3 py-2">IP</th>
-                      <th className="px-3 py-2">Device</th>
-                      <th className="px-3 py-2">Time</th>
+                      <th className="pl-[15px] pr-3 py-2">Employee</th>
+                      <th className="pl-[15px] pr-3 py-2">Action</th>
+                      <th className="pl-[15px] pr-3 py-2">IP</th>
+                      <th className="pl-[15px] pr-3 py-2">Device</th>
+                      <th className="pl-[15px] pr-3 py-2">Time</th>
                     </tr>
                   </thead>
                   <tbody>
                     {activityPager.pageItems.map((a: any) => (
                       <tr key={a.id} className="border-b border-border/50">
-                        <td className="px-3 py-2">{a.staff?.name || '—'}</td>
-                        <td className="px-3 py-2">
+                        <td className="pl-[15px] pr-3 py-2">{a.staff?.name || '—'}</td>
+                        <td className="pl-[15px] pr-3 py-2">
                           {a.action}
                           {a.detail ? (
                             <span className="block text-[10px] text-secondary">{a.detail}</span>
                           ) : null}
                         </td>
-                        <td className="px-3 py-2 text-secondary">{a.ip || '—'}</td>
-                        <td className="max-w-[200px] truncate px-3 py-2 text-secondary">
+                        <td className="pl-[15px] pr-3 py-2 text-secondary">{a.ip || '—'}</td>
+                        <td className="max-w-[200px] truncate pl-[15px] pr-3 py-2 text-secondary">
                           {a.device || '—'}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-2 text-secondary">{fmt(a.createdAt)}</td>
+                        <td className="whitespace-nowrap pl-[15px] pr-3 py-2 text-secondary">{fmt(a.createdAt)}</td>
                       </tr>
                     ))}
                     {activityPager.total === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-3 py-8 text-center text-sm text-secondary">
+                        <td colSpan={5} className="pl-[15px] pr-3 py-8 text-center text-sm text-secondary">
                           No activity history yet
                         </td>
                       </tr>

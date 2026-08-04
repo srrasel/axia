@@ -28,7 +28,7 @@ import {
   Clock3,
 } from 'lucide-react'
 import { api } from './api'
-import { Card, PageHeader, Panel, money, isCrmStaffRole } from './layout'
+import { Card, PageHeader, Panel, money, isCrmStaffRole, nameCellClass } from './layout'
 import { setActiveCurrency, useCurrency } from './currency'
 import { useAuth } from './auth'
 
@@ -436,7 +436,7 @@ export function Dashboard() {
                 className="flex items-center justify-between rounded-xl px-2.5 py-2.5 text-sm transition-colors hover:bg-muted"
               >
                 <div className="min-w-0">
-                  <div className="truncate font-medium text-text">{u.name}</div>
+                  <div className={`truncate ${nameCellClass}`}>{u.name}</div>
                   <div className="truncate text-xs text-secondary">{u.email}</div>
                 </div>
                 <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${u.funded ? 'bg-buy/15 text-buy' : 'bg-muted text-secondary'}`}>
@@ -452,7 +452,7 @@ export function Dashboard() {
             {data.recentTx.map((t: any) => (
               <div key={t.id} className="flex items-center justify-between rounded-xl px-2.5 py-2.5 text-sm transition-colors hover:bg-muted">
                 <div className="min-w-0">
-                  <div className="truncate font-medium text-text">{t.user.name}</div>
+                  <div className={`truncate ${nameCellClass}`}>{t.user.name}</div>
                   <div className="flex items-center gap-1.5 text-xs capitalize text-secondary">
                     <Clock3 size={11} /> {t.type} · {t.status}
                   </div>

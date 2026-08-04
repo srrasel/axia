@@ -156,9 +156,9 @@ const colSelectStyleBase = {
   backgroundPosition: 'right 14px center',
   backgroundSize: '14px 14px',
 } as const
-const thClass = 'align-bottom px-3 py-3 text-left'
+const thClass = 'align-bottom pl-[15px] pr-3 py-3 text-left'
 const thLabelClass = 'mb-1.5 block whitespace-nowrap text-[14px] font-semibold capitalize tracking-wide text-secondary'
-const tdClass = 'align-middle px-3 py-1.5 sm:py-3.5'
+const tdClass = 'align-middle pl-[15px] pr-3 py-1.5 sm:py-3.5'
 
 /** Date filter: custom UI only — avoids native mm/dd/yyyy + icon overlap. */
 function DateFilterInput({

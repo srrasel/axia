@@ -19,7 +19,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '../api'
-import { btnPrimary, money, PageHeader, Panel, TablePagination, ToastPopup, usePagination, useToast } from '../layout'
+import { btnPrimary, money, PageHeader, Panel, TablePagination, ToastPopup, usePagination, useToast, nameCellClass } from '../layout'
 
 function fmt(iso?: string) {
   if (!iso) return '—'
@@ -110,19 +110,19 @@ export function CrmRolesPage() {
         <table className="w-full min-w-[700px] text-left text-sm">
           <thead className="border-b border-border text-[14px] capitalize text-secondary">
             <tr>
-              <th className="px-3 py-2">Name</th>
-              <th className="px-3 py-2">Email</th>
-              <th className="px-3 py-2">Role</th>
-              <th className="px-3 py-2">2FA</th>
-              <th className="px-3 py-2">Active</th>
+              <th className="pl-[15px] pr-3 py-2">Name</th>
+              <th className="pl-[15px] pr-3 py-2">Email</th>
+              <th className="pl-[15px] pr-3 py-2">Role</th>
+              <th className="pl-[15px] pr-3 py-2">2FA</th>
+              <th className="pl-[15px] pr-3 py-2">Active</th>
             </tr>
           </thead>
           <tbody>
             {users.map((u) => (
               <tr key={u.id} className="border-b border-border/50">
-                <td className="px-3 py-2 font-medium">{u.name}</td>
-                <td className="px-3 py-2 text-secondary">{u.email}</td>
-                <td className="px-3 py-2">
+                <td className={`pl-[15px] pr-3 py-2 ${nameCellClass}`}>{u.name}</td>
+                <td className="pl-[15px] pr-3 py-2 text-secondary">{u.email}</td>
+                <td className="pl-[15px] pr-3 py-2">
                   <select
                     disabled={busy || u.role === 'ADMIN'}
                     value={u.role}
@@ -147,8 +147,8 @@ export function CrmRolesPage() {
                     ))}
                   </select>
                 </td>
-                <td className="px-3 py-2">{u.totpEnabled ? 'On' : 'Off'}</td>
-                <td className="px-3 py-2">{u.active ? 'Yes' : 'No'}</td>
+                <td className="pl-[15px] pr-3 py-2">{u.totpEnabled ? 'On' : 'Off'}</td>
+                <td className="pl-[15px] pr-3 py-2">{u.active ? 'Yes' : 'No'}</td>
               </tr>
             ))}
           </tbody>
@@ -420,23 +420,23 @@ export function CrmSecurityPage() {
         <table className="w-full min-w-[800px] text-left text-[12px]">
           <thead className="text-[14px] capitalize text-secondary">
             <tr>
-              <th className="px-3 py-2">User</th>
-              <th className="px-3 py-2">IP</th>
-              <th className="px-3 py-2">Device</th>
-              <th className="px-3 py-2">Result</th>
-              <th className="px-3 py-2">Time</th>
+              <th className="pl-[15px] pr-3 py-2">User</th>
+              <th className="pl-[15px] pr-3 py-2">IP</th>
+              <th className="pl-[15px] pr-3 py-2">Device</th>
+              <th className="pl-[15px] pr-3 py-2">Result</th>
+              <th className="pl-[15px] pr-3 py-2">Time</th>
             </tr>
           </thead>
           <tbody>
             {loginPager.pageItems.map((l: any) => (
               <tr key={l.id} className="border-t border-border/50">
-                <td className="px-3 py-2">{l.user?.email || l.email || '—'}</td>
-                <td className="px-3 py-2 text-secondary">{l.ip || '—'}</td>
-                <td className="max-w-[200px] truncate px-3 py-2 text-secondary">{l.device || '—'}</td>
-                <td className={`px-3 py-2 ${l.success ? 'text-buy' : 'text-sell'}`}>
+                <td className="pl-[15px] pr-3 py-2">{l.user?.email || l.email || '—'}</td>
+                <td className="pl-[15px] pr-3 py-2 text-secondary">{l.ip || '—'}</td>
+                <td className="max-w-[200px] truncate pl-[15px] pr-3 py-2 text-secondary">{l.device || '—'}</td>
+                <td className={`pl-[15px] pr-3 py-2 ${l.success ? 'text-buy' : 'text-sell'}`}>
                   {l.success ? 'OK' : l.reason || 'Fail'}
                 </td>
-                <td className="px-3 py-2 text-secondary">{fmt(l.createdAt)}</td>
+                <td className="pl-[15px] pr-3 py-2 text-secondary">{fmt(l.createdAt)}</td>
               </tr>
             ))}
           </tbody>
@@ -460,21 +460,21 @@ export function CrmSecurityPage() {
         <table className="w-full min-w-[700px] text-left text-[12px]">
           <thead className="text-[14px] capitalize text-secondary">
             <tr>
-              <th className="px-3 py-2">User</th>
-              <th className="px-3 py-2">IP</th>
-              <th className="px-3 py-2">Device</th>
-              <th className="px-3 py-2">Last Active</th>
-              <th className="px-3 py-2">Action</th>
+              <th className="pl-[15px] pr-3 py-2">User</th>
+              <th className="pl-[15px] pr-3 py-2">IP</th>
+              <th className="pl-[15px] pr-3 py-2">Device</th>
+              <th className="pl-[15px] pr-3 py-2">Last Active</th>
+              <th className="pl-[15px] pr-3 py-2">Action</th>
             </tr>
           </thead>
           <tbody>
             {sessionPager.pageItems.map((s: any) => (
               <tr key={s.id} className="border-t border-border/50">
-                <td className="px-3 py-2">{s.user?.name || '—'}</td>
-                <td className="px-3 py-2 text-secondary">{s.ip || '—'}</td>
-                <td className="max-w-[200px] truncate px-3 py-2 text-secondary">{s.device || '—'}</td>
-                <td className="px-3 py-2 text-secondary">{fmt(s.lastActiveAt)}</td>
-                <td className="px-3 py-2">
+                <td className="pl-[15px] pr-3 py-2">{s.user?.name || '—'}</td>
+                <td className="pl-[15px] pr-3 py-2 text-secondary">{s.ip || '—'}</td>
+                <td className="max-w-[200px] truncate pl-[15px] pr-3 py-2 text-secondary">{s.device || '—'}</td>
+                <td className="pl-[15px] pr-3 py-2 text-secondary">{fmt(s.lastActiveAt)}</td>
+                <td className="pl-[15px] pr-3 py-2">
                   <button
                     type="button"
                     className="text-xs text-sell"
@@ -510,26 +510,26 @@ export function CrmSecurityPage() {
         <table className="w-full min-w-[700px] text-left text-[12px]">
           <thead className="text-[14px] capitalize text-secondary">
             <tr>
-              <th className="px-3 py-2">Staff</th>
-              <th className="px-3 py-2">Client</th>
-              <th className="px-3 py-2">Action</th>
-              <th className="px-3 py-2">IP</th>
-              <th className="px-3 py-2">Time</th>
+              <th className="pl-[15px] pr-3 py-2">Staff</th>
+              <th className="pl-[15px] pr-3 py-2">Client</th>
+              <th className="pl-[15px] pr-3 py-2">Action</th>
+              <th className="pl-[15px] pr-3 py-2">IP</th>
+              <th className="pl-[15px] pr-3 py-2">Time</th>
             </tr>
           </thead>
           <tbody>
             {auditPager.pageItems.map((a: any) => (
               <tr key={a.id} className="border-t border-border/50">
-                <td className="px-3 py-2">{a.staff?.name || '—'}</td>
-                <td className="px-3 py-2">
+                <td className="pl-[15px] pr-3 py-2">{a.staff?.name || '—'}</td>
+                <td className="pl-[15px] pr-3 py-2">
                   #{a.client?.crmNumber} {a.client?.name}
                 </td>
-                <td className="px-3 py-2">
+                <td className="pl-[15px] pr-3 py-2">
                   {a.action}
                   {a.detail ? <span className="block text-[10px] text-secondary">{a.detail}</span> : null}
                 </td>
-                <td className="px-3 py-2 text-secondary">{a.ip || '—'}</td>
-                <td className="px-3 py-2 text-secondary">{fmt(a.createdAt)}</td>
+                <td className="pl-[15px] pr-3 py-2 text-secondary">{a.ip || '—'}</td>
+                <td className="pl-[15px] pr-3 py-2 text-secondary">{fmt(a.createdAt)}</td>
               </tr>
             ))}
           </tbody>

@@ -4,7 +4,7 @@ import { DollarSign } from 'lucide-react'
 import { api } from './api'
 import { AuthProvider, useAuth } from './auth'
 import { LoginPage, ForgotPasswordPage } from './auth-pages'
-import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination, canAccessPath, isCrmStaffRole, ToastPopup, useToast, actionBtnPrimary, actionBtnSuccess, actionBtnDanger, actionBtnNeutral, actionTdClass } from './layout'
+import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination, canAccessPath, isCrmStaffRole, ToastPopup, useToast, actionBtnPrimary, actionBtnSuccess, actionBtnDanger, actionBtnNeutral, actionTdClass, nameLinkClass, nameCellClass } from './layout'
 import { setActiveCurrency } from './currency'
 import { Dashboard } from './dashboard'
 import { CrmPricesPage, CrmStaffPage } from './crm'
@@ -193,26 +193,26 @@ function EarningsPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-muted text-[14px] text-secondary">
               <tr>
-                <th className="px-3 py-2">Type</th>
-                <th className="px-3 py-2">Amount</th>
-                <th className="px-3 py-2">Description</th>
-                <th className="px-3 py-2">User</th>
-                <th className="px-3 py-2">Date</th>
+                <th className="pl-[15px] pr-3 py-2">Type</th>
+                <th className="pl-[15px] pr-3 py-2">Amount</th>
+                <th className="pl-[15px] pr-3 py-2">Description</th>
+                <th className="pl-[15px] pr-3 py-2">User</th>
+                <th className="pl-[15px] pr-3 py-2">Date</th>
               </tr>
             </thead>
             <tbody className="text-[12px]">
               {recentPager.pageItems.map((e: any) => (
                 <tr key={e.id} className="border-t border-border">
-                  <td className="px-3 py-2 capitalize">{e.type.replaceAll('_', ' ')}</td>
-                  <td className="px-3 py-2 font-semibold text-buy">{money(e.amount)}</td>
-                  <td className="px-3 py-2">{e.description}</td>
-                  <td className="px-3 py-2">{e.user?.name || '—'}</td>
-                  <td className="px-3 py-2">{new Date(e.createdAt).toLocaleString()}</td>
+                  <td className="pl-[15px] pr-3 py-2 capitalize">{e.type.replaceAll('_', ' ')}</td>
+                  <td className="pl-[15px] pr-3 py-2 font-semibold text-buy">{money(e.amount)}</td>
+                  <td className="pl-[15px] pr-3 py-2">{e.description}</td>
+                  <td className="pl-[15px] pr-3 py-2">{e.user?.name ? <span className={nameCellClass}>{e.user.name}</span> : '—'}</td>
+                  <td className="pl-[15px] pr-3 py-2">{new Date(e.createdAt).toLocaleString()}</td>
                 </tr>
               ))}
               {recentPager.total === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-8 text-center text-secondary">No earnings entries</td>
+                  <td colSpan={5} className="pl-[15px] pr-3 py-8 text-center text-secondary">No earnings entries</td>
                 </tr>
               ) : null}
             </tbody>
@@ -271,30 +271,30 @@ function UsersPage() {
       <div className="overflow-hidden rounded-xl border border-border bg-panel">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-secondary">
+            <thead className="bg-muted text-[14px] text-secondary">
               <tr>
-                <th className="px-3 py-2">Name</th>
-                <th className="px-3 py-2">Email</th>
-                <th className="px-3 py-2">KYC</th>
-                <th className="px-3 py-2">Funded</th>
-                <th className="px-3 py-2">Active</th>
-                <th className="px-3 py-2">Trades</th>
+                <th className="pl-[15px] pr-3 py-2">Name</th>
+                <th className="pl-[15px] pr-3 py-2">Email</th>
+                <th className="pl-[15px] pr-3 py-2">KYC</th>
+                <th className="pl-[15px] pr-3 py-2">Funded</th>
+                <th className="pl-[15px] pr-3 py-2">Active</th>
+                <th className="pl-[15px] pr-3 py-2">Trades</th>
               </tr>
             </thead>
             <tbody>
               {pager.pageItems.map((u) => (
                 <tr key={u.id} className="border-t border-border hover:bg-muted/50">
-                  <td className="px-3 py-2"><Link className="font-medium text-link" to={`/users/${u.id}`}>{u.name}</Link></td>
-                  <td className="px-3 py-2">{u.email}</td>
-                  <td className="px-3 py-2 capitalize">{u.kycStatus}</td>
-                  <td className="px-3 py-2">{u.funded ? 'Yes' : 'No'}</td>
-                  <td className="px-3 py-2">{u.active ? 'Yes' : 'No'}</td>
-                  <td className="px-3 py-2">{u._count?.trades ?? 0}</td>
+                  <td className="pl-[15px] pr-3 py-2"><Link className={nameLinkClass} to={`/users/${u.id}`}>{u.name}</Link></td>
+                  <td className="pl-[15px] pr-3 py-2">{u.email}</td>
+                  <td className="pl-[15px] pr-3 py-2 capitalize">{u.kycStatus}</td>
+                  <td className="pl-[15px] pr-3 py-2">{u.funded ? 'Yes' : 'No'}</td>
+                  <td className="pl-[15px] pr-3 py-2">{u.active ? 'Yes' : 'No'}</td>
+                  <td className="pl-[15px] pr-3 py-2">{u._count?.trades ?? 0}</td>
                 </tr>
               ))}
               {pager.total === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-3 py-8 text-center text-secondary">No users found</td>
+                  <td colSpan={6} className="pl-[15px] pr-3 py-8 text-center text-secondary">No users found</td>
                 </tr>
               ) : null}
             </tbody>
@@ -385,8 +385,8 @@ function UserDetail() {
       <div className="mb-6 overflow-hidden rounded-xl border border-border bg-panel">
         <div className="overflow-auto">
           <table className="w-full text-sm">
-            <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2 text-left">Number</th><th className="px-3 py-2 text-left">Type</th><th className="px-3 py-2 text-left">Balance</th><th className="px-3 py-2 text-left">Equity</th></tr></thead>
-            <tbody>{accountsPager.pageItems.map((a: any) => <tr key={a.id} className="border-t border-border"><td className="px-3 py-2">{a.number}</td><td className="px-3 py-2">{a.type}</td><td className="px-3 py-2">{money(a.balance)}</td><td className="px-3 py-2">{money(a.equity)}</td></tr>)}</tbody>
+            <thead className="bg-muted text-[14px] text-secondary"><tr><th className="pl-[15px] pr-3 py-2 text-left">Number</th><th className="pl-[15px] pr-3 py-2 text-left">Type</th><th className="pl-[15px] pr-3 py-2 text-left">Balance</th><th className="pl-[15px] pr-3 py-2 text-left">Equity</th></tr></thead>
+            <tbody>{accountsPager.pageItems.map((a: any) => <tr key={a.id} className="border-t border-border"><td className="pl-[15px] pr-3 py-2">{a.number}</td><td className="pl-[15px] pr-3 py-2">{a.type}</td><td className="pl-[15px] pr-3 py-2">{money(a.balance)}</td><td className="pl-[15px] pr-3 py-2">{money(a.equity)}</td></tr>)}</tbody>
           </table>
         </div>
         <TablePagination page={accountsPager.page} totalPages={accountsPager.totalPages} total={accountsPager.total} from={accountsPager.from} to={accountsPager.to} onPageChange={accountsPager.setPage} />
@@ -395,8 +395,8 @@ function UserDetail() {
       <div className="overflow-hidden rounded-xl border border-border bg-panel">
         <div className="overflow-auto">
           <table className="w-full text-sm">
-            <thead className="bg-muted text-xs text-secondary"><tr><th className="px-3 py-2 text-left">Symbol</th><th className="px-3 py-2 text-left">Side</th><th className="px-3 py-2 text-left">Status</th><th className="px-3 py-2 text-left">Volume</th><th className="px-3 py-2 text-left">PnL</th></tr></thead>
-            <tbody>{tradesPager.pageItems.map((t: any) => <tr key={t.id} className="border-t border-border"><td className="px-3 py-2">{t.symbol}</td><td className="px-3 py-2">{t.side}</td><td className="px-3 py-2">{t.status}</td><td className="px-3 py-2">{t.volume}</td><td className="px-3 py-2">{t.realizedPnl != null ? money(t.realizedPnl) : '—'}</td></tr>)}</tbody>
+            <thead className="bg-muted text-[14px] text-secondary"><tr><th className="pl-[15px] pr-3 py-2 text-left">Symbol</th><th className="pl-[15px] pr-3 py-2 text-left">Side</th><th className="pl-[15px] pr-3 py-2 text-left">Status</th><th className="pl-[15px] pr-3 py-2 text-left">Volume</th><th className="pl-[15px] pr-3 py-2 text-left">PnL</th></tr></thead>
+            <tbody>{tradesPager.pageItems.map((t: any) => <tr key={t.id} className="border-t border-border"><td className="pl-[15px] pr-3 py-2">{t.symbol}</td><td className="pl-[15px] pr-3 py-2">{t.side}</td><td className="pl-[15px] pr-3 py-2">{t.status}</td><td className="pl-[15px] pr-3 py-2">{t.volume}</td><td className="pl-[15px] pr-3 py-2">{t.realizedPnl != null ? money(t.realizedPnl) : '—'}</td></tr>)}</tbody>
           </table>
         </div>
         <TablePagination page={tradesPager.page} totalPages={tradesPager.totalPages} total={tradesPager.total} from={tradesPager.from} to={tradesPager.to} onPageChange={tradesPager.setPage} />
@@ -415,10 +415,10 @@ function AccountsPage() {
       <div className="overflow-hidden rounded-xl border border-border bg-panel">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-[14px] text-secondary"><tr><th className="px-3 py-2">User</th><th className="px-3 py-2">Number</th><th className="px-3 py-2">Type</th><th className="px-3 py-2">Balance</th><th className="px-3 py-2">Leverage</th></tr></thead>
+            <thead className="bg-muted text-[14px] text-secondary"><tr><th className="pl-[15px] pr-3 py-2">User</th><th className="pl-[15px] pr-3 py-2">Number</th><th className="pl-[15px] pr-3 py-2">Type</th><th className="pl-[15px] pr-3 py-2">Balance</th><th className="pl-[15px] pr-3 py-2">Leverage</th></tr></thead>
             <tbody>
-              {pager.pageItems.map((a) => <tr key={a.id} className="border-t border-border"><td className="px-3 py-2">{a.user.name}</td><td className="px-3 py-2">{a.number}</td><td className="px-3 py-2">{a.type}</td><td className="px-3 py-2">{money(a.balance)}</td><td className="px-3 py-2">{a.leverage}</td></tr>)}
-              {pager.total === 0 ? <tr><td colSpan={5} className="px-3 py-8 text-center text-secondary">No accounts</td></tr> : null}
+              {pager.pageItems.map((a) => <tr key={a.id} className="border-t border-border"><td className={`pl-[15px] pr-3 py-2 ${nameCellClass}`}>{a.user.name}</td><td className="pl-[15px] pr-3 py-2">{a.number}</td><td className="pl-[15px] pr-3 py-2">{a.type}</td><td className="pl-[15px] pr-3 py-2">{money(a.balance)}</td><td className="pl-[15px] pr-3 py-2">{a.leverage}</td></tr>)}
+              {pager.total === 0 ? <tr><td colSpan={5} className="pl-[15px] pr-3 py-8 text-center text-secondary">No accounts</td></tr> : null}
             </tbody>
           </table>
         </div>
@@ -489,28 +489,28 @@ function TradesPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-muted text-[14px] text-secondary">
               <tr>
-                <th className="px-3 py-2">User</th>
-                <th className="px-3 py-2">Symbol</th>
-                <th className="px-3 py-2">Side</th>
-                <th className="px-3 py-2">Status</th>
-                <th className="px-3 py-2">Vol</th>
-                <th className="px-3 py-2">Open (entry)</th>
-                <th className="px-3 py-2">Current (mark)</th>
-                <th className="px-3 py-2">Action</th>
+                <th className="pl-[15px] pr-3 py-2">User</th>
+                <th className="pl-[15px] pr-3 py-2">Symbol</th>
+                <th className="pl-[15px] pr-3 py-2">Side</th>
+                <th className="pl-[15px] pr-3 py-2">Status</th>
+                <th className="pl-[15px] pr-3 py-2">Vol</th>
+                <th className="pl-[15px] pr-3 py-2">Open (entry)</th>
+                <th className="pl-[15px] pr-3 py-2">Current (mark)</th>
+                <th className="pl-[15px] pr-3 py-2">Action</th>
               </tr>
             </thead>
             <tbody>
               {pager.pageItems.map((t) => (
                 <tr key={t.id} className="border-t border-border">
-                  <td className="px-3 py-2">{t.user.name}</td>
-                  <td className="px-3 py-2 font-medium">{t.symbol}</td>
-                  <td className="px-3 py-2">{t.side}</td>
-                  <td className="px-3 py-2">
+                  <td className={`pl-[15px] pr-3 py-2 ${nameCellClass}`}>{t.user.name}</td>
+                  <td className="pl-[15px] pr-3 py-2 font-medium">{t.symbol}</td>
+                  <td className="pl-[15px] pr-3 py-2">{t.side}</td>
+                  <td className="pl-[15px] pr-3 py-2">
                     {t.status}
                     {t.markLocked ? <span className="ml-1 text-[10px] text-accent">locked</span> : null}
                   </td>
-                  <td className="px-3 py-2">{t.volume}</td>
-                  <td className="px-3 py-2">
+                  <td className="pl-[15px] pr-3 py-2">{t.volume}</td>
+                  <td className="pl-[15px] pr-3 py-2">
                     {t.status === 'open' || t.status === 'pending' ? (
                       <input
                         className="h-8 w-28 rounded border border-border bg-muted/30 px-2 text-xs tabular-nums outline-none hover:border-[#fcd535]/70 focus:border-[#fcd535]"
@@ -526,7 +526,7 @@ function TradesPage() {
                       t.openPrice
                     )}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="pl-[15px] pr-3 py-2">
                     {t.status === 'open' || t.status === 'pending' ? (
                       <input
                         className="h-8 w-28 rounded border border-border bg-muted/30 px-2 text-xs tabular-nums outline-none hover:border-[#fcd535]/70 focus:border-[#fcd535]"
@@ -574,7 +574,7 @@ function TradesPage() {
               ))}
               {pager.total === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-3 py-8 text-center text-secondary">
+                  <td colSpan={8} className="pl-[15px] pr-3 py-8 text-center text-secondary">
                     No trades
                   </td>
                 </tr>
@@ -633,26 +633,26 @@ function TransactionsPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-muted text-[14px] text-secondary">
               <tr>
-                <th className="px-3 py-2">User</th>
-                <th className="px-3 py-2">Type</th>
-                <th className="px-3 py-2">Amount</th>
-                <th className="px-3 py-2">Fee</th>
-                <th className="px-3 py-2">Status</th>
-                <th className="px-3 py-2">Payment</th>
-                <th className="px-3 py-2">Note</th>
-                <th className="px-3 py-2">Date</th>
-                <th className="px-3 py-2">Actions</th>
+                <th className="pl-[15px] pr-3 py-2">User</th>
+                <th className="pl-[15px] pr-3 py-2">Type</th>
+                <th className="pl-[15px] pr-3 py-2">Amount</th>
+                <th className="pl-[15px] pr-3 py-2">Fee</th>
+                <th className="pl-[15px] pr-3 py-2">Status</th>
+                <th className="pl-[15px] pr-3 py-2">Payment</th>
+                <th className="pl-[15px] pr-3 py-2">Note</th>
+                <th className="pl-[15px] pr-3 py-2">Date</th>
+                <th className="pl-[15px] pr-3 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
               {pager.pageItems.map((t) => (
                 <tr key={t.id} className="border-t border-border">
-                  <td className="px-3 py-2">{t.user.name}</td>
-                  <td className="px-3 py-2 capitalize">{t.type}</td>
-                  <td className={`px-3 py-2 ${t.amount >= 0 ? 'text-buy' : 'text-sell'}`}>{money(t.amount)}</td>
-                  <td className="px-3 py-2">{money(t.fee || 0)}</td>
-                  <td className="px-3 py-2 capitalize">{t.status}</td>
-                  <td className="px-3 py-2">
+                  <td className={`pl-[15px] pr-3 py-2 ${nameCellClass}`}>{t.user.name}</td>
+                  <td className="pl-[15px] pr-3 py-2 capitalize">{t.type}</td>
+                  <td className={`pl-[15px] pr-3 py-2 ${t.amount >= 0 ? 'text-buy' : 'text-sell'}`}>{money(t.amount)}</td>
+                  <td className="pl-[15px] pr-3 py-2">{money(t.fee || 0)}</td>
+                  <td className="pl-[15px] pr-3 py-2 capitalize">{t.status}</td>
+                  <td className="pl-[15px] pr-3 py-2">
                     <div>{t.payment}</div>
                     {String(t.payment || '').toLowerCase().includes('bank') ? (
                       <div className="text-[10px] font-semibold text-sell">Needs bank approval</div>
@@ -662,10 +662,10 @@ function TransactionsPage() {
                       <div className="text-[10px] font-semibold text-sell">Needs crypto approval</div>
                     ) : null}
                   </td>
-                  <td className="max-w-[180px] truncate px-3 py-2 text-xs text-secondary" title={t.note || ''}>
+                  <td className="max-w-[180px] truncate pl-[15px] pr-3 py-2 text-xs text-secondary" title={t.note || ''}>
                     {t.note || '—'}
                   </td>
-                  <td className="px-3 py-2">{new Date(t.createdAt).toLocaleString()}</td>
+                  <td className="pl-[15px] pr-3 py-2">{new Date(t.createdAt).toLocaleString()}</td>
                   <td className={`${actionTdClass} space-x-2`}>
                     {t.status === 'pending' && (t.type === 'deposit' || t.type === 'withdraw') ? (
                       <div className="flex flex-wrap gap-2">
@@ -694,7 +694,7 @@ function TransactionsPage() {
               ))}
               {pager.total === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-3 py-8 text-center text-secondary">
+                  <td colSpan={9} className="pl-[15px] pr-3 py-8 text-center text-secondary">
                     No transactions for this filter
                   </td>
                 </tr>

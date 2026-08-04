@@ -457,8 +457,13 @@ export const actionBtnPrimary = `${actionBtnBase} bg-[#fcd535] text-[#202630] ho
 export const actionBtnSuccess = `${actionBtnBase} border border-buy/40 bg-buy/15 text-buy hover:bg-buy/25`
 export const actionBtnDanger = `${actionBtnBase} border border-sell/40 bg-sell/15 text-sell hover:bg-sell/25`
 export const actionBtnNeutral = `${actionBtnBase} border border-border bg-panel text-secondary hover:border-accent/40 hover:bg-muted hover:text-text`
-export const actionTdClass = 'px-3 py-2 pl-[22px]'
-export const actionTdClassLoose = 'px-3 py-2.5 pl-[22px]'
+export const theadClass = 'bg-muted text-[14px] text-secondary'
+export const thClass = 'pl-[15px] pr-3 py-2'
+export const tdClass = 'pl-[15px] pr-3 py-2'
+export const nameLinkClass = 'font-medium text-[#22a06b] hover:text-[#1a8056]'
+export const nameCellClass = 'font-medium text-[#22a06b]'
+export const actionTdClass = 'pl-[25px] pr-3 py-2'
+export const actionTdClassLoose = 'pl-[25px] pr-3 py-2.5'
 
 export const PAGE_SIZE = 10
 

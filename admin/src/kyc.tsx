@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Eye, X, Check, Ban, FileText } from 'lucide-react'
 import { api } from './api'
-import { PageHeader, Panel, StatusBadge, TablePagination, usePagination, actionBtnPrimary, actionBtnSuccess, actionBtnDanger, actionBtnNeutral, actionTdClass } from './layout'
+import { PageHeader, Panel, StatusBadge, TablePagination, usePagination, actionBtnPrimary, actionBtnSuccess, actionBtnDanger, actionBtnNeutral, actionTdClass, nameCellClass } from './layout'
 
 type KycDoc = {
   id: string
@@ -107,34 +107,34 @@ export function KycPage() {
       <Panel title="Document Queue" subtitle={`${documents.length} submission(s)`}>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left text-sm">
-            <thead className="border-b border-border text-xs capitalize text-secondary">
+            <thead className="border-b border-border text-[14px] capitalize text-secondary">
               <tr>
-                <th className="px-3 py-2.5">User</th>
-                <th className="px-3 py-2.5">Kind</th>
-                <th className="px-3 py-2.5">Document</th>
-                <th className="px-3 py-2.5">File</th>
-                <th className="px-3 py-2.5">Submitted</th>
-                <th className="px-3 py-2.5">Status</th>
-                <th className="px-3 py-2.5">Actions</th>
+                <th className="pl-[15px] pr-3 py-2.5">User</th>
+                <th className="pl-[15px] pr-3 py-2.5">Kind</th>
+                <th className="pl-[15px] pr-3 py-2.5">Document</th>
+                <th className="pl-[15px] pr-3 py-2.5">File</th>
+                <th className="pl-[15px] pr-3 py-2.5">Submitted</th>
+                <th className="pl-[15px] pr-3 py-2.5">Status</th>
+                <th className="pl-[15px] pr-3 py-2.5">Actions</th>
               </tr>
             </thead>
             <tbody>
               {pager.pageItems.map((d) => (
                 <tr key={d.id} className="border-b border-border/60">
-                  <td className="px-3 py-3">
-                    <div className="font-medium capitalize text-text">{d.user.name}</div>
+                  <td className="pl-[15px] pr-3 py-3">
+                    <div className={`${nameCellClass} capitalize`}>{d.user.name}</div>
                     <div className="text-xs text-secondary">{d.user.email}</div>
                   </td>
-                  <td className="px-3 py-3 capitalize">{formatKind(d.kind)}</td>
-                  <td className="px-3 py-3 font-medium">{d.docType}</td>
-                  <td className="max-w-[180px] truncate px-3 py-3 text-secondary" title={d.fileName}>
+                  <td className="pl-[15px] pr-3 py-3 capitalize">{formatKind(d.kind)}</td>
+                  <td className="pl-[15px] pr-3 py-3 font-medium">{d.docType}</td>
+                  <td className="max-w-[180px] truncate pl-[15px] pr-3 py-3 text-secondary" title={d.fileName}>
                     {d.fileName}
                     {!d.hasFile ? (
                       <span className="ml-1 text-[10px] text-sell">(no file)</span>
                     ) : null}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-3 text-xs text-secondary">{fmt(d.createdAt)}</td>
-                  <td className="px-3 py-3">
+                  <td className="whitespace-nowrap pl-[15px] pr-3 py-3 text-xs text-secondary">{fmt(d.createdAt)}</td>
+                  <td className="pl-[15px] pr-3 py-3">
                     <StatusBadge status={d.status} />
                   </td>
                   <td className={actionTdClass}>

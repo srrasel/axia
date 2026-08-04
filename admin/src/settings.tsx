@@ -304,11 +304,11 @@ export function SettingsPage() {
 
           <div className="overflow-hidden rounded-xl border border-border">
             <table className="w-full text-left text-sm">
-              <thead className="bg-muted/80 text-[11px] uppercase tracking-wide text-secondary">
+              <thead className="bg-muted/80 text-[14px] uppercase tracking-wide text-secondary">
                 <tr>
-                  <th className="px-3 py-2.5 font-semibold">From \ To</th>
+                  <th className="pl-[15px] pr-3 py-2.5 font-semibold">From \ To</th>
                   {['USD', 'EUR', 'GBP'].map((c) => (
-                    <th key={c} className="px-3 py-2.5 font-semibold">
+                    <th key={c} className="pl-[15px] pr-3 py-2.5 font-semibold">
                       {c}
                     </th>
                   ))}
@@ -317,7 +317,7 @@ export function SettingsPage() {
               <tbody>
                 {['USD', 'EUR', 'GBP'].map((from) => (
                   <tr key={from} className="border-t border-border">
-                    <td className="px-3 py-2.5 font-semibold text-text">{from}</td>
+                    <td className="pl-[15px] pr-3 py-2.5 font-semibold text-text">{from}</td>
                     {['USD', 'EUR', 'GBP'].map((to) => (
                       <td
                         key={to}

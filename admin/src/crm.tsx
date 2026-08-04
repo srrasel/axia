@@ -18,6 +18,7 @@ import {
   actionBtnSuccess,
   actionBtnNeutral,
   actionTdClassLoose,
+  nameLinkClass,
 } from './layout'
 import { getActiveCurrency } from './currency'
 
@@ -93,43 +94,43 @@ export function CrmTransactionsPage() {
       <div className="hidden overflow-hidden rounded-2xl border border-border bg-panel md:block">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-secondary">
+            <thead className="bg-muted text-[14px] text-secondary">
               <tr>
-                <th className="px-3 py-2.5">Client</th>
-                <th className="px-3 py-2.5">Assigned</th>
-                <th className="px-3 py-2.5">Type</th>
-                <th className="px-3 py-2.5">Amount</th>
-                <th className="px-3 py-2.5">Fee</th>
-                <th className="px-3 py-2.5">Status</th>
-                <th className="px-3 py-2.5">Note</th>
-                <th className="px-3 py-2.5">Date</th>
+                <th className="pl-[15px] pr-3 py-2.5">Client</th>
+                <th className="pl-[15px] pr-3 py-2.5">Assigned</th>
+                <th className="pl-[15px] pr-3 py-2.5">Type</th>
+                <th className="pl-[15px] pr-3 py-2.5">Amount</th>
+                <th className="pl-[15px] pr-3 py-2.5">Fee</th>
+                <th className="pl-[15px] pr-3 py-2.5">Status</th>
+                <th className="pl-[15px] pr-3 py-2.5">Note</th>
+                <th className="pl-[15px] pr-3 py-2.5">Date</th>
               </tr>
             </thead>
             <tbody>
               {pager.pageItems.map((t) => (
                 <tr key={t.id} className="border-t border-border">
-                  <td className="px-3 py-2.5">
-                    <Link className="text-link" to={`/crm/desk/${t.user.id}`}>
+                  <td className="pl-[15px] pr-3 py-2.5">
+                    <Link className={nameLinkClass} to={`/crm/desk/${t.user.id}`}>
                       {t.user.name}
                     </Link>
                     <div className="text-xs text-secondary">{t.user.email}</div>
                   </td>
-                  <td className="px-3 py-2.5 text-secondary">{t.user.assignedTo?.name || '—'}</td>
-                  <td className="px-3 py-2.5 capitalize">{t.type}</td>
-                  <td className={`px-3 py-2.5 font-medium ${pnlClass(t.amount)}`}>{money(t.amount)}</td>
-                  <td className="px-3 py-2.5">{money(t.fee || 0)}</td>
-                  <td className="px-3 py-2.5">
+                  <td className="pl-[15px] pr-3 py-2.5 text-secondary">{t.user.assignedTo?.name || '—'}</td>
+                  <td className="pl-[15px] pr-3 py-2.5 capitalize">{t.type}</td>
+                  <td className={`pl-[15px] pr-3 py-2.5 font-medium ${pnlClass(t.amount)}`}>{money(t.amount)}</td>
+                  <td className="pl-[15px] pr-3 py-2.5">{money(t.fee || 0)}</td>
+                  <td className="pl-[15px] pr-3 py-2.5">
                     <StatusBadge status={t.status} />
                   </td>
-                  <td className="max-w-[180px] truncate px-3 py-2.5">{t.note || t.payment}</td>
-                  <td className="whitespace-nowrap px-3 py-2.5 text-secondary">
+                  <td className="max-w-[180px] truncate pl-[15px] pr-3 py-2.5">{t.note || t.payment}</td>
+                  <td className="whitespace-nowrap pl-[15px] pr-3 py-2.5 text-secondary">
                     {new Date(t.createdAt).toLocaleString()}
                   </td>
                 </tr>
               ))}
               {pager.total === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-3 py-8 text-center text-secondary">
+                  <td colSpan={8} className="pl-[15px] pr-3 py-8 text-center text-secondary">
                     No transactions
                   </td>
                 </tr>
@@ -153,7 +154,7 @@ export function CrmTransactionsPage() {
           <div key={t.id} className="rounded-2xl border border-border bg-panel p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <Link className="font-medium text-link" to={`/crm/desk/${t.user.id}`}>
+                <Link className={nameLinkClass} to={`/crm/desk/${t.user.id}`}>
                   {t.user.name}
                 </Link>
                 <div className="truncate text-xs text-secondary">{t.user.email}</div>
@@ -263,38 +264,38 @@ export function CrmDeskPage() {
       <div className="hidden overflow-hidden rounded-2xl border border-border bg-panel md:block">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-secondary">
+            <thead className="bg-muted text-[14px] text-secondary">
               <tr>
-                <th className="px-3 py-2.5">Client</th>
-                <th className="px-3 py-2.5">Status</th>
-                <th className="px-3 py-2.5">Assigned to</th>
-                <th className="px-3 py-2.5">Floating</th>
-                <th className="px-3 py-2.5">Realized</th>
-                <th className="px-3 py-2.5">Open</th>
-                {isAdmin ? <th className="px-3 py-2.5">Assign</th> : null}
+                <th className="pl-[15px] pr-3 py-2.5">Client</th>
+                <th className="pl-[15px] pr-3 py-2.5">Status</th>
+                <th className="pl-[15px] pr-3 py-2.5">Assigned to</th>
+                <th className="pl-[15px] pr-3 py-2.5">Floating</th>
+                <th className="pl-[15px] pr-3 py-2.5">Realized</th>
+                <th className="pl-[15px] pr-3 py-2.5">Open</th>
+                {isAdmin ? <th className="pl-[15px] pr-3 py-2.5">Assign</th> : null}
               </tr>
             </thead>
             <tbody>
               {pager.pageItems.map((c) => (
               <tr key={c.id} className="border-t border-border">
-                <td className="px-3 py-2.5">
-                  <button type="button" className="text-left text-link" onClick={() => navigate(`/crm/desk/${c.id}`)}>
+                <td className="pl-[15px] pr-3 py-2.5">
+                  <button type="button" className={`text-left ${nameLinkClass}`} onClick={() => navigate(`/crm/desk/${c.id}`)}>
                     {c.name}
                   </button>
                   <div className="text-xs text-secondary">{c.email}</div>
                 </td>
-                <td className="px-3 py-2.5">
+                <td className="pl-[15px] pr-3 py-2.5">
                   <div className="flex flex-wrap items-center gap-1.5">
                     <StatusBadge status={c.online ? 'Online' : 'Offline'} />
                     {c.funded ? <span className="text-xs text-secondary">Funded</span> : null}
                   </div>
                 </td>
-                <td className="px-3 py-2.5">{c.assignedTo?.name || '—'}</td>
-                <td className={`px-3 py-2.5 ${pnlClass(c.floatingPnl)}`}>{money(c.floatingPnl)}</td>
-                <td className={`px-3 py-2.5 ${pnlClass(c.realizedPnl)}`}>{money(c.realizedPnl)}</td>
-                <td className="px-3 py-2.5">{c.openTrades}</td>
+                <td className="pl-[15px] pr-3 py-2.5">{c.assignedTo?.name || '—'}</td>
+                <td className={`pl-[15px] pr-3 py-2.5 ${pnlClass(c.floatingPnl)}`}>{money(c.floatingPnl)}</td>
+                <td className={`pl-[15px] pr-3 py-2.5 ${pnlClass(c.realizedPnl)}`}>{money(c.realizedPnl)}</td>
+                <td className="pl-[15px] pr-3 py-2.5">{c.openTrades}</td>
                 {isAdmin ? (
-                <td className="px-3 py-2.5">
+                <td className="pl-[15px] pr-3 py-2.5">
                   <select
                     className="h-9 rounded-xl border border-border bg-panel px-2 text-xs"
                     value={c.assignedTo?.id || ''}
@@ -319,7 +320,7 @@ export function CrmDeskPage() {
             ))}
             {pager.total === 0 ? (
               <tr>
-                <td colSpan={isAdmin ? 7 : 6} className="px-3 py-8 text-center text-secondary">
+                <td colSpan={isAdmin ? 7 : 6} className="pl-[15px] pr-3 py-8 text-center text-secondary">
                   No clients found
                 </td>
               </tr>
@@ -347,7 +348,7 @@ export function CrmDeskPage() {
                 className="min-w-0 text-left"
                 onClick={() => navigate(`/crm/desk/${c.id}`)}
               >
-                <div className="font-medium text-link">{c.name}</div>
+                <div className={nameLinkClass}>{c.name}</div>
                 <div className="truncate text-xs text-secondary">{c.email}</div>
               </button>
               <StatusBadge status={c.online ? 'Online' : 'Offline'} />
@@ -612,16 +613,16 @@ export function CrmClientDetailPage() {
       <div className="mb-5 hidden overflow-hidden rounded-2xl border border-border bg-panel md:block">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-secondary">
+            <thead className="bg-muted text-[14px] text-secondary">
               <tr>
-                <th className="px-3 py-2.5">Symbol</th>
-                <th className="px-3 py-2.5">Side</th>
-                <th className="px-3 py-2.5">Vol</th>
-                <th className="px-3 py-2.5">Open</th>
-                <th className="px-3 py-2.5">Current</th>
-                <th className="px-3 py-2.5">Status</th>
-                <th className="px-3 py-2.5">PnL</th>
-                {manager ? <th className="px-3 py-2.5">Manager controls</th> : null}
+                <th className="pl-[15px] pr-3 py-2.5">Symbol</th>
+                <th className="pl-[15px] pr-3 py-2.5">Side</th>
+                <th className="pl-[15px] pr-3 py-2.5">Vol</th>
+                <th className="pl-[15px] pr-3 py-2.5">Open</th>
+                <th className="pl-[15px] pr-3 py-2.5">Current</th>
+                <th className="pl-[15px] pr-3 py-2.5">Status</th>
+                <th className="pl-[15px] pr-3 py-2.5">PnL</th>
+                {manager ? <th className="pl-[15px] pr-3 py-2.5">Manager controls</th> : null}
               </tr>
             </thead>
             <tbody>
@@ -629,17 +630,17 @@ export function CrmClientDetailPage() {
               const pnl = t.status === 'closed' ? t.realizedPnl || 0 : calcLocalPnl(t)
               return (
                 <tr key={t.id} className="border-t border-border">
-                  <td className="px-3 py-2.5 font-medium">{t.symbol}</td>
-                  <td className="px-3 py-2.5 capitalize">{t.side}</td>
-                  <td className="px-3 py-2.5">{t.volume}</td>
-                  <td className="px-3 py-2.5">{t.openPrice}</td>
-                  <td className="px-3 py-2.5">{t.currentPrice}</td>
-                  <td className="px-3 py-2.5">
+                  <td className="pl-[15px] pr-3 py-2.5 font-medium">{t.symbol}</td>
+                  <td className="pl-[15px] pr-3 py-2.5 capitalize">{t.side}</td>
+                  <td className="pl-[15px] pr-3 py-2.5">{t.volume}</td>
+                  <td className="pl-[15px] pr-3 py-2.5">{t.openPrice}</td>
+                  <td className="pl-[15px] pr-3 py-2.5">{t.currentPrice}</td>
+                  <td className="pl-[15px] pr-3 py-2.5">
                     <StatusBadge status={t.status} />
                   </td>
-                  <td className={`px-3 py-2.5 font-medium ${pnlClass(pnl)}`}>{money(pnl)}</td>
+                  <td className={`pl-[15px] pr-3 py-2.5 font-medium ${pnlClass(pnl)}`}>{money(pnl)}</td>
                   {manager && t.status === 'open' ? (
-                    <td className="px-3 py-2.5">
+                    <td className="pl-[15px] pr-3 py-2.5">
                       <div className="flex flex-wrap items-center gap-1">
                         <input
                           className="h-8 w-24 rounded-lg border border-border bg-panel px-1 text-xs"
@@ -685,14 +686,14 @@ export function CrmClientDetailPage() {
                       </div>
                     </td>
                   ) : manager ? (
-                    <td className="px-3 py-2.5 text-secondary">—</td>
+                    <td className="pl-[15px] pr-3 py-2.5 text-secondary">—</td>
                   ) : null}
                 </tr>
               )
             })}
             {tradesPager.total === 0 ? (
               <tr>
-                <td colSpan={manager ? 8 : 7} className="px-3 py-8 text-center text-secondary">
+                <td colSpan={manager ? 8 : 7} className="pl-[15px] pr-3 py-8 text-center text-secondary">
                   No trades
                 </td>
               </tr>
@@ -812,30 +813,30 @@ export function CrmClientDetailPage() {
       <div className="hidden overflow-hidden rounded-2xl border border-border bg-panel md:block">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-secondary">
+            <thead className="bg-muted text-[14px] text-secondary">
               <tr>
-                <th className="px-3 py-2.5">Type</th>
-                <th className="px-3 py-2.5">Amount</th>
-                <th className="px-3 py-2.5">Status</th>
-                <th className="px-3 py-2.5">Note</th>
-                <th className="px-3 py-2.5">Date</th>
+                <th className="pl-[15px] pr-3 py-2.5">Type</th>
+                <th className="pl-[15px] pr-3 py-2.5">Amount</th>
+                <th className="pl-[15px] pr-3 py-2.5">Status</th>
+                <th className="pl-[15px] pr-3 py-2.5">Note</th>
+                <th className="pl-[15px] pr-3 py-2.5">Date</th>
               </tr>
             </thead>
             <tbody>
               {transactionsPager.pageItems.map((t: any) => (
               <tr key={t.id} className="border-t border-border">
-                <td className="px-3 py-2.5 capitalize">{t.type}</td>
-                <td className={`px-3 py-2.5 font-medium ${pnlClass(t.amount)}`}>{money(t.amount)}</td>
-                <td className="px-3 py-2.5">
+                <td className="pl-[15px] pr-3 py-2.5 capitalize">{t.type}</td>
+                <td className={`pl-[15px] pr-3 py-2.5 font-medium ${pnlClass(t.amount)}`}>{money(t.amount)}</td>
+                <td className="pl-[15px] pr-3 py-2.5">
                   <StatusBadge status={t.status} />
                 </td>
-                <td className="px-3 py-2.5">{t.note || t.payment}</td>
-                <td className="px-3 py-2.5 text-secondary">{new Date(t.createdAt).toLocaleString()}</td>
+                <td className="pl-[15px] pr-3 py-2.5">{t.note || t.payment}</td>
+                <td className="pl-[15px] pr-3 py-2.5 text-secondary">{new Date(t.createdAt).toLocaleString()}</td>
               </tr>
             ))}
             {transactionsPager.total === 0 ? (
               <tr>
-                <td colSpan={5} className="px-3 py-8 text-center text-secondary">
+                <td colSpan={5} className="pl-[15px] pr-3 py-8 text-center text-secondary">
                   No transactions
                 </td>
               </tr>
@@ -932,35 +933,35 @@ export function CrmOnlinePage() {
       <div className="hidden overflow-hidden rounded-2xl border border-border bg-panel md:block">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-secondary">
+            <thead className="bg-muted text-[14px] text-secondary">
               <tr>
-                <th className="px-3 py-2.5">Client</th>
-                <th className="px-3 py-2.5">Assigned</th>
-                <th className="px-3 py-2.5">Last seen</th>
-                <th className="px-3 py-2.5">Open trades</th>
-                <th className="px-3 py-2.5">Floating</th>
+                <th className="pl-[15px] pr-3 py-2.5">Client</th>
+                <th className="pl-[15px] pr-3 py-2.5">Assigned</th>
+                <th className="pl-[15px] pr-3 py-2.5">Last seen</th>
+                <th className="pl-[15px] pr-3 py-2.5">Open trades</th>
+                <th className="pl-[15px] pr-3 py-2.5">Floating</th>
               </tr>
             </thead>
             <tbody>
               {pager.pageItems.map((u: any) => (
               <tr key={u.id} className="border-t border-border">
-                <td className="px-3 py-2.5">
-                  <Link to={`/crm/desk/${u.id}`} className="text-link">
+                <td className="pl-[15px] pr-3 py-2.5">
+                  <Link to={`/crm/desk/${u.id}`} className={nameLinkClass}>
                     {u.name}
                   </Link>
                   <div className="text-xs text-secondary">{u.email}</div>
                 </td>
-                <td className="px-3 py-2.5">{u.assignedTo?.name || '—'}</td>
-                <td className="px-3 py-2.5">{u.lastSeenAt ? new Date(u.lastSeenAt).toLocaleTimeString() : '—'}</td>
-                <td className="px-3 py-2.5">
+                <td className="pl-[15px] pr-3 py-2.5">{u.assignedTo?.name || '—'}</td>
+                <td className="pl-[15px] pr-3 py-2.5">{u.lastSeenAt ? new Date(u.lastSeenAt).toLocaleTimeString() : '—'}</td>
+                <td className="pl-[15px] pr-3 py-2.5">
                   {u.trades.map((t: any) => `${t.symbol} ${t.side}`).join(', ') || '—'}
                 </td>
-                <td className={`px-3 py-2.5 font-medium ${pnlClass(u.floatingPnl)}`}>{money(u.floatingPnl)}</td>
+                <td className={`pl-[15px] pr-3 py-2.5 font-medium ${pnlClass(u.floatingPnl)}`}>{money(u.floatingPnl)}</td>
               </tr>
             ))}
             {pager.total === 0 ? (
               <tr>
-                <td colSpan={5} className="px-3 py-8 text-center text-secondary">
+                <td colSpan={5} className="pl-[15px] pr-3 py-8 text-center text-secondary">
                   Nobody online right now — open the trading app as a client to appear here.
                 </td>
               </tr>
@@ -984,7 +985,7 @@ export function CrmOnlinePage() {
           <div key={u.id} className="rounded-2xl border border-border bg-panel p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <Link to={`/crm/desk/${u.id}`} className="font-medium text-link">
+                <Link to={`/crm/desk/${u.id}`} className={nameLinkClass}>
                   {u.name}
                 </Link>
                 <div className="truncate text-xs text-secondary">{u.email}</div>
@@ -1043,36 +1044,36 @@ function PerformanceList({ rows, title }: { rows: any[]; title: string }) {
       <div className="hidden md:block">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-secondary">
+            <thead className="bg-muted text-[14px] text-secondary">
               <tr>
-                <th className="px-3 py-2.5">Client</th>
-                <th className="px-3 py-2.5">Staff</th>
-                <th className="px-3 py-2.5">Total PnL</th>
-                <th className="px-3 py-2.5">Floating</th>
-                <th className="px-3 py-2.5">Realized</th>
-                <th className="px-3 py-2.5">Online</th>
+                <th className="pl-[15px] pr-3 py-2.5">Client</th>
+                <th className="pl-[15px] pr-3 py-2.5">Staff</th>
+                <th className="pl-[15px] pr-3 py-2.5">Total PnL</th>
+                <th className="pl-[15px] pr-3 py-2.5">Floating</th>
+                <th className="pl-[15px] pr-3 py-2.5">Realized</th>
+                <th className="pl-[15px] pr-3 py-2.5">Online</th>
               </tr>
             </thead>
             <tbody>
               {pager.pageItems.map((r) => (
                 <tr key={r.id} className="border-t border-border">
-                  <td className="px-3 py-2.5">
-                    <Link to={`/crm/desk/${r.id}`} className="text-link">
+                  <td className="pl-[15px] pr-3 py-2.5">
+                    <Link to={`/crm/desk/${r.id}`} className={nameLinkClass}>
                       {r.name}
                     </Link>
                   </td>
-                  <td className="px-3 py-2.5">{r.assignedTo?.name || '—'}</td>
-                  <td className={`px-3 py-2.5 font-semibold ${pnlClass(r.totalPnl)}`}>{money(r.totalPnl)}</td>
-                  <td className={`px-3 py-2.5 ${pnlClass(r.floatingPnl)}`}>{money(r.floatingPnl)}</td>
-                  <td className={`px-3 py-2.5 ${pnlClass(r.realizedPnl)}`}>{money(r.realizedPnl)}</td>
-                  <td className="px-3 py-2.5">
+                  <td className="pl-[15px] pr-3 py-2.5">{r.assignedTo?.name || '—'}</td>
+                  <td className={`pl-[15px] pr-3 py-2.5 font-semibold ${pnlClass(r.totalPnl)}`}>{money(r.totalPnl)}</td>
+                  <td className={`pl-[15px] pr-3 py-2.5 ${pnlClass(r.floatingPnl)}`}>{money(r.floatingPnl)}</td>
+                  <td className={`pl-[15px] pr-3 py-2.5 ${pnlClass(r.realizedPnl)}`}>{money(r.realizedPnl)}</td>
+                  <td className="pl-[15px] pr-3 py-2.5">
                     <StatusBadge status={r.online ? 'Yes' : 'No'} />
                   </td>
                 </tr>
               ))}
               {pager.total === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-3 py-6 text-center text-secondary">
+                  <td colSpan={6} className="pl-[15px] pr-3 py-6 text-center text-secondary">
                     No clients above threshold
                   </td>
                 </tr>
@@ -1095,7 +1096,7 @@ function PerformanceList({ rows, title }: { rows: any[]; title: string }) {
           {pager.pageItems.map((r) => (
             <div key={r.id} className="rounded-xl border border-border bg-muted/30 p-3">
               <div className="flex items-start justify-between gap-3">
-                <Link to={`/crm/desk/${r.id}`} className="font-medium text-link">
+                <Link to={`/crm/desk/${r.id}`} className={nameLinkClass}>
                   {r.name}
                 </Link>
                 <StatusBadge status={r.online ? 'Online' : 'Offline'} />
@@ -1227,11 +1228,11 @@ export function CrmPricesPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-muted text-[14px] text-secondary">
               <tr>
-                <th className="px-3 py-2.5">Symbol</th>
-                <th className="px-3 py-2.5">Live / Forced</th>
-                <th className="px-3 py-2.5">Bid / Ask</th>
-                <th className="px-3 py-2.5">Override</th>
-                <th className="px-3 py-2.5">Actions</th>
+                <th className="pl-[15px] pr-3 py-2.5">Symbol</th>
+                <th className="pl-[15px] pr-3 py-2.5">Live / Forced</th>
+                <th className="pl-[15px] pr-3 py-2.5">Bid / Ask</th>
+                <th className="pl-[15px] pr-3 py-2.5">Override</th>
+                <th className="pl-[15px] pr-3 py-2.5">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -1239,11 +1240,11 @@ export function CrmPricesPage() {
               const ov = data.overrides.find((o: any) => o.symbol === q.symbol && o.active)
               return (
                 <tr key={q.symbol} className="border-t border-border">
-                  <td className="px-3 py-2.5 font-medium">
+                  <td className="pl-[15px] pr-3 py-2.5 font-medium">
                     {q.symbol}
                     <div className="text-xs text-secondary">{q.name}</div>
                   </td>
-                  <td className="px-3 py-2.5">
+                  <td className="pl-[15px] pr-3 py-2.5">
                     <span className="tabular-nums">{q.price}</span>
                     {ov ? (
                       <span className="ml-2">
@@ -1251,10 +1252,10 @@ export function CrmPricesPage() {
                       </span>
                     ) : null}
                   </td>
-                  <td className="px-3 py-2.5 tabular-nums text-secondary">
+                  <td className="pl-[15px] pr-3 py-2.5 tabular-nums text-secondary">
                     {Number(q.bid).toFixed(5)} / {Number(q.ask).toFixed(5)}
                   </td>
-                  <td className="px-3 py-2.5">
+                  <td className="pl-[15px] pr-3 py-2.5">
                     <input
                       className={`${inputClass} sm:w-32`}
                       disabled={!manager}
@@ -1506,14 +1507,14 @@ export function CrmStaffPage() {
       <div className="overflow-hidden rounded-2xl border border-border bg-panel">
         <div className="overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-secondary">
+            <thead className="bg-muted text-[14px] text-secondary">
               <tr>
-                <th className="px-3 py-2.5">Name</th>
-                <th className="px-3 py-2.5">Email</th>
-                <th className="px-3 py-2.5">Role</th>
-                <th className="px-3 py-2.5">Clients</th>
-                <th className="px-3 py-2.5">Status</th>
-                {isAdmin ? <th className="px-3 py-2.5">Actions</th> : null}
+                <th className="pl-[15px] pr-3 py-2.5">Name</th>
+                <th className="pl-[15px] pr-3 py-2.5">Email</th>
+                <th className="pl-[15px] pr-3 py-2.5">Role</th>
+                <th className="pl-[15px] pr-3 py-2.5">Clients</th>
+                <th className="pl-[15px] pr-3 py-2.5">Status</th>
+                {isAdmin ? <th className="pl-[15px] pr-3 py-2.5">Actions</th> : null}
               </tr>
             </thead>
             <tbody>
@@ -1521,9 +1522,9 @@ export function CrmStaffPage() {
                 const canEdit = isAdmin && s.role !== 'ADMIN' && s.id !== user?.id
                 return (
                   <tr key={s.id} className="border-t border-border">
-                    <td className="px-3 py-2.5 font-medium">{s.name}</td>
-                    <td className="px-3 py-2.5 text-secondary">{s.email}</td>
-                    <td className="px-3 py-2.5">
+                    <td className={`pl-[15px] pr-3 py-2.5 ${nameCellClass}`}>{s.name}</td>
+                    <td className="pl-[15px] pr-3 py-2.5 text-secondary">{s.email}</td>
+                    <td className="pl-[15px] pr-3 py-2.5">
                       {canEdit ? (
                         <select
                           className="h-9 rounded-lg border border-border bg-panel px-2 text-sm"
@@ -1551,8 +1552,8 @@ export function CrmStaffPage() {
                         <StatusBadge status={s.role} />
                       )}
                     </td>
-                    <td className="px-3 py-2.5 tabular-nums">{s._count?.assignedClients ?? 0}</td>
-                    <td className="px-3 py-2.5">
+                    <td className="pl-[15px] pr-3 py-2.5 tabular-nums">{s._count?.assignedClients ?? 0}</td>
+                    <td className="pl-[15px] pr-3 py-2.5">
                       <StatusBadge status={s.active === false ? 'Offline' : 'Active'} />
                     </td>
                     {isAdmin ? (
@@ -1593,7 +1594,7 @@ export function CrmStaffPage() {
               })}
               {pager.total === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 6 : 5} className="px-3 py-8 text-center text-secondary">
+                  <td colSpan={isAdmin ? 6 : 5} className="pl-[15px] pr-3 py-8 text-center text-secondary">
                     No CRM users yet
                   </td>
                 </tr>
