@@ -149,7 +149,7 @@ function ActionBtn({
         e.stopPropagation()
         onClick()
       }}
-      className="flex min-h-11 w-full touch-manipulation items-center justify-between gap-2 rounded-md border border-border bg-[#12151a] px-3 py-2.5 text-left text-[13px] font-medium text-text transition-colors hover:border-accent/50 hover:bg-[#1c222c] active:bg-[#1c222c] disabled:opacity-50 xl:min-h-0 xl:py-2 xl:text-[12px]"
+      className="flex min-h-9 w-full touch-manipulation items-center justify-between gap-2 rounded-md border border-border bg-[#12151a] px-2.5 py-1.5 text-left text-[12px] font-medium text-text transition-colors hover:border-accent/50 hover:bg-[#1c222c] active:bg-[#1c222c] disabled:opacity-50 xl:min-h-0 xl:px-3 xl:py-2 xl:text-[12px]"
     >
       <span className="min-w-0 flex-1 leading-snug">{label}</span>
       <ChevronRight size={14} className="shrink-0 text-secondary" />
@@ -591,7 +591,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
   }
 
   return (
-    <div ref={pageRef} className="-mx-1 space-y-3 pb-[min(42vh,300px)] lg:-mx-2 xl:pb-4">
+    <div ref={pageRef} className="-mx-1 space-y-3 pb-[min(32vh,240px)] lg:-mx-2 xl:pb-4">
       {/* Identity + KPIs */}
       <div className="rounded-xl border border-border bg-[#161a21] p-3 sm:p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1371,8 +1371,8 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
         </div>
 
         {/* CRM Actions — fixed bottom sheet on mobile, side panel on xl */}
-        <aside className="fixed inset-x-0 -bottom-[30px] z-30 max-h-[min(42vh,320px)] overflow-y-auto overscroll-contain border-t border-border bg-[#161a21]/97 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(0,0,0,0.45)] backdrop-blur-md xl:static xl:z-auto xl:max-h-none xl:overflow-visible xl:rounded-xl xl:border xl:border-border xl:bg-[#161a21] xl:p-2 xl:pb-2 xl:shadow-none xl:backdrop-blur-none xl:sticky xl:top-3 xl:h-fit">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2 px-1">
+        <aside className="fixed inset-x-2 bottom-[max(0.5rem,env(safe-area-inset-bottom))] z-30 max-h-[min(28vh,210px)] overflow-y-auto overscroll-contain rounded-t-xl border border-border bg-[#161a21]/97 p-1.5 pb-1.5 shadow-[0_-12px_32px_rgba(0,0,0,0.45)] backdrop-blur-md xl:static xl:inset-auto xl:z-auto xl:max-h-none xl:overflow-visible xl:rounded-xl xl:border xl:border-border xl:bg-[#161a21] xl:p-2 xl:pb-2 xl:shadow-none xl:backdrop-blur-none xl:sticky xl:top-3 xl:h-fit">
+          <div className="mb-1 flex flex-wrap items-center justify-between gap-1 px-1">
             <div className="text-[11px] font-bold capitalize tracking-wide text-secondary xl:text-[10px]">
               CRM Actions
             </div>
@@ -1393,7 +1393,7 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
               )}
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-1 xl:gap-1">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-2 xl:grid-cols-1 xl:gap-1">
             <ActionBtn label="Client Deposit" onClick={() => setModal('deposit')} disabled={busy} />
             <ActionBtn label="Pop-up Alert" onClick={() => setModal('alert')} disabled={busy} />
             <ActionBtn

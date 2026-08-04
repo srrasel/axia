@@ -115,7 +115,7 @@ export function CrmDashboardPage() {
       >
         <Link
           to="/crm/clients"
-          className="inline-flex h-11 items-center rounded-xl bg-[#fcd535] px-5 text-base font-semibold text-[#202630] hover:bg-[#ceaf30]"
+          className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#fcd535] px-5 text-center text-base font-semibold text-[#202630] hover:bg-[#ceaf30] sm:w-auto"
         >
           Open Clients
         </Link>
