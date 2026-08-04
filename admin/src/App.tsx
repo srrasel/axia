@@ -65,7 +65,7 @@ function EarningsPage() {
   const crmOnly = isCrmStaffRole(user?.role)
   const [data, setData] = useState<any>(null)
   const [type, setType] = useState('')
-  const [manual, setManual] = useState({ amount: 50, description: 'Manual adjustment' })
+  const [manual, setManual] = useState({ amount: 50, description: 'Manual Adjustment' })
   const [error, setError] = useState<string | null>(null)
   const recentPager = usePagination((data?.recent as any[]) || [])
 
@@ -157,7 +157,7 @@ function EarningsPage() {
         onSubmit={async (e) => {
           e.preventDefault()
           await api('/api/admin/earnings/manual', { method: 'POST', body: JSON.stringify(manual) })
-          setManual({ amount: 50, description: 'Manual adjustment' })
+          setManual({ amount: 50, description: 'Manual Adjustment' })
           load()
         }}
       >
@@ -175,11 +175,16 @@ function EarningsPage() {
           />
         </div>
         <input
-          className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-panel px-3 text-sm outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
+          className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-panel px-3 text-sm capitalize outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]"
           value={manual.description}
           onChange={(e) => setManual({ ...manual, description: e.target.value })}
         />
-        <button type="submit" className="h-10 rounded-xl bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]">Add</button>
+        <button
+          type="submit"
+          className="h-10 min-w-[140px] rounded-xl bg-[#fcd535] px-8 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]"
+        >
+          Add
+        </button>
       </form>
       ) : null}
 
@@ -195,7 +200,7 @@ function EarningsPage() {
                 <th className="px-3 py-2">Date</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-[12px]">
               {recentPager.pageItems.map((e: any) => (
                 <tr key={e.id} className="border-t border-border">
                   <td className="px-3 py-2 capitalize">{e.type.replaceAll('_', ' ')}</td>

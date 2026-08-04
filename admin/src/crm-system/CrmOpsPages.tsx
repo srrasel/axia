@@ -202,6 +202,7 @@ export function CrmNotificationsPage() {
       ) : null}
 
       <Panel
+        className="w-full lg:w-[60%]"
         title="Alerts"
         subtitle={unread > 0 ? `${unread} unread · CRM desk notifications` : 'All caught up · CRM desk notifications'}
         action={
