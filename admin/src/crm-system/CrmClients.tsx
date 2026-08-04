@@ -8,7 +8,6 @@ import {
   EyeOff,
   Phone,
   Bookmark,
-  BookmarkMinus,
   Plus,
   UserPlus,
   Pencil,
@@ -733,11 +732,12 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
             rows.length > 0 && rows.every((c) => c.crmCategory === 'POTENTIAL')
           return [
             {
-              icon: canUnflag ? BookmarkMinus : Bookmark,
+              icon: Bookmark,
               title: canUnflag ? 'Remove Potential (unbookmark)' : 'Flag as Potential',
               onClick: () => void togglePotentialSelected(),
               needsSelection: true,
               active: canUnflag,
+              fillIcon: canUnflag,
             },
             {
               icon: Phone,
@@ -767,7 +767,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
               needsSelection: true,
               active: false,
             },
-          ].map(({ icon: Icon, title, onClick, needsSelection, active }) => (
+          ].map(({ icon: Icon, title, onClick, needsSelection, active, fillIcon }) => (
             <button
               key={title}
               type="button"
@@ -780,7 +780,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                   : 'border-border text-secondary hover:border-accent/50 hover:text-accent'
               }`}
             >
-              <Icon size={18} />
+              <Icon size={18} className={fillIcon ? 'fill-current' : undefined} />
             </button>
           ))
         })()}
@@ -803,7 +803,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
           <colgroup>
             <col className="w-10" />
             <col className="w-[220px]" />
-            <col className="w-[74px]" />
+            <col className="w-[96px]" />
             <col className="w-[170px]" />
             <col className="w-[170px]" />
             <col className="w-[170px]" />
@@ -839,7 +839,7 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                 />
               </th>
               <th className={`${thClass} text-center`}>
-                <span className={thLabelClass}>Edit</span>
+                <span className={thLabelClass}>Actions</span>
                 <div className="h-9" />
               </th>
               <th className={thClass}>
@@ -987,9 +987,20 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                   <div className="flex min-w-0 items-center gap-2">
                     <Link
                       to={`/crm/clients/${c.id}`}
-                      className="max-w-[calc(100%-2.25rem)] truncate text-[16px] font-bold capitalize text-[#22a06b] hover:text-[#1a8056]"
+                      className="max-w-full truncate text-[16px] font-bold capitalize text-[#22a06b] hover:text-[#1a8056]"
                     >
                       {c.name}
+                    </Link>
+                  </div>
+                </td>
+                <td className={`${tdClass} text-center`}>
+                  <div className="flex items-center justify-center gap-2">
+                    <Link
+                      to={`/crm/clients/${c.id}`}
+                      title="Edit"
+                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-buy/40 text-buy transition-colors hover:border-buy hover:text-buy"
+                    >
+                      <Pencil size={13} />
                     </Link>
                     <Link
                       to={`/crm/clients/${c.id}`}
@@ -999,15 +1010,6 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                       <Eye size={13} />
                     </Link>
                   </div>
-                </td>
-                <td className={`${tdClass} text-center`}>
-                  <Link
-                    to={`/crm/clients/${c.id}`}
-                    title="Edit"
-                    className="mx-auto inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-buy/40 text-buy transition-colors hover:border-buy hover:text-buy"
-                  >
-                    <Pencil size={13} />
-                  </Link>
                 </td>
                 <td className={`${tdClass} text-[14px] font-medium text-secondary`}>{c.country || '-'}</td>
                 <td className={tdClass}>
