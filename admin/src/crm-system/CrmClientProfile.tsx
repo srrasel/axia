@@ -738,12 +738,12 @@ export function CrmClientProfilePage({ me }: { me: AdminUser }) {
       </div>
 
       {toast ? (
-        <div className="pointer-events-none fixed inset-x-0 top-4 z-[80] flex justify-center px-4 sm:top-6">
+        <div className="pointer-events-none fixed inset-x-0 top-14 z-[80] flex justify-center px-4 sm:top-16">
           <div
             className={`pointer-events-auto max-w-md rounded-xl border px-4 py-3 text-sm font-medium shadow-2xl ${
               toast.tone === 'err'
-                ? 'border-sell/40 bg-[#1a1214] text-sell'
-                : 'border-accent/40 bg-[#1a1810] text-accent'
+                ? 'border-sell/35 bg-white text-[#b42318]'
+                : 'border-[#d0d5dd] bg-white text-[#101828]'
             }`}
             role="status"
           >

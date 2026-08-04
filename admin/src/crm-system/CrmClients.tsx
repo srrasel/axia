@@ -149,8 +149,6 @@ function exportCsv(rows: ClientRow[]) {
 
 const colFilterClass =
   'h-9 w-full min-w-[150px] rounded-lg border border-border bg-[#12151a] px-2.5 text-sm outline-none hover:border-accent/50 focus:border-accent'
-const colDateClass =
-  'h-9 w-full min-w-[150px] rounded-lg border border-border bg-[#12151a] px-2.5 pr-9 text-sm text-text outline-none hover:border-accent/50 focus:border-accent [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0'
 const colSelectClass =
   'h-9 w-full min-w-[150px] cursor-pointer appearance-none rounded-lg border border-border px-2.5 pr-9 text-sm outline-none transition-colors hover:border-[#fcd535] focus:border-[#fcd535]'
 const colSelectStyleBase = {
@@ -163,7 +161,7 @@ const thClass = 'align-bottom px-3 py-3 text-left'
 const thLabelClass = 'mb-1.5 block whitespace-nowrap text-[14px] font-semibold capitalize tracking-wide text-secondary'
 const tdClass = 'align-middle px-3 py-3.5'
 
-/** Date filter with placeholder + calendar icon; one click opens the picker. */
+/** Date filter: custom UI only — avoids native mm/dd/yyyy + icon overlap. */
 function DateFilterInput({
   value,
   onChange,
@@ -188,36 +186,34 @@ function DateFilterInput({
     }
   }
 
+  const display = value
+    ? new Date(`${value}T00:00:00`).toLocaleDateString()
+    : placeholder
+
   return (
     <div className="relative min-w-[150px]">
       <input
         ref={inputRef}
         type="date"
-        className={`${colDateClass} ${value ? '' : 'text-transparent'}`}
         value={value}
-        title={title || placeholder}
+        tabIndex={-1}
+        aria-hidden
+        className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0"
         onChange={(e) => onChange(e.target.value)}
-        onClick={openPicker}
       />
-      {!value ? (
-        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-secondary">
-          {placeholder}
-        </span>
-      ) : null}
       <button
         type="button"
-        tabIndex={-1}
-        className="absolute right-2 top-1/2 z-10 -translate-y-1/2 text-secondary hover:text-accent"
+        className={`${colFilterClass} flex items-center pr-9 text-left ${
+          value ? 'text-text' : 'text-secondary'
+        }`}
         title={title || placeholder}
-        aria-label="Open calendar"
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          openPicker()
-        }}
+        onClick={openPicker}
       >
-        <Calendar className="h-4 w-4" />
+        <span className="truncate">{display}</span>
       </button>
+      <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-secondary">
+        <Calendar className="h-4 w-4" />
+      </span>
     </div>
   )
 }
@@ -993,14 +989,14 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
                     <Link
                       to={`/crm/clients/${c.id}`}
                       title="Edit"
-                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border text-secondary transition-colors hover:border-accent/50 hover:text-accent"
+                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-buy/40 text-buy transition-colors hover:border-buy hover:text-buy"
                     >
                       <Pencil size={13} />
                     </Link>
                     <Link
                       to={`/crm/clients/${c.id}`}
                       title="View"
-                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border text-secondary transition-colors hover:border-accent/50 hover:text-accent"
+                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-buy/40 text-buy transition-colors hover:border-buy hover:text-buy"
                     >
                       <Eye size={13} />
                     </Link>
