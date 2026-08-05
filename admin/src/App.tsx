@@ -4,7 +4,7 @@ import { DollarSign } from 'lucide-react'
 import { api } from './api'
 import { AuthProvider, useAuth } from './auth'
 import { LoginPage, ForgotPasswordPage } from './auth-pages'
-import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination, canAccessPath, isCrmStaffRole, ToastPopup, useToast, actionBtnPrimary, actionBtnSuccess, actionBtnDanger, actionBtnNeutral, actionTdClass, nameLinkClass, nameCellClass, StatusBadge } from './layout'
+import { AdminLayout, Card, PageHeader, money, usePagination, TablePagination, canAccessPath, isCrmStaffRole, ToastPopup, useToast, actionBtnPrimary, actionBtnSuccess, actionBtnDanger, actionBtnNeutral, actionTdClass, nameCellClass, StatusBadge, selectChevronStyle } from './layout'
 import { setActiveCurrency } from './currency'
 import { Dashboard } from './dashboard'
 import { CrmPricesPage, CrmStaffPage } from './crm'
@@ -247,7 +247,7 @@ function UsersPage() {
         <div className="flex gap-2">
           <input className="h-10 rounded-md border border-border px-3 text-sm" placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} />
           <button type="button" className="h-10 rounded-md bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]" onClick={() => setShowCreate(true)}>
-            Create user
+            Create User
           </button>
         </div>
       </PageHeader>
@@ -284,7 +284,7 @@ function UsersPage() {
             <tbody>
               {pager.pageItems.map((u) => (
                 <tr key={u.id} className="border-t border-border hover:bg-muted/50">
-                  <td className="pl-[15px] pr-3 py-2"><Link className={nameLinkClass} to={`/users/${u.id}`}>{u.name}</Link></td>
+                  <td className="pl-[15px] pr-3 py-2"><Link className="font-medium text-white hover:text-white/80" to={`/users/${u.id}`}>{u.name}</Link></td>
                   <td className="pl-[15px] pr-3 py-2">{u.email}</td>
                   <td className="pl-[15px] pr-3 py-2 capitalize">{u.kycStatus}</td>
                   <td className="pl-[15px] pr-3 py-2">{u.funded ? 'Yes' : 'No'}</td>
@@ -427,7 +427,7 @@ function AccountsPage() {
             <tbody>
               {pager.pageItems.map((a) => (
                 <tr key={a.id} className="border-t border-border">
-                  <td className={`pl-[15px] pr-3 py-2 ${nameCellClass}`}>{a.user?.name || '—'}</td>
+                  <td className="pl-[15px] pr-3 py-2 font-medium text-white">{a.user?.name || '—'}</td>
                   <td className="pl-[15px] pr-3 py-2 tabular-nums">{a.number}</td>
                   <td className="pl-[15px] pr-3 py-2">
                     <StatusBadge status={a.type === 'live' ? 'Live' : 'Demo'} />
@@ -503,7 +503,12 @@ function TradesPage() {
     <div>
       {toast ? <ToastPopup text={toast.text} tone={toast.tone} /> : null}
       <PageHeader title="Trades" subtitle="Change open (entry) or mark price in real time — client pages refresh live.">
-        <select className="h-10 rounded border border-border px-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
+        <select
+          className="h-10 min-w-[140px] cursor-pointer appearance-none rounded border border-border bg-panel py-0 pl-3 pr-10 text-sm outline-none hover:border-[#fcd535]/70 focus:border-[#fcd535]"
+          style={selectChevronStyle}
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        >
           <option value="">All</option>
           <option value="open">Open</option>
           <option value="pending">Pending</option>
@@ -528,7 +533,7 @@ function TradesPage() {
             <tbody>
               {pager.pageItems.map((t) => (
                 <tr key={t.id} className="border-t border-border">
-                  <td className={`pl-[15px] pr-3 py-2 ${nameCellClass}`}>{t.user.name}</td>
+                  <td className="pl-[15px] pr-3 py-2 font-medium text-white">{t.user.name}</td>
                   <td className="pl-[15px] pr-3 py-2 font-medium">{t.symbol}</td>
                   <td className="pl-[15px] pr-3 py-2">{t.side}</td>
                   <td className="pl-[15px] pr-3 py-2">
@@ -646,7 +651,12 @@ function TransactionsPage() {
   return (
     <div>
       <PageHeader title="Transactions">
-        <select className="h-10 rounded border border-border px-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
+        <select
+          className="h-10 min-w-[140px] cursor-pointer appearance-none rounded border border-border bg-panel py-0 pl-3 pr-10 text-sm outline-none hover:border-[#fcd535]/70 focus:border-[#fcd535]"
+          style={selectChevronStyle}
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        >
           <option value="pending">Pending</option>
           <option value="completed">Completed</option>
           <option value="rejected">Rejected</option>
@@ -673,7 +683,7 @@ function TransactionsPage() {
             <tbody>
               {pager.pageItems.map((t) => (
                 <tr key={t.id} className="border-t border-border">
-                  <td className={`pl-[15px] pr-3 py-2 ${nameCellClass}`}>{t.user.name}</td>
+                  <td className="pl-[15px] pr-3 py-2 font-medium text-white">{t.user.name}</td>
                   <td className="pl-[15px] pr-3 py-2 capitalize">{t.type}</td>
                   <td className={`pl-[15px] pr-3 py-2 ${t.amount >= 0 ? 'text-buy' : 'text-sell'}`}>{money(t.amount)}</td>
                   <td className="pl-[15px] pr-3 py-2">{money(t.fee || 0)}</td>

@@ -534,7 +534,11 @@ export function CrmClientsPage({ me }: { me: AdminUser }) {
               <select
                 value={bulkAssign}
                 onChange={(e) => setBulkAssign(e.target.value)}
-                className="h-10 rounded-xl border border-border bg-[#161a21] px-3 text-sm outline-none hover:border-accent/50 focus:border-accent"
+                className="h-10 cursor-pointer appearance-none rounded-xl border border-border bg-[#161a21] py-0 pl-3 pr-10 text-sm outline-none hover:border-accent/50 focus:border-accent"
+                style={{
+                  ...createSelectStyle,
+                  backgroundPosition: 'right 16px center',
+                }}
               >
                 <option value="">Mass Assign...</option>
                 <option value="none">Unassign</option>

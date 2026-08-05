@@ -19,7 +19,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '../api'
-import { btnPrimary, money, PageHeader, Panel, TablePagination, ToastPopup, usePagination, useToast, nameCellClass } from '../layout'
+import { btnPrimary, money, PageHeader, Panel, TablePagination, ToastPopup, usePagination, useToast } from '../layout'
 
 function fmt(iso?: string) {
   if (!iso) return '—'
@@ -86,7 +86,7 @@ export function CrmRolesPage() {
         {roles.map((r) => (
           <div key={r.role} className="rounded-xl border border-border bg-[#161a21] p-3">
             <div className="flex items-center justify-between">
-              <div className="font-semibold capitalize">{formatRoleLabel(r.label || r.role)}</div>
+              <div className="font-semibold capitalize text-white">{formatRoleLabel(r.label || r.role)}</div>
               <span className="rounded bg-accent/15 px-2 py-0.5 text-[12px] font-bold capitalize text-accent">
                 {formatRoleLabel(r.access)}
               </span>
@@ -120,7 +120,7 @@ export function CrmRolesPage() {
           <tbody>
             {users.map((u) => (
               <tr key={u.id} className="border-b border-border/50">
-                <td className={`pl-[15px] pr-3 py-2 ${nameCellClass}`}>{u.name}</td>
+                <td className="pl-[15px] pr-3 py-2 font-medium !text-white">{u.name}</td>
                 <td className="pl-[15px] pr-3 py-2 text-secondary">{u.email}</td>
                 <td className="pl-[15px] pr-3 py-2">
                   <select

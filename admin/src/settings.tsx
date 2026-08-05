@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Building2,
   Coins,
   CreditCard,
   Gauge,
@@ -272,7 +271,6 @@ export function SettingsPage() {
   const ratePreview =
     fx?.matrix?.[originalCurrency]?.[nextCur] != null ? Number(fx.matrix[originalCurrency][nextCur]) : null
   const activeDefs = defs.filter((d) => d.group === activeGroup)
-  const ActiveIcon = GROUP_META[activeGroup]?.icon || Building2
 
   return (
     <div className="space-y-5">
@@ -415,11 +413,6 @@ export function SettingsPage() {
         <Panel
           title={activeGroup}
           subtitle={GROUP_META[activeGroup]?.blurb || 'Platform configuration'}
-          action={
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-accent/15 text-accent">
-              <ActiveIcon size={16} />
-            </span>
-          }
         >
           <div className="grid gap-3 sm:grid-cols-2">
             {activeDefs.map((d) => (
