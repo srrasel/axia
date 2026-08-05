@@ -245,7 +245,7 @@ function UsersPage() {
     <div>
       <PageHeader title="Users">
         <div className="flex gap-2">
-          <input className="h-10 rounded-md border border-border px-3 text-sm" placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input className="h-10 rounded-md border border-border bg-panel px-3 text-sm outline-none transition-colors hover:border-[#fcd535]/70 focus:border-[#fcd535]" placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} />
           <button type="button" className="h-10 rounded-md bg-[#fcd535] px-4 text-sm font-semibold text-[#202630] transition-colors hover:bg-[#ceaf30]" onClick={() => setShowCreate(true)}>
             Create User
           </button>
