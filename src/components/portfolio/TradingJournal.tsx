@@ -22,6 +22,18 @@ function saveNotes(notes: Record<string, string>) {
   localStorage.setItem(NOTES_KEY, JSON.stringify(notes))
 }
 
+function pageWindow(current: number, total: number): (number | '…')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const pages: (number | '…')[] = [1]
+  const start = Math.max(2, current - 1)
+  const end = Math.min(total - 1, current + 1)
+  if (start > 2) pages.push('…')
+  for (let i = start; i <= end; i++) pages.push(i)
+  if (end < total - 1) pages.push('…')
+  pages.push(total)
+  return pages
+}
+
 export function TradingJournal() {
   const { trades, activeAccountId } = useApp()
   const [q, setQ] = useState('')
@@ -68,6 +80,7 @@ export function TradingJournal() {
   }, [filtered, page])
   const from = filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
   const to = Math.min(page * PAGE_SIZE, filtered.length)
+  const pages = pageWindow(page, totalPages)
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages)
@@ -244,7 +257,7 @@ export function TradingJournal() {
             <span className="font-medium text-text">{to}</span> of{' '}
             <span className="font-medium text-text">{filtered.length}</span>
           </p>
-          <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1">
             <button
               type="button"
               disabled={page <= 1}
@@ -253,9 +266,27 @@ export function TradingJournal() {
             >
               Prev
             </button>
-            <span className="px-2 text-xs text-text-secondary">
-              {page} / {totalPages}
-            </span>
+            {pages.map((p, i) =>
+              p === '…' ? (
+                <span key={`e-${i}`} className="px-1 text-xs text-text-secondary">
+                  …
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPage(p)}
+                  className={clsx(
+                    'min-w-7 rounded border px-2 py-1 text-xs',
+                    p === page
+                      ? 'border-[#F0B90B]/60 bg-[#F0B90B]/15 text-[#F0B90B]'
+                      : 'border-border text-text-secondary hover:bg-muted',
+                  )}
+                >
+                  {p}
+                </button>
+              ),
+            )}
             <button
               type="button"
               disabled={page >= totalPages}
