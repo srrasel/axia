@@ -22,7 +22,6 @@ import {
   actionBtnNeutral,
   actionTdClassLoose,
   nameLinkClass,
-  nameCellClass,
 } from './layout'
 import { getActiveCurrency } from './currency'
 
