@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   LayoutGrid,
   LineChart,
-  Settings,
   Trophy,
 } from 'lucide-react'
 import clsx from 'clsx'
@@ -137,7 +136,6 @@ export function IconSidebar({ mobileOnly = false }: { mobileOnly?: boolean }) {
 
           <div className="mt-[10px] w-full border-t border-border px-[10px] pt-[10px]">
             <SupportRailButton />
-            <RailLink to="/account/details" label="Settings" icon={Settings} />
           </div>
         </aside>
       ) : null}
