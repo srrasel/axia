@@ -161,30 +161,7 @@ export function SupportFormModal({
   )
 }
 
-/** Mobile floating button (desktop uses left sidebar). */
-export function SupportWidget() {
-  const config = useSupportConfig()
-  const [open, setOpen] = useState(false)
-
-  if (!config?.enabled) return null
-
-  const Icon = supportIconFromConfig(config.icon)
-
-  return (
-    <>
-      <button
-        type="button"
-        aria-label="Open support"
-        onClick={() => setOpen(true)}
-        className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 z-[45] flex h-12 w-12 items-center justify-center rounded-full bg-[#fcd535] text-[#202630] shadow-lg transition-colors hover:bg-[#ceaf30] md:hidden"
-      >
-        <Icon size={22} strokeWidth={1.75} />
-      </button>
-      <SupportFormModal config={config} open={open} onClose={() => setOpen(false)} />
-    </>
-  )
-}
-
+/** Desktop left-sidebar support button (hidden on mobile). */
 export function SupportRailButton() {
   const config = useSupportConfig()
   const [open, setOpen] = useState(false)

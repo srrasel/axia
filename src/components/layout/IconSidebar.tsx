@@ -134,7 +134,7 @@ export function IconSidebar({ mobileOnly = false }: { mobileOnly?: boolean }) {
             ))}
           </nav>
 
-          <div className="mt-[10px] w-full border-t border-border px-[10px] pt-[10px]">
+          <div className="mt-0 w-full border-t border-border px-[10px] pt-[10px]">
             <SupportRailButton />
           </div>
         </aside>
