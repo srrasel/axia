@@ -633,7 +633,7 @@ export function OrderPanel({
           disabled={!canInvest}
           onClick={() => void onInvest()}
           className={clsx(
-            'h-10 w-full cursor-pointer rounded-lg text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50',
+            'h-[50px] w-full cursor-pointer rounded-lg text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50',
             side === 'buy' ? 'bg-buy hover:brightness-95' : 'bg-sell hover:brightness-95',
           )}
         >
