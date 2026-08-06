@@ -452,7 +452,7 @@ export function OrderPanel({
               'cursor-pointer rounded-lg border px-2.5 py-2 text-left transition-colors',
               side === 'sell'
                 ? 'border-sell bg-sell text-white'
-                : 'border-border bg-[#1f242c] text-white hover:border-sell/60',
+                : 'border-border bg-[#1f242c] text-white',
             )}
           >
             <div className="text-[12px] font-semibold uppercase tracking-wide text-white">Sell</div>
@@ -467,7 +467,7 @@ export function OrderPanel({
               'cursor-pointer rounded-lg border px-2.5 py-2 text-left transition-colors',
               side === 'buy'
                 ? 'border-buy bg-buy text-white'
-                : 'border-border bg-[#1f242c] text-white hover:border-buy/60',
+                : 'border-border bg-[#1f242c] text-white',
             )}
           >
             <div className="text-[12px] font-semibold uppercase tracking-wide text-white">Buy</div>

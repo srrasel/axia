@@ -97,12 +97,7 @@ export function Header() {
 
       {/* Demo / Live account switch — desktop / tablet */}
       <div className="relative hidden min-w-0 shrink-0 sm:block">
-        <div
-          className={clsx(
-            'relative flex cursor-pointer items-center gap-2 rounded-xl border py-1 pl-[13px] pr-7 sm:pl-[15px] sm:pr-8',
-            isLiveAccount ? 'border-buy/35 bg-buy/20' : 'border-[#4e1d09] bg-[#4e1d09]',
-          )}
-        >
+        <div className="relative flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-[#29313d] py-1 pl-[13px] pr-7 sm:pl-[15px] sm:pr-8">
           <span
             className={clsx(
               'pointer-events-none relative z-0 inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[12px] font-semibold capitalize tracking-wide',
@@ -111,20 +106,8 @@ export function Header() {
           >
             {isLiveAccount ? 'Live' : 'Demo'}
           </span>
-          <span
-            className={clsx(
-              'pointer-events-none relative z-0 text-[12px] font-medium',
-              isLiveAccount ? 'text-white/80' : 'text-[rgb(253,176,34)]',
-            )}
-          >
-            —
-          </span>
-          <span
-            className={clsx(
-              'pointer-events-none relative z-0 min-w-0 truncate text-[12px] font-semibold tabular-nums',
-              isLiveAccount ? 'text-white' : 'text-[rgb(253,176,34)]',
-            )}
-          >
+          <span className="pointer-events-none relative z-0 text-[12px] font-medium text-text-secondary">—</span>
+          <span className="pointer-events-none relative z-0 min-w-0 truncate text-[12px] font-semibold tabular-nums text-text">
             {account ? formatMoney(account.balance) : '—'}
           </span>
           <ChevronDown
