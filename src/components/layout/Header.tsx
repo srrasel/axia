@@ -97,7 +97,7 @@ export function Header() {
 
       {/* Demo / Live account switch — desktop / tablet */}
       <div className="relative hidden min-w-0 shrink-0 sm:block">
-        <div className="relative flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-[#29313d] py-1 pl-[13px] pr-7 sm:pl-[15px] sm:pr-8">
+        <div className="relative flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-[#29313d] py-[6px] pl-2 pr-7 sm:pl-2.5 sm:pr-8">
           <span
             className={clsx(
               'pointer-events-none relative z-0 inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[12px] font-semibold capitalize tracking-wide',
@@ -332,10 +332,10 @@ export function Header() {
                   <div className="truncate text-xs text-text-secondary">{user?.email}</div>
                   <div
                     className={clsx(
-                      'mt-1 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold capitalize tracking-wide',
+                      'mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize tracking-wide',
                       isLiveAccount
-                        ? 'border-buy/25 bg-buy/15 text-buy'
-                        : 'border-sell/25 bg-sell/15 text-sell',
+                        ? 'bg-buy text-white'
+                        : 'bg-[#4e1d09] text-[rgb(253,176,34)]',
                     )}
                   >
                     {isLiveAccount ? 'Live' : 'Demo'}
@@ -364,17 +364,17 @@ export function Header() {
                             active
                               ? live
                                 ? 'border-buy bg-buy/10'
-                                : 'border-sell bg-sell/10'
+                                : 'border-[#4e1d09] bg-[#4e1d09]/25'
                               : 'border-border hover:bg-[#29313d]',
                           )}
                         >
                           <div className="flex items-center gap-1.5">
                             <span
                               className={clsx(
-                                'inline-flex rounded-full border px-1.5 py-0.5 text-[10px] font-semibold capitalize',
+                                'inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-semibold capitalize',
                                 live
-                                  ? 'border-buy/25 bg-buy/15 text-buy'
-                                  : 'border-sell/25 bg-sell/15 text-sell',
+                                  ? 'bg-buy text-white'
+                                  : 'bg-[#4e1d09] text-[rgb(253,176,34)]',
                               )}
                             >
                               {live ? 'Live' : 'Demo'}
