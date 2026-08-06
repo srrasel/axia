@@ -1527,7 +1527,7 @@ export function CrmStaffPage() {
                 const canEdit = isAdmin && s.role !== 'ADMIN' && s.id !== user?.id
                 return (
                   <tr key={s.id} className="border-t border-border">
-                    <td className={`pl-[15px] pr-3 py-2.5 ${nameCellClass}`}>{s.name}</td>
+                    <td className="pl-[15px] pr-3 py-2.5 font-medium text-white">{s.name}</td>
                     <td className="pl-[15px] pr-3 py-2.5 text-secondary">{s.email}</td>
                     <td className="pl-[15px] pr-3 py-2.5">
                       {canEdit ? (

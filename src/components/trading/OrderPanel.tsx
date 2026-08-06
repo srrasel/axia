@@ -450,11 +450,13 @@ export function OrderPanel({
             onClick={() => setSide('sell')}
             className={clsx(
               'cursor-pointer rounded-lg border px-2.5 py-2 text-left transition-colors',
-              side === 'sell' ? 'border-sell bg-sell/10' : 'border-border hover:bg-muted',
+              side === 'sell'
+                ? 'border-sell bg-sell text-white'
+                : 'border-border bg-[#1f242c] text-white hover:border-sell/60',
             )}
           >
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-sell">Sell</div>
-            <div className="text-sm font-bold tabular-nums leading-tight text-sell">
+            <div className="text-[12px] font-semibold uppercase tracking-wide text-white">Sell</div>
+            <div className="text-[12px] font-bold tabular-nums leading-tight text-white">
               {formatPrice(quote.bid, selectedSymbol)}
             </div>
           </button>
@@ -463,11 +465,13 @@ export function OrderPanel({
             onClick={() => setSide('buy')}
             className={clsx(
               'cursor-pointer rounded-lg border px-2.5 py-2 text-left transition-colors',
-              side === 'buy' ? 'border-buy bg-buy/10' : 'border-border hover:bg-muted',
+              side === 'buy'
+                ? 'border-buy bg-buy text-white'
+                : 'border-border bg-[#1f242c] text-white hover:border-buy/60',
             )}
           >
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-buy">Buy</div>
-            <div className="text-sm font-bold tabular-nums leading-tight text-buy">
+            <div className="text-[12px] font-semibold uppercase tracking-wide text-white">Buy</div>
+            <div className="text-[12px] font-bold tabular-nums leading-tight text-white">
               {formatPrice(quote.ask, selectedSymbol)}
             </div>
           </button>
@@ -475,7 +479,7 @@ export function OrderPanel({
 
         {/* Volume — Amount / Lot */}
         <div>
-          <div className="mb-1 text-[11px] text-text-secondary">Volume</div>
+          <div className="mb-1 text-[12px] text-text-secondary">Volume</div>
           <div className="flex gap-1.5">
             <div className="relative w-[5.75rem] shrink-0">
               <select
@@ -538,7 +542,7 @@ export function OrderPanel({
               </div>
             )}
           </div>
-          <div className="mt-1 text-[10px] text-text-secondary">
+          <div className="mt-1 text-[12px] text-text-secondary">
             {volumeMode === 'amount' ? (
               <>
                 ≈ <span className="font-medium text-text">{volume.toFixed(2)}</span> lot · Margin{' '}
@@ -588,7 +592,7 @@ export function OrderPanel({
         {/* Pending */}
         <div>
           <div className="mb-1.5 flex items-center justify-between gap-2">
-            <span className="text-[11px] text-text-secondary">Open order when price is:</span>
+            <span className="text-[12px] text-text-secondary">Open order when price is:</span>
             <ToggleSwitch checked={pendingOn} onChange={setPendingOn} label="Pending order" />
           </div>
           {pendingOn ? (
@@ -670,7 +674,7 @@ function LevelBlock({
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between gap-2">
-        <div className="min-w-0 text-[11px]">
+        <div className="min-w-0 text-[12px]">
           <span className="text-text-secondary">{title}:</span>{' '}
           {money != null ? (
             <span

@@ -78,7 +78,7 @@ function SidebarBody({ onClose, showClose }: { onClose?: () => void; showClose?:
           <div className="truncate text-sm font-semibold text-text">{user?.name}</div>
           <div className="truncate text-xs text-text-secondary">{user?.email}</div>
           <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-panel px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-text-secondary ring-1 ring-border">
-            <span className={clsx('h-1.5 w-1.5 rounded-full', isLiveAccount ? 'bg-buy' : 'bg-link')} />
+            <span className={clsx('h-1.5 w-1.5 rounded-full', isLiveAccount ? 'bg-buy' : 'bg-sell')} />
             {isLiveAccount ? 'Live' : 'Demo'}
           </div>
           <div className="mt-1 text-[10px] text-text-secondary">

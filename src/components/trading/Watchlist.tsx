@@ -146,7 +146,7 @@ export function Watchlist({
               <SymbolLogo symbol={item.symbol} size={32} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-semibold">{item.symbol}</span>
+                  <span className="text-[16px] font-semibold">{item.symbol}</span>
                   {item.closed ? (
                     <span className="rounded bg-muted px-1 text-[9px] uppercase text-text-secondary">closed</span>
                   ) : null}

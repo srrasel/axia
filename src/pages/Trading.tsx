@@ -56,7 +56,7 @@ export function TradingPage() {
           <div className="flex min-h-0 flex-1 flex-col">
             <div className="flex min-h-0 min-w-0 flex-1">
               <div className="hidden h-full min-h-0 md:block">
-                <Watchlist className="h-full w-56 border-r lg:w-64" />
+                <Watchlist className="h-full w-[274px] border-r lg:w-[306px]" />
               </div>
               <TradingChart />
               <div className="hidden h-full min-h-0 lg:flex">

@@ -97,37 +97,26 @@ export function Header() {
 
       {/* Demo / Live account switch — desktop / tablet */}
       <div className="relative hidden min-w-0 shrink-0 sm:block">
-        <div className="relative flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-[#29313d] py-0.5 pl-2 pr-0.5 sm:gap-2.5 sm:py-1 sm:pl-2.5 sm:pr-1">
+        <div className="relative flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-[#29313d] py-1 pl-2 pr-7 sm:pl-2.5 sm:pr-8">
           <span
             className={clsx(
-              'pointer-events-none relative z-0 h-2 w-2 shrink-0 rounded-full',
+              'pointer-events-none relative z-0 inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold capitalize tracking-wide',
               isLiveAccount
-                ? 'bg-buy shadow-[0_0_0_3px_rgba(34,160,107,0.2)]'
-                : 'bg-link shadow-[0_0_0_3px_rgba(96,165,250,0.2)]',
+                ? 'border-buy/25 bg-buy/15 text-buy'
+                : 'border-sell/25 bg-sell/15 text-sell',
             )}
-          />
-          <div className="pointer-events-none relative z-0 min-w-0 pr-5 sm:pr-6">
-            <div
-              className={clsx(
-                'h-8 max-w-[6.75rem] truncate pr-1 text-xs font-semibold leading-8 sm:max-w-[9.5rem] sm:text-sm',
-                isLiveAccount ? 'text-buy' : 'text-link',
-              )}
-            >
-              {account
-                ? `${account.type === 'demo' ? 'Demo' : 'Live'}${
-                    account.number ? ` · ${String(account.number).slice(-4)}` : ''
-                  }`
-                : 'Account'}
-            </div>
-            <div className="hidden truncate text-[10px] leading-none text-text-secondary sm:block">
-              ID {account?.number || account?.id}
-            </div>
-          </div>
+          >
+            {isLiveAccount ? 'Live' : 'Demo'}
+          </span>
+          <span className="pointer-events-none relative z-0 text-xs font-medium text-text-secondary">—</span>
+          <span className="pointer-events-none relative z-0 min-w-0 truncate text-sm font-semibold tabular-nums text-text">
+            {account ? formatMoney(account.balance) : '—'}
+          </span>
           <ChevronDown
             size={14}
             className={clsx(
               'pointer-events-none absolute right-1.5 top-1/2 z-0 -translate-y-1/2 sm:right-2',
-              isLiveAccount ? 'text-buy' : 'text-link',
+              isLiveAccount ? 'text-buy' : 'text-sell',
             )}
             aria-hidden
           />
@@ -142,8 +131,7 @@ export function Header() {
           >
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>
-                {a.type === 'demo' ? 'Demo' : 'Live'}
-                {a.number ? ` · ${String(a.number).slice(-4)}` : ''}
+                {a.type === 'demo' ? 'Demo' : 'Live'} — {formatMoney(a.balance)}
               </option>
             ))}
           </select>
@@ -347,10 +335,14 @@ export function Header() {
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-semibold text-text">{user?.name}</div>
                   <div className="truncate text-xs text-text-secondary">{user?.email}</div>
-                  <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-panel px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-text-secondary ring-1 ring-border">
-                    <span
-                      className={clsx('h-1.5 w-1.5 rounded-full', isLiveAccount ? 'bg-buy' : 'bg-link')}
-                    />
+                  <div
+                    className={clsx(
+                      'mt-1 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold capitalize tracking-wide',
+                      isLiveAccount
+                        ? 'border-buy/25 bg-buy/15 text-buy'
+                        : 'border-sell/25 bg-sell/15 text-sell',
+                    )}
+                  >
                     {isLiveAccount ? 'Live' : 'Demo'}
                   </div>
                 </div>
@@ -377,18 +369,24 @@ export function Header() {
                             active
                               ? live
                                 ? 'border-buy bg-buy/10'
-                                : 'border-link bg-link/10'
+                                : 'border-sell bg-sell/10'
                               : 'border-border hover:bg-[#29313d]',
                           )}
                         >
                           <div className="flex items-center gap-1.5">
                             <span
-                              className={clsx('h-1.5 w-1.5 rounded-full', live ? 'bg-buy' : 'bg-link')}
-                            />
-                            <span className="text-xs font-semibold">{live ? 'Live' : 'Demo'}</span>
+                              className={clsx(
+                                'inline-flex rounded-full border px-1.5 py-0.5 text-[10px] font-semibold capitalize',
+                                live
+                                  ? 'border-buy/25 bg-buy/15 text-buy'
+                                  : 'border-sell/25 bg-sell/15 text-sell',
+                              )}
+                            >
+                              {live ? 'Live' : 'Demo'}
+                            </span>
                           </div>
-                          <div className="mt-0.5 truncate text-[10px] text-text-secondary">
-                            #{a.number || a.id}
+                          <div className="mt-1 truncate text-[11px] font-semibold tabular-nums text-text">
+                            {formatMoney(a.balance)}
                           </div>
                         </button>
                       )
@@ -449,7 +447,7 @@ function Metric({
 }) {
   return (
     <div className="w-[6.75rem] shrink-0 rounded-lg px-2 py-1.5 xl:w-[7.5rem] xl:px-2.5">
-      <div className="truncate text-[10px] font-medium uppercase tracking-wide text-text-secondary">{label}</div>
+      <div className="truncate text-[12px] font-medium capitalize text-text-secondary">{label}</div>
       <div
         className={clsx(
           'mt-0.5 block w-full truncate text-sm font-semibold leading-tight tabular-nums',

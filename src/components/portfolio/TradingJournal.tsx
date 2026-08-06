@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../context/AppContext'
@@ -27,8 +27,10 @@ export function TradingJournal() {
   const [q, setQ] = useState('')
   const [side, setSide] = useState<'all' | 'buy' | 'sell'>('all')
   const [result, setResult] = useState<'all' | 'win' | 'loss'>('all')
+  const [page, setPage] = useState(1)
   const [notes, setNotes] = useState<Record<string, string>>(() => loadNotes())
   const [editing, setEditing] = useState<string | null>(null)
+  const PAGE_SIZE = 10
 
   const closed = useMemo(
     () =>
@@ -58,6 +60,22 @@ export function TradingJournal() {
       )
     })
   }, [closed, q, side, result, notes])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const pageItems = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE
+    return filtered.slice(start, start + PAGE_SIZE)
+  }, [filtered, page])
+  const from = filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
+  const to = Math.min(page * PAGE_SIZE, filtered.length)
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages)
+  }, [page, totalPages])
+
+  useEffect(() => {
+    setPage(1)
+  }, [q, side, result])
 
   const stats = useMemo(() => {
     const wins = closed.filter((t) => (t.realizedPnl ?? 0) > 0)
@@ -150,7 +168,7 @@ export function TradingJournal() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((t) => {
+                pageItems.map((t) => {
                   const pnl = t.realizedPnl ?? 0
                   return (
                     <tr key={t.id} className="border-t border-border/70 align-top">
@@ -219,6 +237,36 @@ export function TradingJournal() {
           </table>
         </div>
       </div>
+      {filtered.length > PAGE_SIZE ? (
+        <div className="flex flex-col gap-2 rounded-lg border border-border bg-panel px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-text-secondary">
+            Showing <span className="font-medium text-text">{from}</span>–
+            <span className="font-medium text-text">{to}</span> of{' '}
+            <span className="font-medium text-text">{filtered.length}</span>
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="rounded border border-border px-2 py-1 text-xs text-text-secondary disabled:opacity-40"
+            >
+              Prev
+            </button>
+            <span className="px-2 text-xs text-text-secondary">
+              {page} / {totalPages}
+            </span>
+            <button
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              className="rounded border border-border px-2 py-1 text-xs text-text-secondary disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

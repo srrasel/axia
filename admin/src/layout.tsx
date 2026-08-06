@@ -157,10 +157,10 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       <div className="relative px-5 py-3 text-[16px] capitalize tracking-wide text-white">
         {user?.role?.replaceAll('_', ' ').toLowerCase()} - <CurrencyBadge />
       </div>
-      <nav className="relative flex-1 space-y-5 overflow-y-auto px-3 pb-4">
+      <nav className="relative flex-1 space-y-5 overflow-y-auto px-[22px] pb-4">
         {visibleGroups.map((group) => (
           <div key={group.title}>
-            <div className="mb-1.5 px-3 text-[12px] font-semibold capitalize tracking-[0.16em] text-secondary/70">
+            <div className="mb-1.5 px-[22px] text-[12px] font-semibold capitalize tracking-[0.16em] text-secondary/70">
               {group.title}
             </div>
             <div className="space-y-0.5">
@@ -174,7 +174,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                   onClick={onNavigate}
                   className={({ isActive }) =>
                     clsx(
-                      'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-secondary transition-colors hover:bg-muted hover:text-text',
+                      'flex items-center gap-3 rounded-xl px-[22px] py-2.5 text-sm text-secondary transition-colors hover:bg-muted hover:text-text',
                       isActive &&
                         'bg-sidebar-active font-semibold text-text',
                     )
@@ -200,7 +200,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           </div>
         ))}
       </nav>
-      <div className="relative border-t border-border p-4">
+      <div className="relative border-t border-border px-[22px] py-4">
         <div className="mb-2 truncate text-xs text-secondary">{user?.email}</div>
         <button
           type="button"

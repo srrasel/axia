@@ -3,17 +3,13 @@ import { createPortal } from 'react-dom'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   BarChart3,
-  Bell,
   Briefcase,
   Calendar,
   CandlestickChart,
-  Crosshair,
   LayoutDashboard,
   LayoutGrid,
   LineChart,
-  List,
   Settings,
-  Store,
   Trophy,
 } from 'lucide-react'
 import clsx from 'clsx'
@@ -21,15 +17,11 @@ import { useApp } from '../../context/AppContext'
 
 const desktopItems = [
   { to: '/member', icon: LineChart, label: 'Trading', end: true },
-  { to: '/markets', icon: List, label: 'Markets' },
-  { to: '/signals', icon: Store, label: 'Signals' },
-  { to: '/premium', icon: Crosshair, label: 'Premium' },
   { to: '/portfolio', icon: Briefcase, label: 'Portfolio' },
   { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
   { to: '/reports', icon: LayoutDashboard, label: 'Reports' },
   { to: '/calendar', icon: Calendar, label: 'Calendar' },
   { to: '/analytics', icon: BarChart3, label: 'Analytics' },
-  { to: '/notifications', icon: Bell, label: 'Notifications' },
 ]
 
 const mobileItems = [

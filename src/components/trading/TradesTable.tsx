@@ -43,7 +43,19 @@ export function TradesTable() {
       </div>
 
       <div className="flex-1 overflow-auto">
-        <table className="w-full min-w-[1100px] text-left text-[12px] sm:text-sm">
+        <table className="w-full min-w-[1100px] table-fixed text-left text-[12px] sm:text-sm">
+          <colgroup>
+            <col className="w-[190px]" />
+            <col className="w-[90px]" />
+            <col className="w-[80px]" />
+            <col className="w-[90px]" />
+            <col className="w-[95px]" />
+            <col className="w-[95px]" />
+            <col className="w-[170px]" />
+            <col className="w-[95px]" />
+            <col className="w-[85px]" />
+            <col className="w-[85px]" />
+          </colgroup>
           <thead className="sticky top-0 z-10 bg-[#29313d] text-[12px] text-text-secondary sm:text-[14px]">
             <tr>
               <th className="border-0 px-3 py-2 font-medium">Order</th>
@@ -142,10 +154,10 @@ export function TradesTable() {
                         </button>
                       )}
                     </td>
-                    <td className={clsx('px-3 py-2 font-semibold tabular-nums', pnl >= 0 ? 'positive' : 'negative')}>
+                    <td className={clsx('px-3 py-2 font-semibold tabular-nums whitespace-nowrap', pnl >= 0 ? 'positive' : 'negative')}>
                       {formatMoney(pnl)}
                     </td>
-                    <td className="px-3 py-2 tabular-nums">{formatMoney(t.swap)}</td>
+                    <td className="px-3 py-2 tabular-nums whitespace-nowrap">{formatMoney(t.swap)}</td>
                     <td className="px-3 py-2">
                       {t.status === 'open' ? (
                         <button

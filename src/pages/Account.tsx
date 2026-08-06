@@ -563,6 +563,8 @@ export function TransactionsPage() {
   const [period, setPeriod] = useState('all')
   const [type, setType] = useState('all')
   const [account, setAccount] = useState('all')
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 10
 
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
@@ -574,6 +576,22 @@ export function TransactionsPage() {
       return true
     })
   }, [transactions, type, account, period])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const pageItems = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE
+    return filtered.slice(start, start + PAGE_SIZE)
+  }, [filtered, page])
+  const from = filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
+  const to = Math.min(page * PAGE_SIZE, filtered.length)
+
+  useEffect(() => {
+    setPage(1)
+  }, [period, type, account])
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages)
+  }, [page, totalPages])
 
   return (
     <PageShell title="Transaction History">
@@ -640,7 +658,7 @@ export function TransactionsPage() {
         <>
           {/* Mobile cards */}
           <div className="space-y-3 md:hidden">
-            {filtered.map((t) => (
+            {pageItems.map((t) => (
               <div key={t.id} className="rounded-xl border border-border p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -686,7 +704,7 @@ export function TransactionsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((t) => (
+                {pageItems.map((t) => (
                   <tr key={t.id} className="border-t border-border">
                     <td className="px-3 py-3">
                       <div className="font-medium capitalize">{t.type.replace('_', ' ')}</div>
@@ -716,6 +734,34 @@ export function TransactionsPage() {
               </tbody>
             </table>
           </div>
+          {filtered.length > PAGE_SIZE ? (
+            <div className="mt-3 flex flex-col gap-2 text-xs text-text-secondary sm:flex-row sm:items-center sm:justify-between">
+              <span>
+                Showing {from}-{to} of {filtered.length}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="h-8 rounded-md border border-border px-3 text-sm text-text disabled:cursor-not-allowed disabled:opacity-50 hover:bg-muted"
+                >
+                  Prev
+                </button>
+                <span className="text-sm">
+                  Page {page} / {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="h-8 rounded-md border border-border px-3 text-sm text-text disabled:cursor-not-allowed disabled:opacity-50 hover:bg-muted"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          ) : null}
         </>
       )}
     </PageShell>

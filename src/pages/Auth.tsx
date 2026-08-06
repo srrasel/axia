@@ -326,7 +326,7 @@ function SocialAuth() {
     <div className="mt-6">
       <div className="mb-4 flex items-center gap-3">
         <div className="h-px flex-1 bg-[#333B47]" />
-        <span className="text-[12px] font-medium tracking-wide text-[#848e9c]">or</span>
+        <span className="text-[12px] font-medium tracking-wide text-white">or</span>
         <div className="h-px flex-1 bg-[#333B47]" />
       </div>
       <div className="space-y-3">

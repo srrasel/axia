@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Eye, X, Check, Ban, FileText } from 'lucide-react'
 import { api } from './api'
-import { PageHeader, Panel, StatusBadge, TablePagination, usePagination, actionBtnPrimary, actionBtnSuccess, actionBtnDanger, actionBtnNeutral, actionTdClass, nameCellClass } from './layout'
+import { PageHeader, Panel, StatusBadge, TablePagination, usePagination, actionBtnPrimary, actionBtnSuccess, actionBtnDanger, actionBtnNeutral, actionTdClass } from './layout'
 
 type KycDoc = {
   id: string
@@ -122,7 +122,7 @@ export function KycPage() {
               {pager.pageItems.map((d) => (
                 <tr key={d.id} className="border-b border-border/60">
                   <td className="pl-[15px] pr-3 py-3">
-                    <div className={`${nameCellClass} capitalize`}>{d.user.name}</div>
+                    <div className="font-medium capitalize text-white">{d.user.name}</div>
                     <div className="text-xs text-secondary">{d.user.email}</div>
                   </td>
                   <td className="pl-[15px] pr-3 py-3 capitalize">{formatKind(d.kind)}</td>
