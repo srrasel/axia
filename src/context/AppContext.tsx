@@ -492,9 +492,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = async (patch: Partial<User>) => {
     try {
+      const body: Record<string, unknown> = {}
+      if (patch.name !== undefined) body.name = patch.name
+      if (patch.nationality !== undefined) body.nationality = patch.nationality
+      if (patch.photoUrl !== undefined) body.photoUrl = patch.photoUrl
       const data = await api<{ user: any }>('/api/profile', {
         method: 'PATCH',
-        body: JSON.stringify({ name: patch.name, nationality: patch.nationality }),
+        body: JSON.stringify(body),
       })
       setUser(mapUser(data.user))
       showToast('Profile updated')

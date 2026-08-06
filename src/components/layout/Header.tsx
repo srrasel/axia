@@ -9,8 +9,8 @@ import { UserAvatar } from '../UserAvatar'
 import { MobileAccountSwitcher } from './MobileAccountSwitcher'
 
 const userMenu = [
-  { to: '/account/details', icon: User, label: 'Account details' },
-  { to: '/account/manage', icon: Layers, label: 'Manage accounts', hideOnMobile: true },
+  { to: '/account/details', icon: User, label: 'Account Details' },
+  { to: '/account/manage', icon: Layers, label: 'Manage Accounts', hideOnMobile: true },
   { to: '/account/deposit', icon: CreditCard, label: 'Deposit' },
   { to: '/account/withdraw', icon: Wallet, label: 'Withdraw' },
   { to: '/account/transactions', icon: History, label: 'Transactions', hideOnMobile: true },
@@ -75,14 +75,14 @@ export function Header() {
         setNotifOpen(false)
       }
     }
-    // Defer so the opening tap/click does not immediately close on mobile
+    // Delay so the same click/tap that opens a menu cannot immediately close it
     const timer = window.setTimeout(() => {
-      document.addEventListener('pointerdown', onDoc)
-    }, 0)
+      document.addEventListener('pointerdown', onDoc, true)
+    }, 120)
     document.addEventListener('keydown', onKey)
     return () => {
       window.clearTimeout(timer)
-      document.removeEventListener('pointerdown', onDoc)
+      document.removeEventListener('pointerdown', onDoc, true)
       document.removeEventListener('keydown', onKey)
     }
   }, [userOpen, langOpen, notifOpen])
@@ -298,11 +298,13 @@ export function Header() {
               'flex cursor-pointer items-center rounded-full bg-transparent p-0.5 transition-colors hover:bg-[#28303c] sm:p-1.5',
               userOpen && 'bg-[#28303c]',
             )}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation()
               setUserOpen((v) => !v)
               setLangOpen(false)
               setNotifOpen(false)
             }}
+            onPointerDown={(e) => e.stopPropagation()}
           >
             <span className="sm:hidden">
               <UserAvatar
@@ -419,7 +421,7 @@ export function Header() {
                     <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-sell/10">
                       <LogOut size={18} strokeWidth={1.75} />
                     </span>
-                    Sign out
+                    Logout
                   </button>
                 </div>
               </div>
@@ -469,9 +471,9 @@ export function Toast() {
   return (
     <div
       role="status"
-      className="toast pointer-events-auto fixed right-3 top-[max(4.25rem,calc(env(safe-area-inset-top)+3.75rem))] z-[100] flex w-[min(22rem,calc(100%-1.5rem))] items-start gap-3 rounded-3xl bg-white px-4 py-3.5 text-left text-[#111] shadow-[0_12px_40px_rgba(0,0,0,0.35)] sm:right-5"
+      className="toast pointer-events-auto fixed right-3 top-[max(4.25rem,calc(env(safe-area-inset-top)+3.75rem))] z-[100] flex w-[min(22rem,calc(100%-1.5rem))] items-center gap-3 rounded-3xl bg-white px-4 py-3.5 text-left text-[#111] shadow-[0_12px_40px_rgba(0,0,0,0.35)] sm:right-5"
     >
-      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#e5e7eb] bg-white">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#e5e7eb] bg-white">
         {toast.kind === 'trade' ? (
           <Check
             size={16}
@@ -483,7 +485,7 @@ export function Toast() {
         )}
       </span>
 
-      <div className="min-w-0 flex-1 pt-0.5 text-[15px] leading-snug">
+      <div className="min-w-0 flex-1 text-[15px] capitalize leading-snug">
         {toast.kind === 'trade' ? (
           <>
             <div>
@@ -512,7 +514,7 @@ export function Toast() {
         type="button"
         aria-label="Dismiss"
         onClick={clearToast}
-        className="mt-0.5 shrink-0 cursor-pointer rounded-md p-0.5 text-[#6b7280] transition-colors hover:text-[#111]"
+        className="shrink-0 cursor-pointer rounded-md p-0.5 text-[#6b7280] transition-colors hover:text-[#111]"
       >
         <X size={16} strokeWidth={2} />
       </button>

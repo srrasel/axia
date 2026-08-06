@@ -18,15 +18,15 @@ import { useApp } from '../../context/AppContext'
 import { UserAvatar } from '../UserAvatar'
 
 const links = [
-  { to: '/account/details', icon: User, label: 'Account details' },
-  { to: '/account/manage', icon: Layers, label: 'Manage accounts' },
-  { to: '/account/transactions', icon: History, label: 'Transactions history' },
+  { to: '/account/details', icon: User, label: 'Account Details' },
+  { to: '/account/manage', icon: Layers, label: 'Manage Accounts' },
+  { to: '/account/transactions', icon: History, label: 'Transactions History' },
   { to: '/account/deposit', icon: CreditCard, label: 'Deposit' },
   { to: '/account/withdraw', icon: Wallet, label: 'Withdraw' },
-  { to: '/account/verification', icon: ShieldCheck, label: 'Verification center', badgeKey: 'kyc' as const },
-  { to: '/account/invite', icon: Users, label: 'Invite a friend' },
+  { to: '/account/verification', icon: ShieldCheck, label: 'Verification Center', badgeKey: 'kyc' as const },
+  { to: '/account/invite', icon: Users, label: 'Invite A Friend' },
   { to: '/account/questionnaire', icon: FileText, label: 'View Questionnaire' },
-  { to: '/account/mobile', icon: Smartphone, label: 'Get mobile app' },
+  { to: '/account/mobile', icon: Smartphone, label: 'Get Mobile App' },
 ]
 
 type Props = {

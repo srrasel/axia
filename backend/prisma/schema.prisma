@@ -115,6 +115,8 @@ model User {
   name               String
   initials           String
   phone              String?
+  /// Profile photo as data URL (image/jpeg|png|webp)
+  photoUrl           String?
   nationality        String          @default("Saudi Arabia")
   country            String          @default("Saudi Arabia")
   language           String          @default("en")

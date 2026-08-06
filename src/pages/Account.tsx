@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   Briefcase,
   Building2,
+  Camera,
   Check,
   ChevronDown,
   Copy,
@@ -64,6 +65,8 @@ export function AccountDetailsPage() {
   const [name, setName] = useState(user?.name ?? '')
   const [nationality, setNationality] = useState(user?.nationality ?? '')
   const [msg, setMsg] = useState<string | null>(null)
+  const [photoBusy, setPhotoBusy] = useState(false)
+  const [photoError, setPhotoError] = useState<string | null>(null)
 
   const [qr, setQr] = useState<string | null>(null)
   const [secret, setSecret] = useState<string | null>(null)
@@ -79,6 +82,32 @@ export function AccountDetailsPage() {
     setEditing(false)
     setName(user?.name ?? '')
     setNationality(user?.nationality ?? '')
+  }
+
+  const onPhotoSelected = (file: File | undefined) => {
+    if (!file) return
+    setPhotoError(null)
+    if (!/^image\/(jpeg|jpg|png|webp)$/i.test(file.type)) {
+      setPhotoError('Use JPG, PNG, or WebP')
+      return
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setPhotoError('Image too large (max 2 MB)')
+      return
+    }
+    setPhotoBusy(true)
+    const reader = new FileReader()
+    reader.onload = async () => {
+      const photoUrl = String(reader.result || '')
+      const err = await updateProfile({ photoUrl })
+      setPhotoBusy(false)
+      if (err) setPhotoError(err)
+    }
+    reader.onerror = () => {
+      setPhotoBusy(false)
+      setPhotoError('Could not read image')
+    }
+    reader.readAsDataURL(file)
   }
 
   return (
@@ -116,13 +145,56 @@ export function AccountDetailsPage() {
       </div>
 
       <div className="mb-5 flex items-center gap-3 sm:mb-6 sm:gap-4">
-        <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={64} />
+        <div className="relative shrink-0">
+          <UserAvatar photoUrl={user?.photoUrl} name={user?.name} size={64} />
+          <label
+            className={clsx(
+              'absolute -bottom-1 -right-1 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-border bg-panel text-text-secondary shadow-sm transition-colors hover:bg-muted hover:text-brand-ink',
+              photoBusy && 'pointer-events-none opacity-60',
+            )}
+            aria-label="Update profile image"
+            title="Update profile image"
+          >
+            <Camera size={14} strokeWidth={1.75} />
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+              className="hidden"
+              disabled={photoBusy}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                e.target.value = ''
+                onPhotoSelected(file)
+              }}
+            />
+          </label>
+        </div>
         <div className="min-w-0 flex-1">
           <div className="truncate text-base font-semibold sm:text-lg">{user?.name}</div>
           <div className="truncate text-sm text-text-secondary">{user?.email}</div>
           <div className="text-xs text-text-secondary">
             {liveCount} live · {demoCount} demo
           </div>
+          {photoBusy ? <div className="mt-1 text-xs text-text-secondary">Uploading…</div> : null}
+          {photoError ? <div className="mt-1 text-xs text-sell">{photoError}</div> : null}
+          {user?.photoUrl ? (
+            <button
+              type="button"
+              disabled={photoBusy}
+              className="mt-1 text-xs font-medium text-text-secondary underline-offset-2 hover:text-sell hover:underline disabled:opacity-50"
+              onClick={async () => {
+                setPhotoBusy(true)
+                setPhotoError(null)
+                const err = await updateProfile({ photoUrl: null })
+                setPhotoBusy(false)
+                if (err) setPhotoError(err)
+              }}
+            >
+              Remove Photo
+            </button>
+          ) : (
+            <div className="mt-1 text-xs text-text-secondary">Tap camera to upload photo</div>
+          )}
         </div>
       </div>
 
@@ -222,13 +294,13 @@ export function AccountDetailsPage() {
           {msg ? (
             <p className={clsx('text-sm', msg === 'Password updated' ? 'text-buy' : 'text-sell')}>{msg}</p>
           ) : null}
-          <Input name="current" label="Current password" type="password" />
-          <Input name="next" label="New password" type="password" />
+          <Input name="current" label="Current Password" type="password" />
+          <Input name="next" label="New Password" type="password" />
           <button
             type="submit"
             className="h-10 w-full rounded-lg btn-brand px-4 text-sm font-semibold sm:w-auto"
           >
-            Update password
+            Update Password
           </button>
         </form>
       ) : (
@@ -1634,7 +1706,7 @@ export function QuestionnairePage() {
 
 export function MobileAppPage() {
   return (
-    <PageShell title="Get mobile app">
+    <PageShell title="Get Mobile App">
       <div className="max-w-lg rounded-lg border border-border p-6">
         <h2 className="text-lg font-semibold">Trade on the go</h2>
         <p className="mt-2 text-sm text-text-secondary">

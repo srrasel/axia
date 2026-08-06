@@ -88,11 +88,31 @@ userRouter.patch('/profile', async (req, res) => {
   const schema = z.object({
     name: z.string().min(2).optional(),
     nationality: z.string().min(2).optional(),
+    photoUrl: z.string().nullable().optional(),
   })
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
 
-  const data: { name?: string; nationality?: string; initials?: string } = { ...parsed.data }
+  const data: {
+    name?: string
+    nationality?: string
+    initials?: string
+    photoUrl?: string | null
+  } = { ...parsed.data }
+
+  if (data.photoUrl !== undefined) {
+    if (data.photoUrl === null || data.photoUrl === '') {
+      data.photoUrl = null
+    } else {
+      if (data.photoUrl.length > 2_800_000) {
+        return res.status(400).json({ error: 'Image too large (max 2 MB)' })
+      }
+      if (!/^data:image\/(jpeg|jpg|png|webp);base64,/i.test(data.photoUrl)) {
+        return res.status(400).json({ error: 'Invalid image format' })
+      }
+    }
+  }
+
   if (data.name) data.initials = initialsFromName(data.name)
 
   const user = await prisma.user.update({
