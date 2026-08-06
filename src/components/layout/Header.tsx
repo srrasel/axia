@@ -97,27 +97,39 @@ export function Header() {
 
       {/* Demo / Live account switch — desktop / tablet */}
       <div className="relative hidden min-w-0 shrink-0 sm:block">
-        <div className="relative flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-[#29313d] py-1 pl-2 pr-7 sm:pl-2.5 sm:pr-8">
+        <div
+          className={clsx(
+            'relative flex cursor-pointer items-center gap-2 rounded-xl border py-1 pl-[13px] pr-7 sm:pl-[15px] sm:pr-8',
+            isLiveAccount ? 'border-buy/35 bg-buy/20' : 'border-[#4e1d09] bg-[#4e1d09]',
+          )}
+        >
           <span
             className={clsx(
-              'pointer-events-none relative z-0 inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold capitalize tracking-wide',
-              isLiveAccount
-                ? 'border-buy/25 bg-buy/15 text-buy'
-                : 'border-sell/25 bg-sell/15 text-sell',
+              'pointer-events-none relative z-0 inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[12px] font-semibold capitalize tracking-wide',
+              isLiveAccount ? 'bg-buy text-white' : 'bg-[#4e1d09] text-[rgb(253,176,34)]',
             )}
           >
             {isLiveAccount ? 'Live' : 'Demo'}
           </span>
-          <span className="pointer-events-none relative z-0 text-xs font-medium text-text-secondary">—</span>
-          <span className="pointer-events-none relative z-0 min-w-0 truncate text-sm font-semibold tabular-nums text-text">
+          <span
+            className={clsx(
+              'pointer-events-none relative z-0 text-[12px] font-medium',
+              isLiveAccount ? 'text-white/80' : 'text-[rgb(253,176,34)]',
+            )}
+          >
+            —
+          </span>
+          <span
+            className={clsx(
+              'pointer-events-none relative z-0 min-w-0 truncate text-[12px] font-semibold tabular-nums',
+              isLiveAccount ? 'text-white' : 'text-[rgb(253,176,34)]',
+            )}
+          >
             {account ? formatMoney(account.balance) : '—'}
           </span>
           <ChevronDown
             size={14}
-            className={clsx(
-              'pointer-events-none absolute right-1.5 top-1/2 z-0 -translate-y-1/2 sm:right-2',
-              isLiveAccount ? 'text-buy' : 'text-sell',
-            )}
+            className="pointer-events-none absolute right-1.5 top-1/2 z-0 -translate-y-1/2 text-white sm:right-2"
             aria-hidden
           />
           <select

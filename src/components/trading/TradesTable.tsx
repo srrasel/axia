@@ -43,7 +43,7 @@ export function TradesTable() {
       </div>
 
       <div className="flex-1 overflow-auto">
-        <table className="w-full min-w-[1100px] table-fixed text-left text-[12px] sm:text-sm">
+        <table className="w-full min-w-[1100px] table-fixed text-left text-[12px]">
           <colgroup>
             <col className="w-[190px]" />
             <col className="w-[90px]" />
@@ -56,7 +56,7 @@ export function TradesTable() {
             <col className="w-[85px]" />
             <col className="w-[85px]" />
           </colgroup>
-          <thead className="sticky top-0 z-10 bg-[#29313d] text-[12px] text-text-secondary sm:text-[14px]">
+          <thead className="sticky top-0 z-10 bg-[#29313d] text-[12px] text-text-secondary">
             <tr>
               <th className="border-0 px-3 py-2 font-medium">Order</th>
               <th className="border-0 px-3 py-2 font-medium">Asset</th>
@@ -84,9 +84,9 @@ export function TradesTable() {
                   <tr key={t.id} className="border-t border-border/70">
                     <td className="px-3 py-2">
                       <div className="font-medium">#{t.id}</div>
-                      <div className="text-[12px] text-text-secondary sm:text-[11px]">{t.openTime}</div>
+                      <div className="text-[12px] text-text-secondary">{t.openTime}</div>
                       {t.triggerPrice != null && t.status === 'pending' ? (
-                        <div className="text-[12px] text-link sm:text-[11px]">
+                        <div className="text-[12px] text-link">
                           Trigger {formatPrice(t.triggerPrice, t.symbol)}
                         </div>
                       ) : null}
@@ -95,7 +95,7 @@ export function TradesTable() {
                     <td className="px-3 py-2">
                       <span
                         className={clsx(
-                          'rounded px-2 py-0.5 text-[12px] font-semibold capitalize sm:text-xs',
+                          'rounded px-2 py-0.5 text-[12px] font-semibold capitalize',
                           t.side === 'buy' ? 'bg-buy/10 text-buy' : 'bg-sell/10 text-sell',
                         )}
                       >
@@ -109,7 +109,7 @@ export function TradesTable() {
                         ? formatPrice(t.closePrice ?? t.currentPrice, t.symbol)
                         : formatPrice(t.currentPrice, t.symbol)}
                     </td>
-                    <td className="px-3 py-2 text-[12px] text-text-secondary sm:text-xs">
+                    <td className="px-3 py-2 text-[12px] text-text-secondary">
                       {editing === t.id ? (
                         <div className="flex items-center gap-1">
                           <input
@@ -163,7 +163,7 @@ export function TradesTable() {
                         <button
                           type="button"
                           onClick={() => void closeTrade(t.id)}
-                          className="rounded border border-border px-2 py-1 text-[12px] font-medium hover:bg-muted sm:text-xs"
+                          className="rounded border border-border px-2 py-1 text-[12px] font-medium hover:bg-muted"
                         >
                           Close
                         </button>
@@ -171,7 +171,7 @@ export function TradesTable() {
                         <button
                           type="button"
                           onClick={() => void cancelPending(t.id)}
-                          className="rounded border border-border px-2 py-1 text-[12px] font-medium hover:bg-muted sm:text-xs"
+                          className="rounded border border-border px-2 py-1 text-[12px] font-medium hover:bg-muted"
                         >
                           Cancel
                         </button>
