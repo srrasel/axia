@@ -49,25 +49,27 @@ export function NotificationsPage() {
         </button>
       }
     >
-      <div className="mb-4 hidden items-center justify-between md:flex">
-        <h1 className="text-xl font-semibold">Notifications</h1>
-        <button type="button" onClick={markNotificationsRead} className="text-sm text-link">
-          Mark all read
-        </button>
-      </div>
-      <div className="space-y-2">
-        {notifications.map((n) => (
-          <div
-            key={n.id}
-            className={`rounded-lg border border-border p-4 ${n.read ? 'opacity-60' : 'bg-sidebar-active'}`}
-          >
-            <div className="flex justify-between gap-3">
-              <div className="font-semibold">{n.title}</div>
-              <div className="text-xs text-text-secondary">{n.time}</div>
+      <div className="md:w-[60%]">
+        <div className="mb-4 hidden items-center justify-between md:flex">
+          <h1 className="text-xl font-semibold">Notifications</h1>
+          <button type="button" onClick={markNotificationsRead} className="text-sm text-link">
+            Mark all read
+          </button>
+        </div>
+        <div className="space-y-2">
+          {notifications.map((n) => (
+            <div
+              key={n.id}
+              className={`rounded-lg border border-border p-4 ${n.read ? 'opacity-60' : 'bg-sidebar-active'}`}
+            >
+              <div className="flex justify-between gap-3">
+                <div className="text-[12px] font-semibold">{n.title}</div>
+                <div className="text-xs text-text-secondary">{n.time}</div>
+              </div>
+              <p className="mt-1 text-[12px] text-text-secondary">{n.body}</p>
             </div>
-            <p className="mt-1 text-sm text-text-secondary">{n.body}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </MobileMoreBackShell>
   )

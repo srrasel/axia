@@ -1244,7 +1244,7 @@ export function DepositPage() {
               min={1}
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="h-14 w-full rounded-xl border border-border bg-muted/40 pl-10 pr-4 text-2xl font-semibold outline-none transition-[border-color] hover:!border-white focus:!border-white active:!border-white"
+              className="h-14 w-full rounded-xl border border-border bg-muted/40 pl-10 pr-4 text-2xl font-semibold outline-none focus:!border-white active:!border-white"
               required
             />
           </div>
@@ -1259,7 +1259,7 @@ export function DepositPage() {
                   'rounded-lg border bg-transparent px-2 py-2.5 text-xs font-semibold transition-colors',
                   amount === v
                     ? 'border-[#fff] text-[#fff]'
-                    : 'border-border text-text-secondary hover:border-[#F0B90B]/50 hover:text-brand-ink',
+                    : 'border-border text-text-secondary',
                 )}
               >
                 {currency.symbol}
@@ -1282,9 +1282,7 @@ export function DepositPage() {
                   onClick={() => setMethod(t.id)}
                   className={clsx(
                     'flex items-center gap-3 rounded-2xl border bg-transparent p-3 text-left transition-all sm:block',
-                    active
-                      ? 'border-[#fff]'
-                      : 'border-border hover:border-[#F0B90B]/50',
+                    active ? 'border-[#fff]' : 'border-border',
                   )}
                 >
                   <Icon size={18} className={clsx('shrink-0', active ? 'text-[#fff]' : 'text-text-secondary')} />
@@ -1316,7 +1314,7 @@ export function DepositPage() {
               <input
                 value={card.name}
                 onChange={(e) => setCard((c) => ({ ...c, name: e.target.value }))}
-                className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-colors hover:!border-white focus:!border-white"
+                className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none focus:!border-white"
                 placeholder="Full name"
                 autoComplete="cc-name"
               />
@@ -1328,7 +1326,7 @@ export function DepositPage() {
                 <input
                   value={card.number}
                   onChange={(e) => setCard((c) => ({ ...c, number: formatCardNumber(e.target.value) }))}
-                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 pr-12 font-mono outline-none transition-colors hover:!border-white focus:!border-white"
+                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 pr-12 font-mono outline-none focus:!border-white"
                   placeholder="ACCT-000003"
                   inputMode="numeric"
                   autoComplete="cc-number"
@@ -1343,7 +1341,7 @@ export function DepositPage() {
                 <input
                   value={card.expiry}
                   onChange={(e) => setCard((c) => ({ ...c, expiry: formatExpiry(e.target.value) }))}
-                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none transition-colors hover:!border-white focus:!border-white"
+                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none focus:!border-white"
                   placeholder="MM/YY"
                   inputMode="numeric"
                   autoComplete="cc-exp"
@@ -1354,7 +1352,7 @@ export function DepositPage() {
                 <input
                   value={card.cvc}
                   onChange={(e) => setCard((c) => ({ ...c, cvc: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
-                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none transition-colors hover:!border-white focus:!border-white"
+                  className="h-11 w-full rounded-xl border border-border bg-transparent px-3 font-mono outline-none focus:!border-white"
                   placeholder="123"
                   inputMode="numeric"
                   autoComplete="cc-csc"
@@ -1386,7 +1384,7 @@ export function DepositPage() {
                     'rounded-xl border bg-transparent px-3 py-3 text-left transition-all',
                     cryptoCoin === c.id
                       ? 'border-[#fff] text-[#fff]'
-                      : 'border-border hover:border-[#F0B90B]/50',
+                      : 'border-border',
                   )}
                 >
                   <div className="text-sm font-semibold">{c.id}</div>
@@ -1434,7 +1432,7 @@ export function DepositPage() {
                       onClick={() => setBankCountry(c.countryCode)}
                       className={clsx(
                         'rounded-lg border bg-transparent px-2.5 py-3 text-left transition-all',
-                        active ? 'border-[#fff] text-[#fff]' : 'border-border hover:border-[#fff]',
+                        active ? 'border-[#fff] text-[#fff]' : 'border-border',
                       )}
                     >
                       <div className="text-[13px] font-semibold leading-tight">{c.label}</div>
@@ -1480,7 +1478,7 @@ export function DepositPage() {
                   </div>
                   <a
                     href={contactFinanceHref}
-                    className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-border px-4 text-sm font-medium text-text-secondary transition-colors hover:border-[#fff] hover:text-[#fff]"
+                    className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-border px-4 text-sm font-medium text-text-secondary transition-colors hover:text-[#fff]"
                   >
                     <Mail size={15} />
                     Contact Finance
@@ -1525,7 +1523,7 @@ export function DepositPage() {
                   <input
                     value={bankReference}
                     onChange={(e) => setBankReference(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none transition-[border-color] hover:!border-white focus:!border-white active:!border-white"
+                    className="h-11 w-full rounded-xl border border-border bg-transparent px-3 outline-none focus:!border-white active:!border-white"
                     placeholder="Transfer ID / reference (optional)"
                   />
                 </label>
