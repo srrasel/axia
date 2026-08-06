@@ -21,6 +21,7 @@ import {
 import { BankAccountsPage } from './bank-accounts'
 import { SettingsPage } from './settings'
 import { KycPage } from './kyc'
+import { SupportMessagesPage } from './support'
 
 function CrmClientsRoute() {
   const { user } = useAuth()
@@ -782,6 +783,7 @@ export default function App() {
           <Route path="/trades" element={<TradesPage />} />
           <Route path="/transactions" element={<TransactionsPage />} />
           <Route path="/kyc" element={<KycPage />} />
+          <Route path="/support" element={<SupportMessagesPage />} />
           <Route path="/bank-accounts" element={<BankAccountsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>

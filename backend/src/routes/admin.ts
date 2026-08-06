@@ -945,3 +945,28 @@ adminRouter.get('/accounts', adminRequired, async (_req, res) => {
   })
   return res.json({ accounts })
 })
+
+adminRouter.get('/support-messages', staffRequired, async (req, res) => {
+  const status = String(req.query.status || '')
+  const rows = await prisma.supportMessage.findMany({
+    where: status ? { status } : undefined,
+    include: { user: { select: { id: true, name: true, email: true } } },
+    orderBy: { createdAt: 'desc' },
+    take: 200,
+  })
+  return res.json({ messages: rows })
+})
+
+adminRouter.patch('/support-messages/:id', staffRequired, async (req, res) => {
+  const schema = z.object({
+    status: z.enum(['open', 'closed']),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid payload' })
+  const message = await prisma.supportMessage.update({
+    where: { id: String(req.params.id) },
+    data: { status: parsed.data.status },
+    include: { user: { select: { id: true, name: true, email: true } } },
+  })
+  return res.json({ message })
+})

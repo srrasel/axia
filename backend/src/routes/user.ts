@@ -5,7 +5,7 @@ import { prisma } from '../prisma.js'
 import { authRequired, loadUser, publicUser } from '../auth.js'
 import { calcMargin, calcPnl, calcUsedMargin, initialsFromName } from '../trading.js'
 import { fetchCandles, fetchQuotes } from '../market.js'
-import { getPremiumThreshold, getSettingNumber, getCurrencyCode, currencySymbol } from '../settings.js'
+import { getPremiumThreshold, getSettingNumber, getCurrencyCode, currencySymbol, getSetting, getSettingBool } from '../settings.js'
 import { fxMatrix } from '../fx.js'
 import { settleTradeClose } from '../settle.js'
 
@@ -429,4 +429,39 @@ userRouter.post('/notifications/read', async (req, res) => {
     data: { read: true },
   })
   return res.json({ ok: true })
+})
+
+userRouter.get('/support/config', async (_req, res) => {
+  const enabled = await getSettingBool('support_widget_enabled', true)
+  return res.json({
+    enabled,
+    icon: (await getSetting('support_icon')) || 'message-circle',
+    title: (await getSetting('support_form_title')) || 'Contact Support',
+    subtitle: (await getSetting('support_form_subtitle')) || 'Send us a message and our team will get back to you.',
+    placeholder: (await getSetting('support_form_placeholder')) || 'How can we help you?',
+    successMessage: (await getSetting('support_success_message')) || 'Your message was sent. We will reply soon.',
+    supportEmail: (await getSetting('support_email')) || 'support@nitajfx.online',
+  })
+})
+
+userRouter.post('/support/messages', async (req, res) => {
+  const enabled = await getSettingBool('support_widget_enabled', true)
+  if (!enabled) return res.status(400).json({ error: 'Support form is disabled' })
+
+  const schema = z.object({
+    subject: z.string().max(120).optional(),
+    message: z.string().min(3).max(4000),
+  })
+  const parsed = schema.safeParse(req.body)
+  if (!parsed.success) return res.status(400).json({ error: 'Enter a valid message' })
+
+  const row = await prisma.supportMessage.create({
+    data: {
+      userId: req.user!.id,
+      subject: (parsed.data.subject || 'Support').trim() || 'Support',
+      message: parsed.data.message.trim(),
+    },
+  })
+
+  return res.json({ ok: true, id: row.id })
 })

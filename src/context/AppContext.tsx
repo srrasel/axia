@@ -112,6 +112,7 @@ interface AppState {
   completeQuestionnaire: () => Promise<void>
   markNotificationsRead: () => Promise<void>
   clearToast: () => void
+  showToast: (msg: string | AppToast) => void
   refreshQuotes: () => Promise<void>
   refreshAll: () => Promise<void>
 }
@@ -749,6 +750,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await refreshAll()
     },
     clearToast: () => setToast(null),
+    showToast,
     refreshQuotes,
     refreshAll,
   }

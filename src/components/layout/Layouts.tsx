@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { Header, Toast } from './Header'
 import { IconSidebar } from './IconSidebar'
+import { SupportWidget } from '../SupportWidget'
 
 export function PlatformLayout() {
   return (
@@ -11,6 +12,7 @@ export function PlatformLayout() {
         <main className="min-w-0 flex-1 overflow-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0">
           <Outlet />
         </main>
+        <SupportWidget />
       </div>
       <Toast />
     </div>

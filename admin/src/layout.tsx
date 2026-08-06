@@ -23,6 +23,7 @@ import {
   Shield,
   SlidersHorizontal,
   Gauge,
+  Headphones,
   type LucideIcon,
 } from 'lucide-react'
 import clsx from 'clsx'
@@ -118,6 +119,7 @@ const navGroups: { title: string; items: NavItem[] }[] = [
       { to: '/transactions', icon: ArrowLeftRight, label: 'Money Ops', adminOnly: true },
       { to: '/bank-accounts', icon: Building2, label: 'Bank Accounts', adminOnly: true },
       { to: '/kyc', icon: BadgeCheck, label: 'KYC', adminOnly: true },
+      { to: '/support', icon: Headphones, label: 'Support', adminOnly: true },
       { to: '/settings', icon: Settings, label: 'Settings', adminOnly: true },
     ],
   },

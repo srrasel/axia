@@ -3,6 +3,7 @@ import {
   Coins,
   CreditCard,
   Gauge,
+  Headphones,
   Landmark,
   RefreshCw,
   Save,
@@ -30,6 +31,7 @@ type SettingDef = {
 
 const GROUP_META: Record<string, { icon: LucideIcon; blurb: string }> = {
   General: { icon: Settings2, blurb: 'Brand identity and core platform options' },
+  Support: { icon: Headphones, blurb: 'Member support widget icon and message form' },
   Premium: { icon: Sparkles, blurb: 'Premium account thresholds and features' },
   Fees: { icon: Coins, blurb: 'Trading, deposit, and withdrawal fee rules' },
   Limits: { icon: Gauge, blurb: 'Deposit, withdraw, leverage, and demo limits' },
