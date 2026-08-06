@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useApp } from '../../context/AppContext'
+import { SupportRailButton } from '../SupportWidget'
 
 const desktopItems = [
   { to: '/member', icon: LineChart, label: 'Trading', end: true },
@@ -135,6 +136,7 @@ export function IconSidebar({ mobileOnly = false }: { mobileOnly?: boolean }) {
           </nav>
 
           <div className="mt-[10px] w-full border-t border-border px-[10px] pt-[10px]">
+            <SupportRailButton />
             <RailLink to="/account/details" label="Settings" icon={Settings} />
           </div>
         </aside>
